@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 
-public class EewController
+public class EewController : IEewController
 {
 	public bool IsReplay { get; private set; }
 
@@ -222,10 +222,19 @@ public class EewController
 				return;
 			}
 
-			if (!EewCache.TryGetValue(eventId, out var eew) || eew.IsCancelled)
+			if (!EewCache.TryGetValue(eventId, out var eew) || eew.IsTrueCancelled)
 				return;
-			
+
 			var newEew2 = eew with { IsCancelled = true, IsTrueCancelled = true, ReceiveTime = updatedTime };
+			// 擬似キャンセル済みの場合は通知を済ませているため、確定キャンセルへの格上げのみ行う
+			if (eew.IsCancelled)
+			{
+				Logger.LogInformation("擬似キャンセル中のEEWを確定キャンセルにしました: {EventId}", eventId);
+				EewCache[eventId] = newEew2;
+				InvokeEewUpdated(updatedTime);
+				return;
+			}
+
 			Logger.LogInformation("EEWをキャンセルしました: {EventId}", eventId);
 			EewCache[eventId] = newEew2;
 			var intstr = newEew2.MaxIntensity.ToShortString().Replace('*', '-');

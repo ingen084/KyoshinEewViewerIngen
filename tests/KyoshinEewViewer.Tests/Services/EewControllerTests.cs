@@ -102,6 +102,41 @@ public class EewControllerTests
 		Assert.True(actual.IsTrueCancelled);
 	}
 
+	[Fact(DisplayName = "擬似キャンセル後_確定キャンセルを受信すると通知を繰り返さず確定キャンセルに切り替わる")]
+	public void 擬似キャンセル後_確定キャンセルを受信すると通知を繰り返さず確定キャンセルに切り替わる()
+	{
+		var config = new KyoshinEewViewerConfiguration();
+		var soundPlayer = new SoundPlayerService(config, NullLogger<SoundPlayerService>.Instance);
+		var controller = CreateController(config, soundPlayer);
+		var updatedEews = new List<Eew[]>();
+		controller.EewUpdated += (_, eews) => updatedEews.Add(eews);
+		var baseTime = new DateTime(2026, 6, 18, 12, 0, 0);
+		var eew = CreateEew(baseTime);
+
+		controller.Update(eew, baseTime);
+		controller.Cancelled(null, baseTime.AddSeconds(1));
+		Assert.False(updatedEews.Last().Single().IsTrueCancelled);
+
+		var soundConfigs = config.Sounds["Eew"];
+		Assert.True(soundConfigs.Remove("EewCanceled"));
+		Assert.True(soundConfigs.Remove("EewReceived"));
+
+		controller.Cancelled(eew.Id, baseTime.AddSeconds(2));
+
+		var cancelled = updatedEews.Last().Single();
+		Assert.True(cancelled.IsCancelled);
+		Assert.True(cancelled.IsTrueCancelled);
+		Assert.DoesNotContain("EewCanceled", soundConfigs);
+		Assert.DoesNotContain("EewReceived", soundConfigs);
+
+		// 確定キャンセル後は同一報を再受信しても擬似キャンセルのように解除されない
+		controller.Update(eew with { ReceiveTime = baseTime.AddSeconds(3) }, baseTime.AddSeconds(3));
+
+		var actual = updatedEews.Last().Single();
+		Assert.True(actual.IsCancelled);
+		Assert.True(actual.IsTrueCancelled);
+	}
+
 	[Fact(DisplayName = "擬似キャンセル後_新しい報数の再受信でキャンセル状態が解除される")]
 	public void 擬似キャンセル後_新しい報数の再受信でキャンセル状態が解除される()
 	{

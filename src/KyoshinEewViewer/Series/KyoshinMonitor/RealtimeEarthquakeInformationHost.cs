@@ -30,6 +30,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 	public KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }
 	private SignalNowFileWatcher SignalNowEewReceiver { get; }
 	public EewTelegramSubscriber EewTelegramSubscriber { get; }
+	private AxisEewReceiver AxisEewReceiver { get; }
 	public AxisInformationProvider AxisInformationProvider { get; }
 	private TimerService TimerService { get; }
 
@@ -65,6 +66,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		};
 		SignalNowEewReceiver = new SignalNowFileWatcher(AppLog.Create<SignalNowFileWatcher>(), config, EewController, TimerService);
 		EewTelegramSubscriber = new EewTelegramSubscriber(AppLog.Create<EewTelegramSubscriber>(), EewController, telegramProvider, TimerService);
+		AxisEewReceiver = new AxisEewReceiver(AppLog.Create<AxisEewReceiver>(), EewController);
 
 		EewTelegramSubscriber.ObservePropertyChanged(x => x.Enabled).Subscribe(x => DmdataReceiving = x);
 		EewTelegramSubscriber.ObservePropertyChanged(x => x.WarningOnlyEnabled).Subscribe(x => DmdataWarningOnlyReceiving = x);
@@ -243,41 +245,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 
 			Logger.LogDebug("AXIS のEEWを受信しました: {Payload}", JsonSerializer.Serialize(message));
 
-			var eew = message.Message.Deserialize<EewMessage>();
-
-			if ((eew?.Flag?.IsTraining ?? true) ||
-				!(eew?.Hypocenter?.Depth?.Length > 2) ||
-				!int.TryParse(eew.Hypocenter.Depth[..^2], out var depth))
-				return;
-			float? magnitude = float.TryParse(eew.Magnitude, out var m) ? m : null;
-
-			if (eew.EventID == null)
-				return;
-
-			// アプリ内の時刻は日本標準時の壁時計で統一しているため、マシンのタイムゾーンに依存しないよう明示的に変換する
-			var originTime = eew.OriginDateTime.ToOffset(TimeSpan.FromHours(9)).DateTime;
-			var reportTime = eew.ReportDateTime.ToOffset(TimeSpan.FromHours(9)).DateTime;
-
-			EewController.Update(new()
-			{
-				Id = eew.EventID,
-				Source = Models.EewSource.Axis,
-				DisplaySource = "AXIS",
-				Hypocenter = new()
-				{
-					Depth = depth,
-					Location = eew.Hypocenter.Coordinate?.Length >= 2 ? new(eew.Hypocenter.Coordinate[1], eew.Hypocenter.Coordinate[0]) : null,
-					Magnitude = magnitude,
-					OccurrenceTime = originTime,
-					Place = eew.Hypocenter.Name,
-					IsTemporary = depth == 10 && magnitude is { } m2 && Math.Abs(m2 - 1.0) < 0.01,
-				},
-				IsFinal = eew.Flag.IsFinal,
-				ReceiveTime = reportTime,
-				SerialNo = eew.Serial,
-				MaxIntensity = eew.Intensity?.ToJmaIntensity() ?? JmaIntensity.Unknown,
-				IsWarning = (eew.Text?.Contains("強い揺れ") ?? false) || eew.Intensity?.ToJmaIntensity() >= JmaIntensity.Int5Lower,
-			}, reportTime);
+			AxisEewReceiver.Receive(message.Message.Deserialize<EewMessage>());
 		}
 		catch (Exception ex)
 		{
