@@ -1,4 +1,5 @@
 using Avalonia.Headless.XUnit;
+using Avalonia.Threading;
 using KyoshinEewViewer.UiTests.Infrastructure;
 using KyoshinEewViewer.UiTests.Infrastructure.Telegram;
 using System.Net.WebSockets;
@@ -335,5 +336,36 @@ public sealed class TelegramRecoveryUiTests
 			RecoveryLimit);
 		await app.WaitEewReceivingAsync();
 		await app.AssertEewDeliveredAsync("20261018103000");
+	}
+
+	[AvaloniaFact]
+	public async Task 受信元の切り替えと地震情報の受信が続いても_地震情報の一覧はUIスレッドでだけ変更される()
+	{
+		await using var app = await TelegramScenario.StartAsync();
+		await app.WaitDmdataWebSocketAsync();
+
+		// 一覧は画面にバインドされているため、UIスレッド以外で変更すると表示が壊れる
+		var changes = 0;
+		var changesOutsideUiThread = 0;
+		app.Earthquake.Service.Earthquakes.CollectionChanged += (_, _) =>
+		{
+			Interlocked.Increment(ref changes);
+			if (!Dispatcher.UIThread.CheckAccess())
+				Interlocked.Increment(ref changesOutsideUiThread);
+		};
+
+		// 受信元の切り替えで一覧を作り直す
+		app.Network.DmdataAvailable = false;
+		app.Network.Socket!.Drop();
+		await app.WaitEarthquakeSourceAsync(JmaXml, advance: RecoveryLimit);
+
+		// 切り替え後に受信した地震情報を一覧に追加する
+		var next = new TelegramFixtures.EarthquakeTelegram("fixture-eq-3", "20261018103500", new(2026, 10, 18, 10, 35, 0, TimeSpan.FromHours(9)), "茨城県南部");
+		app.Network.Publish(next);
+		await app.PollJmaAsync();
+		await Ui.WaitUntilAsync(() => Ui.VisibleTexts(app.EarthquakeWindow).Contains(next.Place), () => $"受信した地震情報を表示する\n{app.Logs}");
+
+		Assert.True(changes > 0, "一覧が変更されていません。");
+		Assert.Equal(0, changesOutsideUiThread);
 	}
 }
