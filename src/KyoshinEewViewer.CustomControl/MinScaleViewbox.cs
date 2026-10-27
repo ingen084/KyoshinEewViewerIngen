@@ -79,7 +79,9 @@ public class MinScaleViewbox : Decorator
 		var autoScaleY = effectiveMinH > 0 && availableSize.Height < effectiveMinH
 			? availableSize.Height / effectiveMinH : 1.0;
 
-		return userScale * Math.Min(autoScaleX, autoScaleY);
+		var scale = userScale * Math.Min(autoScaleX, autoScaleY);
+		// 幅か高さが 0 だと縮小率も 0 になり、子のサイズを求める割り算が NaN になるため縮小しない
+		return scale > 0 ? scale : userScale;
 	}
 
 	protected override Size MeasureOverride(Size availableSize)

@@ -99,10 +99,17 @@ public static class LoggingAdapter
 					fileLoggerOpts.FormatLogFileName = fName => string.Format(fName, DateTime.Now);
 					fileLoggerOpts.HandleFileError = e =>
 					{
-						// 権限が存在しない場合、カレントディレクトリにフォールバック
+						// 権限が存在しない場合、書き込めなかった場所とは別のディレクトリにフォールバック
+						// スタートアップ登録から起動した場合などは、カレントディレクトリにも書き込めないことがある
 						if (e.ErrorException is UnauthorizedAccessException)
 						{
-							var fallbackPath = Path.Combine(Environment.CurrentDirectory, config.Logging.Directory);
+							var failedPath = Path.GetDirectoryName(e.LogFileName) ?? fullPath;
+							var fallbackPath = IsSamePath(failedPath, PlatformDirectories.Logs)
+								? Path.Combine(Environment.CurrentDirectory, config.Logging.Directory)
+								: PlatformDirectories.Logs;
+							// 書き込めなかった場所を再び指定すると、開けずに例外となり起動できなくなる
+							if (IsSamePath(failedPath, fallbackPath))
+								return;
 							try
 							{
 								if (!Directory.Exists(fallbackPath))
@@ -134,4 +141,10 @@ public static class LoggingAdapter
 		ObservableSystem.RegisterUnhandledExceptionHandler(ex
 			=> AppLog.Default.LogWarning(ex, "Rx の購読処理内で例外が発生しました"));
 	}
+
+	private static bool IsSamePath(string a, string b)
+		=> string.Equals(
+			Path.TrimEndingDirectorySeparator(Path.GetFullPath(a)),
+			Path.TrimEndingDirectorySeparator(Path.GetFullPath(b)),
+			StringComparison.OrdinalIgnoreCase);
 }
