@@ -32,6 +32,7 @@ public static class LoggingAdapter
 		// メモリ内ログプロバイダーを作成
 		InMemoryProvider = new InMemoryLoggerProvider(maxLogCount: 1000);
 
+		var sendCrashReport = !RuntimeInformation.RuntimeIdentifier.Contains("wasm") && config.Update.SendCrashReport;
 		Factory = LoggerFactory.Create(builder =>
 		{
 			builder.AddProvider(InMemoryProvider);
@@ -41,7 +42,7 @@ public static class LoggingAdapter
 #if DEBUG
 			builder.SetMinimumLevel(LogLevel.Debug).AddDebug();
 #endif
-			if (!RuntimeInformation.RuntimeIdentifier.Contains("wasm") && config.Update.SendCrashReport)
+			if (sendCrashReport)
 				builder.AddSentry(o =>
 				{
 					o.Dsn = "https://565aa07785854f1aabdaac930c1a483f@sentry.ingen084.net/2";
@@ -55,6 +56,8 @@ public static class LoggingAdapter
 					o.AutoSessionTracking = true;
 					o.MinimumBreadcrumbLevel = LogLevel.Information;
 					o.MinimumEventLevel = LogLevel.Error;
+					// メモリ不足の原因を調べられるよう、プロセスの資源の使用量を添付する
+					o.SetBeforeSend((e, _) => ProcessResourceRecorder.Attach(e));
 					o.ConfigureScope(s =>
 					{
 						s.User = new SentryUser {
@@ -135,6 +138,8 @@ public static class LoggingAdapter
 			}
 		});
 		AppLog.SetFactory(Factory);
+		if (sendCrashReport)
+			ProcessResourceRecorder.Start();
 
 		// R3 は購読ハンドラ内の例外を購読元へ伝播させず、未処理例外ハンドラへ渡して購読を継続する。
 		// 既定では握り潰されるため、ログに残るよう接続しておく
