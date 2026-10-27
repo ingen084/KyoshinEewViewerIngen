@@ -1,6 +1,7 @@
 using Avalonia.Headless.XUnit;
 using KyoshinEewViewer.UiTests.Infrastructure;
 using KyoshinEewViewer.UiTests.Infrastructure.Telegram;
+using System.Net.WebSockets;
 
 namespace KyoshinEewViewer.UiTests;
 
@@ -313,5 +314,26 @@ public sealed class TelegramRecoveryUiTests
 			() => Ui.VisibleTexts(settings).Contains("接続状態: 完全接続") && !reconnect.IsEffectivelyVisible,
 			() => $"再接続後は再接続ボタンを表示しない\n{string.Join(", ", Ui.VisibleTexts(settings))}");
 		await app.AssertEewDeliveredAsync("20261018102500");
+	}
+
+	[AvaloniaFact]
+	public async Task WebSocketの切断処理に失敗しても_受信の状態が止まらずに接続し直す()
+	{
+		await using var app = await TelegramScenario.StartAsync();
+		await app.WaitDmdataWebSocketAsync();
+
+		// DmdataSharp が切断時に受信処理の例外を投げ直す状態で、WebSocketが切断される
+		var socket = app.Network.Socket!;
+		socket.DisconnectError = new WebSocketException(WebSocketError.ConnectionClosedPrematurely);
+		socket.Drop();
+		await Ui.WaitUntilAsync(() => app.Eew.IsDisconnected, () => $"緊急地震速報の切断を表示する\n{app.Logs}");
+
+		// 自動再接続を待ったあと、切断に失敗しても新しい接続で受信を再開する
+		await app.WaitAsync(
+			() => app.Network.Socket != socket && app.Network.Socket is { IsConnected: true },
+			() => "WebSocketに接続し直す",
+			RecoveryLimit);
+		await app.WaitEewReceivingAsync();
+		await app.AssertEewDeliveredAsync("20261018103000");
 	}
 }

@@ -28,6 +28,10 @@ internal sealed class FakeDmdataSocketController(SimulatedTelegramNetwork networ
 	/// </summary>
 	public SocketStartRequestParameter? Parameter { get; private set; }
 	public bool Disposed { get; private set; }
+	/// <summary>
+	/// 切断の失敗を模擬する場合に投げる例外 (DmdataSharp が受信処理の例外を投げ直す場合)
+	/// </summary>
+	public Exception? DisconnectError { get; set; }
 
 	public event EventHandler<DataWebSocketMessage>? DataReceived;
 	public event EventHandler<RawDataReceivedEventArgs>? RawDataReceived;
@@ -88,6 +92,8 @@ internal sealed class FakeDmdataSocketController(SimulatedTelegramNetwork networ
 
 	public Task DisconnectAsync()
 	{
+		if (DisconnectError is { } error)
+			return Task.FromException(error);
 		IsConnected = false;
 		return Task.CompletedTask;
 	}

@@ -251,7 +251,7 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 			() =>
 			{
 				Logger.LogInformation("WebSocketへの再接続を試みます");
-				_ = StartInternalAsync();
+				StartInternalInBackground();
 			});
 
 		ReconnectionStrategy.InitializeTemporaryFailureRecoveryTimer(() =>
@@ -259,7 +259,7 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 			if (CurrentState != ConnectionState.TemporaryFailure || ApiClient == null)
 				return;
 			Logger.LogInformation("一時的な障害から復旧を試みます (試行回数: {TemporaryFailureCount})", ReconnectionStrategy.TemporaryFailureCount);
-			_ = StartInternalAsync();
+			StartInternalInBackground();
 		});
 
 		ConnectionManager.DataReceived += async (s, e) =>
@@ -311,7 +311,7 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 				{
 					// PULL型に切り替えた後にWebSocketが復帰したため、WebSocketでの受信に戻す
 					WebSocketLostAt = null;
-					_ = StartInternalAsync();
+					StartInternalInBackground();
 				}
 				else if (IsWebSocketLost && (CurrentState == ConnectionState.WebSocketConnected || CurrentState == ConnectionState.Connecting))
 				{
@@ -747,7 +747,7 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 			{
 				// PULLを再スケジュールせずに止まらないよう、WebSocketでの受信に戻す
 				Logger.LogInformation("WebSocketが接続されているため、WebSocketでの受信に戻します");
-				_ = StartInternalAsync();
+				StartInternalInBackground();
 				return;
 			}
 
@@ -883,6 +883,22 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 		finally
 		{
 			_stateTransitionSemaphore.Release();
+		}
+	}
+
+	/// <summary>
+	/// 完了を待たずに受信を開始し直す<br/>
+	/// タイマーやイベントから呼ぶため、例外はここで記録する
+	/// </summary>
+	private async void StartInternalInBackground()
+	{
+		try
+		{
+			await StartInternalAsync();
+		}
+		catch (Exception ex)
+		{
+			Logger.LogError(ex, "dmdataの受信の再開中に例外が発生しました");
 		}
 	}
 

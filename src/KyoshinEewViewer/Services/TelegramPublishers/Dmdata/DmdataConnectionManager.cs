@@ -160,15 +160,23 @@ public partial class DmdataConnectionManager : ObservableObject, IDisposable
 	}
 
 	/// <summary>
-	/// WebSocket接続を切断する
+	/// WebSocket接続を切断する<br/>
+	/// 切断に失敗しても、呼び出し元が次の接続や状態の更新に進めるよう例外は投げない
 	/// </summary>
 	public async Task DisconnectWebSocketAsync()
 	{
-		if (RedundantController != null)
+		if (RedundantController == null)
+			return;
+
+		try
 		{
 			await RedundantController.DisconnectAsync();
-			UpdateConnectionStatus();
 		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, "WebSocketの切断中に例外が発生しました");
+		}
+		UpdateConnectionStatus();
 	}
 
 	/// <summary>
