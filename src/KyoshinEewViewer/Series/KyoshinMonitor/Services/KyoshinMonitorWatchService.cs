@@ -263,7 +263,8 @@ public class KyoshinMonitorWatchService
 				var missingRate = (double)missingPoints / totalPoints;
 				if (missingRate >= 0.5)
 				{
-					Logger.LogWarning("{Time:yyyy/MM/dd HH:mm:ss} 観測点の欠損率が高くなっています: {MissingPoints}/{TotalPoints} ({MissingRate:P1})", time, missingPoints, totalPoints, missingRate);
+					// 毎秒記録されることがあり、ログや Sentry のパンくずが埋まってしまうため調査時 (-d で起動) のみ記録する
+					Logger.LogDebug("{Time:yyyy/MM/dd HH:mm:ss} 観測点の欠損率が高くなっています: {MissingPoints}/{TotalPoints} ({MissingRate:P1})", time, missingPoints, totalPoints, missingRate);
 
 					// 設定が有効な場合はレスポンス画像を保存
 					if (Config.KyoshinMonitor.SaveResponseOnHighMissingRate && imageBytes != null)
