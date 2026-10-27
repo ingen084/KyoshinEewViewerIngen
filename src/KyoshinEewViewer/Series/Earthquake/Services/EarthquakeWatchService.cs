@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using DmdataSharp.ApiResponses.V2.Parameters;
 using DmdataSharp.Exceptions;
@@ -16,6 +17,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Subjects;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -29,7 +31,17 @@ public class EarthquakeWatchService : ObservableObject
 	private readonly string[] _targetTitles = ["震度速報", "震源に関する情報", "震源・震度に関する情報", "顕著な地震の震源要素更新のお知らせ", "長周期地震動に関する観測情報"];
 
 	public EarthquakeStationParameterResponse? Stations { get; private set; }
+	/// <summary>
+	/// 地震情報の一覧<br/>
+	/// 画面にバインドされるため、UIスレッドでのみ変更する
+	/// </summary>
 	public ObservableCollection<EarthquakeEvent> Earthquakes { get; } = [];
+
+	/// <summary>
+	/// 地震情報の一覧を更新する処理を1つずつ実行するためのロック<br/>
+	/// 受信元の切り替えによる一覧の作り直しと、受信した電文の処理が混ざらないようにする
+	/// </summary>
+	private readonly SemaphoreSlim _processLock = new(1, 1);
 
 	private readonly Subject<EarthquakeUpdate> _earthquakeUpdatedSubject = new();
 	private readonly Subject<Unit> _failedSubject = new();
@@ -82,37 +94,49 @@ public class EarthquakeWatchService : ObservableObject
 						Logger.LogError(ex, "地震観測点情報取得中に問題が発生しました");
 					}
 
-				Earthquakes.Clear();
-				foreach (var h in t.OrderBy(h => h.ArrivalTime).ToArray())
+				await _processLock.WaitAsync();
+				try
 				{
-					try
+					await Dispatcher.UIThread.InvokeAsync(() => Earthquakes.Clear());
+					foreach (var h in t.OrderBy(h => h.ArrivalTime).ToArray())
 					{
-						await ProcessInformation(h, hideNotice: true);
-					}
-					catch (Exception ex)
-					{
-						Logger.LogError(ex, "キャッシュ破損疑いのため削除します");
 						try
 						{
-							// キャッシュ破損時用
-							h.Cleanup();
-							await ProcessInformation(h, hideNotice: true);
+							await ProcessInformationCore(h, dryRun: false, hideNotice: true);
 						}
-						catch (Exception ex2)
+						catch (Exception ex)
 						{
-							// その他のエラー発生時は処理を中断させる
-							Logger.LogError(ex2, "初回電文取得中に問題が発生しました");
+							Logger.LogError(ex, "キャッシュ破損疑いのため削除します");
+							try
+							{
+								// キャッシュ破損時用
+								h.Cleanup();
+								await ProcessInformationCore(h, dryRun: false, hideNotice: true);
+							}
+							catch (Exception ex2)
+							{
+								// その他のエラー発生時は残りの電文の処理を中断させる
+								Logger.LogError(ex2, "初回電文取得中に問題が発生しました");
+								break;
+							}
 						}
-						return;
 					}
-				}
-				// 電文データがない(震源情報しかないなどの)データを削除する
-				foreach (var eq in Earthquakes.Where(e => e.Fragments.All(f => f is not IntensityInformationFragment and not HypocenterAndIntensityInformationFragment)).ToArray())
-					Earthquakes.Remove(eq);
+					var earthquakes = await Dispatcher.UIThread.InvokeAsync(() =>
+					{
+						// 電文データがない(震源情報しかないなどの)データを削除する
+						foreach (var eq in Earthquakes.Where(e => e.Fragments.All(f => f is not IntensityInformationFragment and not HypocenterAndIntensityInformationFragment)).ToArray())
+							Earthquakes.Remove(eq);
+						return Earthquakes.ToArray();
+					});
 
-				foreach (var eq in Earthquakes)
-					_earthquakeUpdatedSubject.OnNext(new EarthquakeUpdate(eq, IsBulkInserting: true, IsDryRun: false, Fragment: null, PreviousMaxIntensity: null));
-				_sourceSwitchedSubject.OnNext(s);
+					foreach (var eq in earthquakes)
+						_earthquakeUpdatedSubject.OnNext(new EarthquakeUpdate(eq, IsBulkInserting: true, IsDryRun: false, Fragment: null, PreviousMaxIntensity: null));
+					_sourceSwitchedSubject.OnNext(s);
+				}
+				finally
+				{
+					_processLock.Release();
+				}
 			},
 			async t =>
 			{
@@ -160,27 +184,53 @@ public class EarthquakeWatchService : ObservableObject
 
 	public async Task ProcessTsunamiInformation(Telegram telegram, bool hideNotice = false)
 	{
-		await using var stream = await telegram.GetBodyAsync();
-		using var report = new JmaXmlDocument(stream);
-		if (report.Control.Title != "津波警報・注意報・予報a")
-			return;
-
-		var fragments = EarthquakeInformationFragment.CreateFromTsunamiJmxXmlDocument(telegram, report);
-		foreach (var (eventId, fragment) in fragments)
+		await _processLock.WaitAsync();
+		try
 		{
-			// TODO 作成できるようにしておいた方がよさそう
-			var eq = Earthquakes.FirstOrDefault(e => e.EventId == eventId);
-			if (eq == null)
+			await using var stream = await telegram.GetBodyAsync();
+			using var report = new JmaXmlDocument(stream);
+			if (report.Control.Title != "津波警報・注意報・予報a")
+				return;
+
+			var fragments = EarthquakeInformationFragment.CreateFromTsunamiJmxXmlDocument(telegram, report);
+			foreach (var (eventId, fragment) in fragments)
 			{
-				Logger.LogWarning("イベントID {EventId} が見つからなかったため津波情報による震源情報の更新を行いませんでした。", eventId);
-				continue;
+				// TODO 作成できるようにしておいた方がよさそう
+				var eq = await Dispatcher.UIThread.InvokeAsync(() => Earthquakes.FirstOrDefault(e => e.EventId == eventId));
+				if (eq == null)
+				{
+					Logger.LogWarning("イベントID {EventId} が見つからなかったため津波情報による震源情報の更新を行いませんでした。", eventId);
+					continue;
+				}
+				eq.AddFragment(fragment);
+				if (!hideNotice)
+					_earthquakeUpdatedSubject.OnNext(new EarthquakeUpdate(eq, IsBulkInserting: false, IsDryRun: false, Fragment: null, PreviousMaxIntensity: null));
 			}
-			eq.AddFragment(fragment);
-			if (!hideNotice)
-				_earthquakeUpdatedSubject.OnNext(new EarthquakeUpdate(eq, IsBulkInserting: false, IsDryRun: false, Fragment: null, PreviousMaxIntensity: null));
+		}
+		finally
+		{
+			_processLock.Release();
 		}
 	}
+
 	public async Task<EarthquakeEvent?> ProcessInformation(Telegram telegram, bool dryRun = false, bool hideNotice = false)
+	{
+		await _processLock.WaitAsync();
+		try
+		{
+			return await ProcessInformationCore(telegram, dryRun, hideNotice);
+		}
+		finally
+		{
+			_processLock.Release();
+		}
+	}
+
+	/// <summary>
+	/// 電文を処理して地震情報の一覧に反映する<br/>
+	/// 呼び出し元で <see cref="_processLock"/> を取得しておくこと
+	/// </summary>
+	private async Task<EarthquakeEvent?> ProcessInformationCore(Telegram telegram, bool dryRun, bool hideNotice)
 	{
 		await using var stream = await telegram.GetBodyAsync();
 		using var report = new JmaXmlDocument(stream);
@@ -191,15 +241,25 @@ public class EarthquakeWatchService : ObservableObject
 			if (!_targetTitles.Contains(report.Control.Title))
 				return null;
 
-			var isCreated = false;
-			// 保存されている Earthquake インスタンスを抜き出してくる
-			var eq = Earthquakes.FirstOrDefault(e => e.EventId == report.Head.EventId);
-			if (eq == null || dryRun)
+			var eventId = report.Head.EventId;
+			EarthquakeEvent eq;
+			bool isCreated;
+			if (dryRun)
 			{
-				eq = new EarthquakeEvent(report.Head.EventId);
-				if (!dryRun)
-					Earthquakes.Insert(0, eq);
+				eq = new EarthquakeEvent(eventId);
 				isCreated = true;
+			}
+			else
+			{
+				// 保存されている Earthquake インスタンスを抜き出し、なければ一覧に追加する
+				(eq, isCreated) = await Dispatcher.UIThread.InvokeAsync(() =>
+				{
+					if (Earthquakes.FirstOrDefault(e => e.EventId == eventId) is { } found)
+						return (found, false);
+					var created = new EarthquakeEvent(eventId);
+					Earthquakes.Insert(0, created);
+					return (created, true);
+				});
 			}
 
 			// 情報更新前の震度

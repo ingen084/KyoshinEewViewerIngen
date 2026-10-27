@@ -18,12 +18,23 @@ public class InformationCacheService
 	public Timer ClearCacheTimer { get; }
 	private SHA256 Sha256 { get; } = SHA256.Create();
 
-	private readonly string _shortCachePath = Path.Join(Path.GetTempPath(), "KyoshinEewViewerIngen", "ShortCache");
-	private readonly string _longCachePath = Path.Join(Path.GetTempPath(), "KyoshinEewViewerIngen", "LongCache");
+	private readonly string _shortCachePath;
+	private readonly string _longCachePath;
 
 	public InformationCacheService(ILogger<InformationCacheService> logger)
+		: this(logger, Path.Join(Path.GetTempPath(), "KyoshinEewViewerIngen"))
+	{
+	}
+
+	/// <summary>
+	/// キャッシュの保存先を指定して生成する<br/>
+	/// テストで実行ごとに保存先を分けるために使う
+	/// </summary>
+	internal InformationCacheService(ILogger<InformationCacheService> logger, string cacheDirectory)
 	{
 		Logger = logger;
+		_shortCachePath = Path.Join(cacheDirectory, "ShortCache");
+		_longCachePath = Path.Join(cacheDirectory, "LongCache");
 		ClearCacheTimer = new Timer(s => CleanupCaches(), null, TimeSpan.FromMinutes(1), TimeSpan.FromHours(1));
 	}
 

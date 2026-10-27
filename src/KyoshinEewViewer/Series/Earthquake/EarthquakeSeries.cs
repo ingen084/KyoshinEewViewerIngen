@@ -111,18 +111,27 @@ public partial class EarthquakeSeries : SeriesBase
 		};
 		IsHistoryShown = Config.Earthquake.ShowHistory;
 
-		Service.SourceSwitching
+		// 取得元の切り替え・失敗の通知は、表示の順序が入れ替わらないよう1つのストリームで処理する
+		Observable.Merge(
+				Service.SourceSwitching.Select(_ => (State: SourceState.Switching, Source: (string?)null)),
+				Service.SourceSwitched.Select(s => (State: SourceState.Switched, Source: (string?)s)),
+				Service.Failed.Select(_ => (State: SourceState.Failed, Source: (string?)null)))
 			.ObserveOn(UiScheduler.Instance)
-			.Subscribe(_ =>
+			.Select(e => Observable.FromAsync(async () =>
 			{
-				IsFault = false;
-				IsLoading = true;
-			});
+				switch (e.State)
+				{
+					case SourceState.Switching:
+						IsFault = false;
+						IsLoading = true;
+						return;
+					case SourceState.Failed:
+						IsFault = true;
+						IsLoading = false;
+						return;
+				}
 
-		Service.SourceSwitched
-			.ObserveOn(UiScheduler.Instance)
-			.Select(s => Observable.FromAsync(async () =>
-			{
+				var s = e.Source!;
 				SourceString = s;
 				if (Config.Notification.SwitchEqSource)
 					NotificationService?.Notify("地震情報", s + "で地震情報を受信しています。", Notification.NotificationUrgency.Low);
@@ -195,15 +204,23 @@ public partial class EarthquakeSeries : SeriesBase
 			.Concat()
 			.Subscribe(_ => { }, ex => Logger.LogError(ex, "地震情報更新処理中に例外が発生しました"));
 
-		Service.Failed
-			.ObserveOn(UiScheduler.Instance)
-			.Subscribe(_ =>
-			{
-				IsFault = true;
-				IsLoading = false;
-			});
-
 		RegisterSystemWorkflows();
+	}
+
+	private enum SourceState
+	{
+		/// <summary>
+		/// 取得元を切り替え中
+		/// </summary>
+		Switching,
+		/// <summary>
+		/// 取得元を切り替えた
+		/// </summary>
+		Switched,
+		/// <summary>
+		/// 受信できる取得元がない
+		/// </summary>
+		Failed,
 	}
 
 	public async Task Restart()
