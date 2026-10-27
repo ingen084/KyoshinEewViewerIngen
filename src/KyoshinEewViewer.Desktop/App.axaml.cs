@@ -82,7 +82,14 @@ public class App : Application
 			// クラッシュファイルのダンプ･再起動設定
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 			{
-				WerRegisterAppLocalDump("./Dumps");
+				try
+				{
+					WerRegisterAppLocalDump("./Dumps");
+				}
+				catch (EntryPointNotFoundException)
+				{
+					// Windows 10 1709 より前の Windows には存在しないため、ダンプの保存は諦める
+				}
 				RegisterApplicationRestart($"-c \"{Environment.CurrentDirectory.Replace("\"", "\\\"")}\" {(StartupOptions.Current?.StandaloneSeriesName is { } ssn ? $"-s {ssn.Replace("\"", "\\\"")}" : "")}", RestartFlags.None);
 			}
 
@@ -104,7 +111,8 @@ public class App : Application
 				{
 					if (x == null) return;
 					config.Theme.IntensityTheme = x.Meta;
-					Dispatcher.UIThread.Post(() => FixedObjectRenderer.UpdateIntensityPaintCache(desktop.Windows[0]));
+					// スプラッシュを表示しない起動ではウィンドウがまだないため、テーマを適用したアプリケーションから取得する
+					Dispatcher.UIThread.Post(() => FixedObjectRenderer.UpdateIntensityPaintCache(this));
 				});
 
 			Task.Run(async () =>
