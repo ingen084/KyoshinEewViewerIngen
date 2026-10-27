@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using ManagedBass;
@@ -16,14 +17,33 @@ namespace KyoshinEewViewer.Services;
 /// <summary>
 /// 音声を再生するサービス
 /// </summary>
-public class SoundPlayerService
+public partial class SoundPlayerService : ObservableObject
 {
 	internal KyoshinEewViewerConfiguration Config { get; }
 
 	/// <summary>
 	/// 利用可能かどうか
 	/// </summary>
-	public bool IsAvailable { get; }
+	[ObservableProperty]
+	public partial bool IsAvailable { get; private set; }
+
+	/// <summary>
+	/// 使用中の再生デバイス (null の場合は既定のデバイス)
+	/// </summary>
+	[ObservableProperty]
+	public partial AudioDevice? CurrentDevice { get; private set; }
+
+	/// <summary>
+	/// 保存した再生デバイスを使用できず、既定のデバイスで代用しているか
+	/// </summary>
+	[ObservableProperty]
+	public partial bool IsFallbackToDefault { get; private set; }
+
+	/// <summary>
+	/// 再生デバイスの切り替えと、ストリームの作成を排他するためのロック
+	/// </summary>
+	/// <remarks>切り替え中に作成したストリームは解放されたデバイスに属してしまうため、切り替えが終わるまで待たせる</remarks>
+	internal Lock BassLock { get; } = new();
 #if DEBUG
 	public Sound TestSound { get; }
 #endif
@@ -37,35 +57,24 @@ public class SoundPlayerService
 		// とりあえず初期化を試みる
 		try
 		{
-			//デバイス選べるようにしたい
-			//for (var i = 0; i < Bass.DeviceCount; i++)
-			//{
-			//	var info = Bass.GetDeviceInfo(i);
-			//	Logger.LogDebug("デバイス{I}: {Name}", i, info.Name);
-			//}
-
-			if (IsAvailable = Bass.Init())
+			if (Config.Audio.DeviceName is not { } deviceName)
+				TryInit(null, null);
+			else if (!TryInit(deviceName, Config.Audio.DeviceDriver))
 			{
-				void UpdateVolume()
-				{
-					var volume = Config.Audio.IsMuted ? 0 : Config.Audio.GlobalVolume;
-					Bass.GlobalStreamVolume = (int)(Math.Clamp(volume, 0, 1) * 10000);
-				}
-
-				Config.Audio.ObservePropertyChanged(x => x.GlobalVolume)
-					.Subscribe(_ => UpdateVolume());
-				Config.Audio.ObservePropertyChanged(x => x.IsMuted)
-					.Subscribe(_ => UpdateVolume());
-				UpdateVolume();
+				Logger.LogWarning("保存した再生デバイスを使用できないため、既定のデバイスを使用します: {DeviceName} ({DeviceDriver})", deviceName, Config.Audio.DeviceDriver);
+				IsFallbackToDefault = TryInit(null, null);
 			}
-			else
-				Logger.LogWarning("Bass の初期化に失敗しました。 LastError:{LastError}", Bass.LastError);
 		}
 		catch (Exception ex)
 		{
 			Logger.LogError(ex, "Bass の初期化に失敗しました");
 			IsAvailable = false;
 		}
+
+		Config.Audio.ObservePropertyChanged(x => x.GlobalVolume)
+			.Subscribe(_ => UpdateVolume());
+		Config.Audio.ObservePropertyChanged(x => x.IsMuted)
+			.Subscribe(_ => UpdateVolume());
 #if DEBUG
 		TestSound = RegisterSound(
 			new SoundCategory("Test", "テスト"),
@@ -90,37 +99,174 @@ public class SoundPlayerService
 	private Dictionary<SoundCategory, List<Sound>> Sounds { get; } = [];
 	public IReadOnlyDictionary<SoundCategory, List<Sound>> RegisteredSounds => Sounds;
 
-	public async Task<bool> PlayAsync(string path, double volume, bool waitToEnd)
+	/// <summary>
+	/// 利用できる再生デバイスの一覧を取得する
+	/// </summary>
+	public IReadOnlyList<AudioDevice> GetOutputDevices()
+	{
+		var devices = new List<AudioDevice>();
+		try
+		{
+			// 0 は「No sound」のため 1 から列挙する
+			for (var i = 1; Bass.GetDeviceInfo(i, out var info); i++)
+			{
+				Logger.LogDebug("再生デバイス {Index}: {Name} ({Driver}) Enabled:{IsEnabled} Default:{IsDefault}", i, info.Name, info.Driver, info.IsEnabled, info.IsDefault);
+				// BASS が用意する「Default」(Windows はドライバー名なし、Linux は ALSA の default) は既定のデバイスと同じものなので除外する
+				if (!info.IsEnabled || info.Name is null || string.IsNullOrEmpty(info.Driver) || info.Driver == "default")
+					continue;
+				devices.Add(new(i, info.Name, info.Driver));
+			}
+		}
+		catch (Exception ex)
+		{
+			Logger.LogWarning(ex, "再生デバイスの一覧を取得できませんでした");
+		}
+		return devices;
+	}
+
+	/// <summary>
+	/// 名前とドライバー名から再生デバイスを探す
+	/// </summary>
+	/// <remarks>
+	/// 両方が一致するものを優先し、なければ名前だけが一致するものを返す。
+	/// Linux ではドライバー名に ALSA のカード番号が含まれることがあり、起動ごとに変わりうるため
+	/// </remarks>
+	internal static AudioDevice? FindDevice(IEnumerable<AudioDevice> devices, string name, string? driver)
+	{
+		AudioDevice? nameMatched = null;
+		foreach (var device in devices)
+		{
+			if (device.Name != name)
+				continue;
+			if (device.Driver == driver)
+				return device;
+			nameMatched ??= device;
+		}
+		return nameMatched;
+	}
+
+	/// <summary>
+	/// 再生デバイスを切り替え、設定に保存する
+	/// </summary>
+	/// <param name="device">切り替え先のデバイス (null の場合は既定のデバイス)</param>
+	/// <returns>切り替えに成功したか (失敗した場合は元のデバイスに戻す)</returns>
+	public bool ChangeDevice(AudioDevice? device)
+	{
+		lock (BassLock)
+		{
+			var previous = CurrentDevice;
+			var wasAvailable = IsAvailable;
+
+			// BASS はスレッドごとに使うデバイスを選ぶ仕組みのため、複数のデバイスを初期化すると
+			// デバイスを指定していないスレッドは番号の小さいデバイスで再生してしまう。
+			// 常に1台だけが初期化された状態にするため、先に解放してから初期化する
+			FreeDevice();
+			if (TryInit(device?.Name, device?.Driver))
+			{
+				Config.Audio.DeviceName = device?.Name;
+				Config.Audio.DeviceDriver = device?.Driver;
+				IsFallbackToDefault = false;
+				return true;
+			}
+
+			if (wasAvailable && !TryInit(previous?.Name, previous?.Driver))
+			{
+				Logger.LogWarning("元の再生デバイスに戻せませんでした: {DeviceName} ({DeviceDriver})", previous?.Name ?? "既定のデバイス", previous?.Driver);
+				IsFallbackToDefault = false;
+			}
+			return false;
+		}
+	}
+
+	/// <summary>
+	/// 再生デバイスを初期化する
+	/// </summary>
+	/// <param name="name">デバイスの名前 (null の場合は既定のデバイス)</param>
+	/// <param name="driver">デバイスのドライバー名</param>
+	private bool TryInit(string? name, string? driver)
+	{
+		AudioDevice? device = null;
+		if (name is not null)
+		{
+			// 番号は起動中にも変わることがあるため、初期化の直前に探し直す
+			device = FindDevice(GetOutputDevices(), name, driver);
+			if (device is null)
+			{
+				Logger.LogWarning("再生デバイスが見つかりません: {DeviceName} ({DeviceDriver})", name, driver);
+				return false;
+			}
+		}
+
+		if (!Bass.Init(device?.Index ?? -1))
+		{
+			Logger.LogWarning("Bass の初期化に失敗しました。 LastError:{LastError} Device:{DeviceName} ({DeviceDriver})", Bass.LastError, name ?? "既定のデバイス", driver);
+			return false;
+		}
+
+		Logger.LogInformation("再生デバイスを初期化しました: {DeviceName} ({DeviceDriver})", device?.Name ?? "既定のデバイス", device?.Driver);
+		CurrentDevice = device;
+		IsAvailable = true;
+		UpdateVolume();
+		return true;
+	}
+
+	private void FreeDevice()
 	{
 		if (!IsAvailable)
-		{
-			Logger.LogWarning("音声を再生できません。Bass が利用できません。 Path:{Path}", path);
-			return false;
-		}
+			return;
 
-		var ch = Bass.CreateStream(path);
-		if (ch == 0)
-		{
-			Logger.LogWarning("音声ストリームの作成に失敗しました。 LastError:{LastError} Exists:{Exists} Path:{Path}", Bass.LastError, File.Exists(path), path);
-			return false;
-		}
-		Bass.ChannelSetAttribute(ch, ChannelAttribute.Volume, Math.Clamp(volume, 0, 1));
+		// デバイス上のストリームはすべて解放されるため、キャッシュしているチャンネルも破棄する
+		foreach (var sound in Sounds.SelectMany(s => s.Value))
+			sound.ResetChannel();
+		Bass.Free();
+		IsAvailable = false;
+	}
 
+	private void UpdateVolume()
+	{
+		if (!IsAvailable)
+			return;
+		var volume = Config.Audio.IsMuted ? 0 : Config.Audio.GlobalVolume;
+		Bass.GlobalStreamVolume = (int)(Math.Clamp(volume, 0, 1) * 10000);
+	}
+
+	public async Task<bool> PlayAsync(string path, double volume, bool waitToEnd)
+	{
 		var mre = new ManualResetEventSlim(false);
-		Bass.ChannelSetSync(ch, SyncFlags.Onetime | SyncFlags.End, 0, (handle, channel, data, user) =>
+		lock (BassLock)
 		{
-			Bass.StreamFree(ch);
-			mre.Set();
-		});
-		if (Bass.ChannelPlay(ch))
-		{
-			if (waitToEnd)
-				await Task.Run(mre.Wait);
-			return true;
+			if (!IsAvailable)
+			{
+				Logger.LogWarning("音声を再生できません。Bass が利用できません。 Path:{Path}", path);
+				return false;
+			}
+
+			var ch = Bass.CreateStream(path);
+			if (ch == 0)
+			{
+				Logger.LogWarning("音声ストリームの作成に失敗しました。 LastError:{LastError} Exists:{Exists} Path:{Path}", Bass.LastError, File.Exists(path), path);
+				return false;
+			}
+			Bass.ChannelSetAttribute(ch, ChannelAttribute.Volume, Math.Clamp(volume, 0, 1));
+
+			Bass.ChannelSetSync(ch, SyncFlags.Onetime | SyncFlags.End, 0, (handle, channel, data, user) =>
+			{
+				Bass.StreamFree(ch);
+				mre.Set();
+			});
+			// 再生デバイスの切り替えで解放された場合は End が来ないため、解放時にも待機を終える
+			Bass.ChannelSetSync(ch, SyncFlags.Onetime | SyncFlags.Free, 0, (handle, channel, data, user) => mre.Set());
+			if (!Bass.ChannelPlay(ch))
+			{
+				Logger.LogWarning("音声の再生開始に失敗しました。 LastError:{LastError} Path:{Path}", Bass.LastError, path);
+				Bass.StreamFree(ch);
+				return false;
+			}
 		}
-		Logger.LogWarning("音声の再生開始に失敗しました。 LastError:{LastError} Path:{Path}", Bass.LastError, path);
-		Bass.StreamFree(ch);
-		return false;
+
+		if (waitToEnd)
+			await Task.Run(mre.Wait);
+		return true;
 	}
 
 	public Sound RegisterSound(SoundCategory category, string name, string displayName, string? description = null, Dictionary<string, string>? exampleParameter = null)
@@ -148,6 +294,14 @@ public class SoundPlayerService
 }
 
 public record struct SoundCategory(string Name, string DisplayName);
+
+/// <summary>
+/// 音声の再生デバイス
+/// </summary>
+/// <param name="Index">BASS のデバイス番号 (起動中にも変わることがあるため保存しない)</param>
+/// <param name="Name">デバイスの名前</param>
+/// <param name="Driver">ドライバー名 (Windows はエンドポイントID、macOS は UID、Linux は ALSA のデバイス名)</param>
+public record class AudioDevice(int Index, string Name, string? Driver);
 public class Sound : IDisposable
 {
 	internal Sound(SoundPlayerService service, SoundCategory parentCategory, string name, string displayName, string? description, IDictionary<string, string>? exampleParameter)
@@ -231,6 +385,12 @@ public class Sound : IDisposable
 		if (!config.Enabled || string.IsNullOrWhiteSpace(filePath))
 			return false;
 
+		lock (Service.BassLock)
+			return PlayCore(config, filePath);
+	}
+
+	private bool PlayCore(KyoshinEewViewerConfiguration.SoundConfig config, string filePath)
+	{
 		if (!Service.IsAvailable)
 		{
 			Service.Logger.LogWarning("音声を再生できません。Bass が利用できません。 Sound:{Name}/{Name2} Path:{FilePath}", ParentCategory.Name, Name, filePath);
@@ -293,6 +453,15 @@ public class Sound : IDisposable
 			return false;
 		}
 		return false;
+	}
+
+	/// <summary>
+	/// キャッシュしているチャンネルを破棄する (再生デバイスを解放するとチャンネルも解放されるため)
+	/// </summary>
+	internal void ResetChannel()
+	{
+		Channel = null;
+		LoadedFilePath = null;
 	}
 
 	public void Dispose()

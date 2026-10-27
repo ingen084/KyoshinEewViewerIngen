@@ -304,23 +304,33 @@ public partial class VoicevoxService : ObservableObject, IDisposable
 
 		try
 		{
-			var ch = Bass.CreateStream(cachedFilePath);
-			if (ch == 0)
-			{
-				Logger.LogWarning("CreateStream に失敗しています。 LastError:{LastError}", Bass.LastError);
-				return;
-			}
-			Bass.ChannelSetAttribute(ch, ChannelAttribute.Volume, (float)volume);
-
+			int ch;
 			// 自然終了通知用 TCS。BASS の End sync で完了する
-			var endTcs = new TaskCompletionSource();
-			Bass.ChannelSetSync(ch, SyncFlags.Onetime | SyncFlags.End, 0, (handle, channel, data, user) => endTcs.TrySetResult());
-
-			if (!Bass.ChannelPlay(ch))
+			// BASS のコールバック内で後続処理を走らせないよう、継続は非同期で実行する
+			var endTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+			lock (SoundPlayerService.BassLock)
 			{
-				Logger.LogWarning("ChannelPlay に失敗しています。 LastError:{LastError}", Bass.LastError);
-				Bass.StreamFree(ch);
-				return;
+				if (!SoundPlayerService.IsAvailable)
+					return;
+
+				ch = Bass.CreateStream(cachedFilePath);
+				if (ch == 0)
+				{
+					Logger.LogWarning("CreateStream に失敗しています。 LastError:{LastError}", Bass.LastError);
+					return;
+				}
+				Bass.ChannelSetAttribute(ch, ChannelAttribute.Volume, (float)volume);
+
+				Bass.ChannelSetSync(ch, SyncFlags.Onetime | SyncFlags.End, 0, (handle, channel, data, user) => endTcs.TrySetResult());
+				// 再生デバイスの切り替えで解放された場合は End が来ないため、解放時にも完了させる
+				Bass.ChannelSetSync(ch, SyncFlags.Onetime | SyncFlags.Free, 0, (handle, channel, data, user) => endTcs.TrySetResult());
+
+				if (!Bass.ChannelPlay(ch))
+				{
+					Logger.LogWarning("ChannelPlay に失敗しています。 LastError:{LastError}", Bass.LastError);
+					Bass.StreamFree(ch);
+					return;
+				}
 			}
 
 			// 自然終了かキャンセルのどちらか早い方で BASS リソースを解放する。

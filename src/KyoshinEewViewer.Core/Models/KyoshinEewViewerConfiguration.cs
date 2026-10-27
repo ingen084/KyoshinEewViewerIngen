@@ -467,6 +467,18 @@ public partial class KyoshinEewViewerConfiguration : ObservableObject, IWindowPl
 
 		[ObservableProperty]
 		public partial bool ShowMuteButtonInMainWindow { get; set; } = true;
+
+		/// <summary>
+		/// 再生デバイスの名前 (null の場合は既定のデバイス)
+		/// </summary>
+		[ObservableProperty]
+		public partial string? DeviceName { get; set; }
+
+		/// <summary>
+		/// 再生デバイスのドライバー名
+		/// </summary>
+		[ObservableProperty]
+		public partial string? DeviceDriver { get; set; }
 	}
 
 	[ObservableProperty]
