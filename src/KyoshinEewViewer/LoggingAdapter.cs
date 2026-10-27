@@ -32,6 +32,7 @@ public static class LoggingAdapter
 		// メモリ内ログプロバイダーを作成
 		InMemoryProvider = new InMemoryLoggerProvider(maxLogCount: 1000);
 
+		var sendCrashReport = !RuntimeInformation.RuntimeIdentifier.Contains("wasm") && config.Update.SendCrashReport;
 		Factory = LoggerFactory.Create(builder =>
 		{
 			builder.AddProvider(InMemoryProvider);
@@ -41,7 +42,7 @@ public static class LoggingAdapter
 #if DEBUG
 			builder.SetMinimumLevel(LogLevel.Debug).AddDebug();
 #endif
-			if (!RuntimeInformation.RuntimeIdentifier.Contains("wasm") && config.Update.SendCrashReport)
+			if (sendCrashReport)
 				builder.AddSentry(o =>
 				{
 					o.Dsn = "https://565aa07785854f1aabdaac930c1a483f@sentry.ingen084.net/2";
@@ -55,6 +56,8 @@ public static class LoggingAdapter
 					o.AutoSessionTracking = true;
 					o.MinimumBreadcrumbLevel = LogLevel.Information;
 					o.MinimumEventLevel = LogLevel.Error;
+					// メモリ不足の原因を調べられるよう、プロセスの資源の使用量を添付する
+					o.SetBeforeSend((e, _) => ProcessResourceRecorder.Attach(e));
 					o.ConfigureScope(s =>
 					{
 						s.User = new SentryUser {
@@ -99,10 +102,17 @@ public static class LoggingAdapter
 					fileLoggerOpts.FormatLogFileName = fName => string.Format(fName, DateTime.Now);
 					fileLoggerOpts.HandleFileError = e =>
 					{
-						// 権限が存在しない場合、カレントディレクトリにフォールバック
+						// 権限が存在しない場合、書き込めなかった場所とは別のディレクトリにフォールバック
+						// スタートアップ登録から起動した場合などは、カレントディレクトリにも書き込めないことがある
 						if (e.ErrorException is UnauthorizedAccessException)
 						{
-							var fallbackPath = Path.Combine(Environment.CurrentDirectory, config.Logging.Directory);
+							var failedPath = Path.GetDirectoryName(e.LogFileName) ?? fullPath;
+							var fallbackPath = IsSamePath(failedPath, PlatformDirectories.Logs)
+								? Path.Combine(Environment.CurrentDirectory, config.Logging.Directory)
+								: PlatformDirectories.Logs;
+							// 書き込めなかった場所を再び指定すると、開けずに例外となり起動できなくなる
+							if (IsSamePath(failedPath, fallbackPath))
+								return;
 							try
 							{
 								if (!Directory.Exists(fallbackPath))
@@ -128,10 +138,18 @@ public static class LoggingAdapter
 			}
 		});
 		AppLog.SetFactory(Factory);
+		if (sendCrashReport)
+			ProcessResourceRecorder.Start();
 
 		// R3 は購読ハンドラ内の例外を購読元へ伝播させず、未処理例外ハンドラへ渡して購読を継続する。
 		// 既定では握り潰されるため、ログに残るよう接続しておく
 		ObservableSystem.RegisterUnhandledExceptionHandler(ex
 			=> AppLog.Default.LogWarning(ex, "Rx の購読処理内で例外が発生しました"));
 	}
+
+	private static bool IsSamePath(string a, string b)
+		=> string.Equals(
+			Path.TrimEndingDirectorySeparator(Path.GetFullPath(a)),
+			Path.TrimEndingDirectorySeparator(Path.GetFullPath(b)),
+			StringComparison.OrdinalIgnoreCase);
 }
