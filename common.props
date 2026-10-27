@@ -88,7 +88,7 @@
 		<PackageReference Include="KyoshinMonitorLib" Version="0.4.6.1" />
 		<PackageReference Include="KyoshinMonitorLib.SkiaImages" Version="0.4.6" />
 		<PackageReference Include="KyoshinMonitorLib.Timers" Version="0.4.6" />
-		<PackageReference Include="DmdataSharp" Version="0.6.0.2" />
+		<PackageReference Include="DmdataSharp" Version="0.6.0.3" />
 	</ItemGroup>
 
 	<!-- 独自アナライザー (KEVI001 / KEVIXAML001,002) を全プロジェクトへ適用する。
