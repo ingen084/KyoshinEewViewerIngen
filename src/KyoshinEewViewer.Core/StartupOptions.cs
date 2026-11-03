@@ -33,5 +33,16 @@ public class StartupOptions
 	/// </summary>
 	[Option("smoke-test", Required = false)]
 	public bool SmokeTest { get; set; }
+
+	/// <summary>
+	/// 結合テストビルド専用: メインウィンドウ表示後に画面操作のシナリオを実行し、結果を書き出して自動終了する
+	/// </summary>
+	[Option("ui-test", Required = false)]
+	public bool UiTest { get; set; }
+
+	/// <summary>
+	/// 既存のインスタンスに影響しないように、多重起動の検知とIPCサーバーを無効にする
+	/// </summary>
+	public bool IsIntegrationTestRun => SmokeTest || AutoUpdateTest || UiTest;
 #endif
 }

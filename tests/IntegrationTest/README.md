@@ -1,10 +1,11 @@
-# 起動・自動アップデート結合テスト
+# 起動・画面操作・自動アップデート結合テスト
 
-起動(スモークテスト)と、更新検出→ダウンロード→検証→自己置換→再起動までの自動アップデートを、
+起動(スモークテスト)、画面操作(UIテスト)と、更新検出→ダウンロード→検証→自己置換→再起動までの自動アップデートを、
 実際に publish したバイナリで検証する結合テスト。CIではリリース前の検査として、`release.yml` から
 `.github/workflows/integration-test.yml` を呼び出し、各プラットフォーム(windows/ubuntu/macos × x64/arm64)で実行する。
 1つでも失敗した場合はリリースを作成しない。Actionsの画面から手動で実行することもできる。
-ビルド設定 (`*.csproj`、`common.props` など) を変える PR でも、Linux x64 だけ同じ検査を実行する。
+ビルド設定 (`*.csproj`、`common.props` など) や UIテストが操作する画面を変える PR でも、Linux x64 だけ同じ検査を実行する。
+シナリオで使う文言を変えるとテストが失敗するので、シナリオも合わせて直す。
 
 ## 仕組み
 
@@ -13,6 +14,7 @@
   - 環境変数 `KEVI_UPDATE_API_URL` による更新チェックエンドポイントの差し替え(統計用リクエストも抑止)
   - `--auto-update-test`: 更新検出時に自動で自己更新を開始する起動引数
   - `--smoke-test`: メインウィンドウ表示後にセンチネルファイルを書き出し、起動時ワークフローの完了を待って自動終了する起動引数
+  - `--ui-test`: メインウィンドウ表示後に画面操作のシナリオを実行し、結果を書き出して自動終了する起動引数
   - テストモード時は多重起動チェックとIPCサーバー起動をスキップ
 - **センチネルファイル**: 実行ファイルと同じディレクトリの `kevi-startup-sentinel.json`。
   本体(スモークテスト時)とダミー新バージョンが書き出し、テストドライバがポーリングして完了を検出する。
@@ -25,6 +27,13 @@
 - **テンプレートの確認** (`profiles/workflows-smoke.json`): トリミングはテストプロジェクトでは起きないので、
   スモークテストが実バイナリの起動時ワークフローでテンプレートを実行し、ログの出力を期待値と比べる。
   Scriban の組み込み関数が消えると例外で出力がなくなり、テンプレートが名前で読む .NET 標準型のメンバーが消えると値が空になる。
+- **UIテスト** (`src/KyoshinEewViewer.Desktop/IntegrationTest/`): トリミングされた Avalonia の上では `Avalonia.Headless` のテストを実行できないので、
+  結合テストビルドのアプリの中にドライバを組み込んで画面を操作する。結果はプロファイルディレクトリの `kevi-ui-test-result.txt` に書き出され、
+  最終行が `RESULT: PASSED` でなければ失敗になる。バインディングエラーが1件でも記録された場合も失敗にする。
+  - ドライバから静的に参照したメンバーはトリミングされなくなるので、確認は表示されたテキストと保存されたファイルで行う。
+    名前で読まれるメンバー (`ReflectionBinding` の対象など) をドライバから参照すると、消失を検出できなくなる。
+  - `workflows.json` がカレントディレクトリにないと、アプリはユーザーの設定ディレクトリのワークフローを読み書きする。
+    保存操作を含むので、`run-ui-test.ps1` が先にファイルを作り、ドライバもファイルがなければ実行しない。
 
 ## ローカルでの実行方法 (Windowsの例)
 
@@ -52,7 +61,12 @@ pwsh tests/IntegrationTest/run-smoke-test.ps1 `
     -ProfileTemplate tests/IntegrationTest/profiles/profile-smoke.json `
     -ExpectedVersion 0.0.1
 
-# 4. アップデートテスト (pythonが必要)
+# 4. UIテスト
+pwsh tests/IntegrationTest/run-ui-test.ps1 `
+    -AppExePath tmp/local-int/dist/KyoshinEewViewer.exe `
+    -ProfileTemplate tests/IntegrationTest/profiles/profile-smoke.json
+
+# 5. アップデートテスト (pythonが必要)
 pwsh tests/IntegrationTest/run-update-test.ps1 `
     -AppExePath tmp/local-int/dist/KyoshinEewViewer.exe `
     -ProfileTemplate tests/IntegrationTest/profiles/profile-update.json `
