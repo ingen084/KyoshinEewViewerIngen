@@ -25,14 +25,33 @@ function Wait-Sentinel([string]$Path, [int]$TimeoutSec) {
 	throw "センチネルファイルが時間内に作成されませんでした: $Path"
 }
 
-# 失敗時の調査用にアプリのログを出力する
-function Show-AppLogs([string]$ProfileDir) {
+# アプリのログの出力先を返す
+function Get-AppLogDirs([string]$ProfileDir) {
 	$logDirs = @(Join-Path $ProfileDir 'Logs')
 	# macOSは設定に関わらず標準のログディレクトリへ出力する
 	if ($IsMacOS) {
 		$logDirs += Join-Path $HOME 'Library/Logs/KyoshinEewViewer'
 	}
-	foreach ($logDir in $logDirs) {
+	return $logDirs
+}
+
+# ログから指定の文字列に続く部分を探す。見つからなければ $null を返す
+function Find-AppLogText([string]$ProfileDir, [string]$Prefix) {
+	foreach ($logDir in Get-AppLogDirs $ProfileDir) {
+		if (-not (Test-Path $logDir)) {
+			continue
+		}
+		$hit = Get-ChildItem $logDir -File | Select-String -SimpleMatch $Prefix | Select-Object -First 1
+		if ($hit) {
+			return $hit.Line.Substring($hit.Line.IndexOf($Prefix) + $Prefix.Length)
+		}
+	}
+	return $null
+}
+
+# 失敗時の調査用にアプリのログを出力する
+function Show-AppLogs([string]$ProfileDir) {
+	foreach ($logDir in Get-AppLogDirs $ProfileDir) {
 		if (-not (Test-Path $logDir)) {
 			Write-Host "ログディレクトリが存在しません: $logDir"
 			continue

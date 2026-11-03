@@ -1,14 +1,18 @@
 #!/usr/bin/env pwsh
 # スモークテスト: 実バイナリをテスト用プロファイルで起動し、
-# メインウィンドウ表示のセンチネルファイルと正常終了を確認する。
+# メインウィンドウ表示のセンチネルファイル、正常終了、起動時ワークフローのテンプレート出力を確認する。
 # 対象バイナリは -p:IntegrationTestBuild=true でビルドされている必要がある。
 param(
 	[Parameter(Mandatory = $true)][string]$AppExePath,
 	[Parameter(Mandatory = $true)][string]$ProfileTemplate,
+	[string]$WorkflowsTemplate = (Join-Path $PSScriptRoot 'profiles/workflows-smoke.json'),
 	[string]$ExpectedVersion,
 	[string]$WorkDir,
 	[int]$TimeoutSec = 180
 )
+
+# トリミングで関数が消えるとテンプレートは例外になり、標準型のメンバーが消えると値が空になる
+$expectedTemplateOutput = 'slice=5|index_of=2|zero=0|microsecond=9|nanosecond=100|days=2|guid_version=4'
 
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'common.ps1')
@@ -21,6 +25,12 @@ if (-not $WorkDir) {
 New-Item -ItemType Directory -Force $WorkDir | Out-Null
 
 $profileDir = Initialize-ProfileDir -WorkDir $WorkDir -ProfileTemplate $ProfileTemplate
+
+# macOSのログは実行をまたいで残るので、今回の出力を実行IDで見分ける
+$runId = [guid]::NewGuid().ToString('N')
+$workflows = (Get-Content $WorkflowsTemplate -Raw).Replace('__RUN_ID__', $runId)
+Set-Content (Join-Path $profileDir 'workflows.json') $workflows -Encoding utf8NoBOM
+
 $sentinelPath = Join-Path (Split-Path $AppExePath -Parent) 'kevi-startup-sentinel.json'
 Remove-Item $sentinelPath -Force -ErrorAction SilentlyContinue
 
@@ -44,6 +54,15 @@ try {
 	}
 	if ($proc.ExitCode -ne 0) {
 		throw "アプリが異常終了しました (終了コード: $($proc.ExitCode))"
+	}
+
+	# workflows.json を読めなかった場合も黙って空になるので、出力がないことも失敗にする
+	$templateOutput = Find-AppLogText -ProfileDir $profileDir -Prefix "TEMPLATE-CHECK|$runId|"
+	if ($null -eq $templateOutput) {
+		throw '起動時ワークフローのテンプレート出力がログにありません'
+	}
+	if ($templateOutput -ne $expectedTemplateOutput) {
+		throw "テンプレート出力が一致しません (期待値: $expectedTemplateOutput, 実際: $templateOutput)"
 	}
 
 	Write-Host "スモークテスト成功: バージョン $($sentinel.Version)"

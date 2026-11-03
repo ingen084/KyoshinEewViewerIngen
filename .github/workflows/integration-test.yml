@@ -3,9 +3,26 @@ name: integration-test
 # 起動(スモークテスト)と自動アップデート完了までの結合テストを各プラットフォームで実行する。
 # 本番のGitHub Releases APIには接続せず、ローカルのモックサーバーとダミー新バージョンを使う。
 # リリース前の検査として release.yml から呼び出し、失敗した場合はリリースを作成しない。
+# 依存ライブラリの更新でトリミングの結果が変わるので、ビルド設定を変える PR でも Linux x64 だけ確認する。
 on:
   workflow_call:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '**/*.csproj'
+      - 'common.props'
+      - 'src/KyoshinEewViewer.Desktop/TrimmerRoots.xml'
+      - 'tests/IntegrationTest/**'
+      - '.github/actions/publish-kevi/**'
+      - '.github/workflows/integration-test.yml'
+
+permissions:
+  contents: read
+
+# 同じ PR の古い実行だけを止める。リリース前の検査は止めない
+concurrency:
+  group: integration-test-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -15,13 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - { runner: windows-latest, os: windows, arch: x64 }
-          - { runner: windows-11-arm, os: windows, arch: arm64 }
-          - { runner: ubuntu-latest, os: ubuntu, arch: x64 }
-          - { runner: ubuntu-24.04-arm, os: ubuntu, arch: arm64 }
-          - { runner: macos-15-intel, os: macos, arch: x64 }
-          - { runner: macos-latest, os: macos, arch: arm64 }
+        include: ${{ fromJson(github.event_name == 'pull_request' && '[{"runner":"ubuntu-latest","os":"ubuntu","arch":"x64"}]' || '[{"runner":"windows-latest","os":"windows","arch":"x64"},{"runner":"windows-11-arm","os":"windows","arch":"arm64"},{"runner":"ubuntu-latest","os":"ubuntu","arch":"x64"},{"runner":"ubuntu-24.04-arm","os":"ubuntu","arch":"arm64"},{"runner":"macos-15-intel","os":"macos","arch":"x64"},{"runner":"macos-latest","os":"macos","arch":"arm64"}]') }}
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:

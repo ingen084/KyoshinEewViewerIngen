@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace KyoshinEewViewer.Core;
 
@@ -11,6 +12,11 @@ namespace KyoshinEewViewer.Core;
 public static class IntegrationTestSentinel
 {
 	public const string FileName = "kevi-startup-sentinel.json";
+
+	/// <summary>
+	/// 起動時イベントで動いたワークフローがすべて終わったら完了する
+	/// </summary>
+	public static TaskCompletionSource StartupWorkflowsCompleted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
 	/// <summary>
 	/// 実行ファイルと同じディレクトリにセンチネルファイルを書き出す

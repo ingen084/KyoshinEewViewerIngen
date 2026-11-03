@@ -26,6 +26,12 @@
         <ProjectReference Include="..\KyoshinEewViewer\KyoshinEewViewer.csproj" />
     </ItemGroup>
 
+    <!-- Scriban は組み込み関数をリフレクションで列挙するため、丸ごと残さないと関数が消えてテンプレートが実行時エラーになる -->
+    <ItemGroup>
+        <TrimmerRootAssembly Include="Scriban" />
+        <TrimmerRootDescriptor Include="TrimmerRoots.xml" />
+    </ItemGroup>
+
     <ItemGroup>
         <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
     </ItemGroup>

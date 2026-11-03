@@ -1,0 +1,10 @@
+<linker>
+	<!-- ワークフローのテンプレートは .NET 標準型のメンバーを名前で読む。
+	     トリミングで消えてもエラーにならず空文字になるので、イベントのプロパティや演算でテンプレートに渡る型は丸ごと残す -->
+	<assembly fullname="System.Private.CoreLib">
+		<type fullname="System.DateTime" preserve="all" />
+		<type fullname="System.DateTimeOffset" preserve="all" />
+		<type fullname="System.Guid" preserve="all" />
+		<type fullname="System.TimeSpan" preserve="all" />
+	</assembly>
+</linker>

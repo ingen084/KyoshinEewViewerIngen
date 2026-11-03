@@ -1,0 +1,21 @@
+[
+	{
+		"Id": "6f0a3c1e-52b7-4d7e-9a44-1c2d3e4f5a60",
+		"Name": "smoke-template-check",
+		"Enabled": true,
+		"Trigger": {
+			"$type": "ApplicationStartup"
+		},
+		"Actions": {
+			"IsParallel": false,
+			"ChildActions": [
+				{
+					"Action": {
+						"$type": "LogOutput",
+						"TemplateText": "TEMPLATE-CHECK|__RUN_ID__|{{ parsed = date.parse \"2026-03-04T05:06:07.0080091\"; span = timespan.from_days 2 }}slice={{ \"05\" | string.slice 1 }}|index_of={{ \"abc\" | string.index_of \"c\" }}|zero={{ timespan.zero.TotalSeconds }}|microsecond={{ parsed.Microsecond }}|nanosecond={{ parsed.Nanosecond }}|days={{ span.Days }}|guid_version={{ EventId.Version }}"
+					}
+				}
+			]
+		}
+	}
+]
