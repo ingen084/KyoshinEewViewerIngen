@@ -3,7 +3,7 @@
 	"AutoProcessPriority": false,
 	"SeriesEnable": {
 		"kyoshin-monitor": false,
-		"earthquake": false,
+		"earthquake": true,
 		"tsunami": false,
 		"lightning": false,
 		"qzss": true
@@ -22,11 +22,15 @@
 		"UseUnstableBuild": false,
 		"SendCrashReport": false
 	},
+	"Notification": {
+		"Enable": false
+	},
 	"Eew": {
 		"EnableWebhookPointForecast": true
 	},
 	"Qzss": {
-		"Connect": false
+		"Connect": false,
+		"IgnoreTrainingOrTestReport": false
 	},
 	"Voicevox": {
 		"Enabled": true,

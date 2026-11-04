@@ -119,6 +119,12 @@ internal static class WorkflowCatalogScenario
 			await WaitForTextAsync(page, action.Name);
 			await WaitForTextStartingWithAsync(page, action.Text);
 		}
+
+		UiTestDriver.Step("読み戻した音声再生アクションのボタンを確認する");
+		await WaitUntilAsync(
+			() => page.GetVisualDescendants().OfType<PlaySoundActionControl>().SelectMany(c => c.GetVisualDescendants().OfType<Button>())
+				.Where(b => b.GetType() == typeof(Button)).ToArray() is { Length: > 0 } buttons && buttons.All(b => b.Command != null),
+			"音声再生アクションのボタンのコマンド");
 	}
 
 	private static Task<ComboBox[]> TriggerComboBoxesAsync(WorkflowPage page, TriggerCase trigger)

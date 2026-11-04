@@ -203,7 +203,7 @@ public partial class SettingWindowViewModel : ViewModelBase
 			feedbackPage,
 			new BasicSettingPage<AboutPage>("\xf129", "このアプリについて", []),
 			new BasicSettingPage<LicencePage>("\xf2c2", "ライセンス", []),
-#if DEBUG
+#if DEBUG || INTEGRATION_TEST
 			new BasicSettingPage<DebugMenuPage>("\xf188", "デバッグメニュー", []),
 #endif
 		];
@@ -385,23 +385,6 @@ public partial class SettingWindowViewModel : ViewModelBase
 		{
 			workflow.IsTestRunning = false;
 		}
-	}
-	public async Task OpenSoundFileForWorkflow(object? parameter)
-	{
-		if (parameter is not PlaySoundAction action)
-			return;
-		if (KyoshinEewViewerApp.TopLevelControl == null)
-			return;
-		var files = await KyoshinEewViewerApp.TopLevelControl.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
-		{
-			Title = "音声ファイルを開く",
-			FileTypeFilter = [FilePickerFileTypes.All],
-			AllowMultiple = false,
-		});
-		if (files is not { Count: > 0 } || files[0].TryGetLocalPath() is not { } localPath)
-			return;
-
-		action.FilePath = localPath;
 	}
 	public void OpenWorkflowPage()
 		=> UrlOpener.OpenUrl("https://github.com/ingen084/KyoshinEewViewerIngen/blob/develop/workflow-guide.md");

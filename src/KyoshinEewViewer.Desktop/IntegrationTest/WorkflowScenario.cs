@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.VisualTree;
 using AvaloniaEdit;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using KyoshinEewViewer.Views.Components;
 using KyoshinEewViewer.Views.SettingPages;
@@ -27,8 +28,10 @@ internal static class WorkflowScenario
 	private const string ExpectedOutput = "UI-CHECK|ApplicationStartup|5";
 	private const string SavedActionType = "\"LogOutput\"";
 
-	public static async Task RunAsync(IClassicDesktopStyleApplicationLifetime desktop, SettingWindowSession settings, string workflowsFile)
+	public static async Task RunAsync(IClassicDesktopStyleApplicationLifetime desktop, SettingWindowSession settings)
 	{
+		var workflowsFile = Path.Combine(PlatformDirectories.ApplicationData, "workflows.json");
+
 		UiTestDriver.Step("ワークフロー画面を開く");
 		var page = await settings.ShowPageAsync<WorkflowPage>(PageTitle);
 		await WaitForTextAsync(page, EmptyMessage);

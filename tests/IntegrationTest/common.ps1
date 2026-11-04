@@ -55,9 +55,9 @@ function Wait-Sentinel([string]$Path, [int]$TimeoutSec) {
 # アプリのログの出力先を返す
 function Get-AppLogDirs([string]$ProfileDir) {
 	$logDirs = @(Join-Path $ProfileDir 'Logs')
-	# macOSは設定に関わらず標準のログディレクトリへ出力する
+	# macOSは設定に関わらず標準のログディレクトリへ出力する。結合テストの実行中はプロファイル内の専用ディレクトリになる
 	if ($IsMacOS) {
-		$logDirs += Join-Path $HOME 'Library/Logs/KyoshinEewViewer'
+		$logDirs += Join-Path $ProfileDir 'appdata/Logs'
 	}
 	return $logDirs
 }

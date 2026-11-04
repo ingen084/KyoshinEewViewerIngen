@@ -44,11 +44,22 @@ internal static class WindowsToastIdentity
 	private static uint _classObjectCookie;
 
 	/// <summary>
+	/// 結合テストビルド専用: レジストリのキーはユーザーごとに1つなので、テストの終了時に削除すると動作中の本番インスタンスの通知まで表示されなくなる
+	/// </summary>
+#if INTEGRATION_TEST
+	private static bool IsRegistrationSkipped => StartupOptions.Current?.IsIntegrationTestRun == true;
+#else
+	private static bool IsRegistrationSkipped => false;
+#endif
+
+	/// <summary>
 	/// プロセスの AUMID を設定し、COM アクティベーターとレジストリを登録して Toast を表示可能にする。
 	/// あわせて Toast に表示するアプリ名・アイコンを整える。
 	/// </summary>
 	public static void Register()
 	{
+		if (IsRegistrationSkipped)
+			return;
 		try
 		{
 			// Compat の初期化より前にプロセス AUMID を設定する
@@ -99,6 +110,8 @@ internal static class WindowsToastIdentity
 	/// </summary>
 	public static void Unregister()
 	{
+		if (IsRegistrationSkipped)
+			return;
 		try
 		{
 			if (_classObjectCookie != 0)

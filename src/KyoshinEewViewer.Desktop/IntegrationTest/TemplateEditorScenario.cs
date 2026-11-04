@@ -1,7 +1,9 @@
 #if INTEGRATION_TEST
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.VisualTree;
 using AvaloniaEdit;
+using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using KyoshinEewViewer.Views.Components;
 using KyoshinEewViewer.Views.SettingPages;
@@ -13,7 +15,7 @@ using static KyoshinEewViewer.Desktop.IntegrationTest.WorkflowPageOperations;
 namespace KyoshinEewViewer.Desktop.IntegrationTest;
 
 /// <summary>
-/// テンプレートエディタの補完と構文エラーの表示を確認する
+/// テンプレートエディタの補完と構文エラーの警告を確認する
 /// </summary>
 internal static class TemplateEditorScenario
 {
@@ -34,6 +36,14 @@ internal static class TemplateEditorScenario
 
 		UiTestDriver.Step("組み込み関数の補完を確認する");
 		await TypeAndExpectCompletionAsync(dialog, editor, "{{ string", ".", "slice");
+
+		UiTestDriver.Step("構文エラーの警告を確認する");
+		editor.Text = "{{ if";
+		await ClickByContentAsync(dialog, "OK");
+		var warning = await WaitForControlAsync<FAContentDialog>(dialog);
+		await WaitForTextAsync(warning, "テンプレートシンタックスエラー");
+		await ClickByContentAsync(warning, "編集に戻る");
+		await WaitUntilAsync(() => !dialog.GetVisualDescendants().OfType<FAContentDialog>().Any(), "警告が閉じる");
 
 		UiTestDriver.Step("編集を取り消して元の状態に戻す");
 		await ClickByContentAsync(dialog, "キャンセル");

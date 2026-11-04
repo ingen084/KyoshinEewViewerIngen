@@ -16,6 +16,14 @@ namespace KyoshinEewViewer.Services.TelegramPublishers.JmaXml;
 
 public class JmaXmlTelegramPublisher : TelegramPublisher
 {
+#if INTEGRATION_TEST
+	// 結合テストビルド専用: 環境変数でモックサーバーへ差し替えられるようにする
+	private static readonly string FeedBaseUrl =
+		Environment.GetEnvironmentVariable("KEVI_JMA_FEED_BASE_URL") ?? "https://www.data.jma.go.jp/developer/xml/feed/";
+#else
+	private const string FeedBaseUrl = "https://www.data.jma.go.jp/developer/xml/feed/";
+#endif
+
 	private ILogger Logger { get; }
 	private TimerService Timer { get; }
 	private InformationCacheService CacheService { get; }
@@ -40,15 +48,15 @@ public class JmaXmlTelegramPublisher : TelegramPublisher
 		{
 			JmaXmlType.EqVol,
 			(
-				"https://www.data.jma.go.jp/developer/xml/feed/eqvol_l.xml",
-				"https://www.data.jma.go.jp/developer/xml/feed/eqvol.xml"
+				FeedBaseUrl + "eqvol_l.xml",
+				FeedBaseUrl + "eqvol.xml"
 			)
 		},
 		{
 			JmaXmlType.Extra,
 			(
-				"https://www.data.jma.go.jp/developer/xml/feed/extra_l.xml",
-				"https://www.data.jma.go.jp/developer/xml/feed/extra.xml"
+				FeedBaseUrl + "extra_l.xml",
+				FeedBaseUrl + "extra.xml"
 			)
 		}
 	};

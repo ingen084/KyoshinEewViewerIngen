@@ -288,18 +288,16 @@ public partial class TemplateEditorDialog : Window
 
     private async void OkButton_Click(object? sender, RoutedEventArgs e)
     {
-        try
-        {
-            Scriban.Template.Parse(Editor.Text);
-        }
-        catch (Exception ex)
+        var template = Scriban.Template.Parse(Editor.Text);
+        if (template.HasErrors)
         {
             var result = await new FAContentDialog
             {
                 Title = "テンプレートシンタックスエラー",
-                Content = $"テンプレートにシンタックスエラーがあります:\n\n{ex.Message}\n\nこのままにしますか？",
-                PrimaryButtonText = "編集する",
-                SecondaryButtonText = "戻る"
+                Content = $"テンプレートにシンタックスエラーがあります:\n\n{template.Messages}\n\nこのまま保存しますか？",
+                PrimaryButtonText = "このまま保存",
+                SecondaryButtonText = "編集に戻る",
+                DefaultButton = FAContentDialogButton.Secondary,
             }.ShowAsync(this);
 
             if (result != FAContentDialogResult.Primary)
