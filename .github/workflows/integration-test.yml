@@ -1,9 +1,10 @@
 name: integration-test
 
-# 起動(スモークテスト)と自動アップデート完了までの結合テストを各プラットフォームで実行する。
+# 起動(スモークテスト)、画面操作(UIテスト)、自動アップデート完了までの結合テストを各プラットフォームで実行する。
 # 本番のGitHub Releases APIには接続せず、ローカルのモックサーバーとダミー新バージョンを使う。
 # リリース前の検査として release.yml から呼び出し、失敗した場合はリリースを作成しない。
 # 依存ライブラリの更新でトリミングの結果が変わるので、ビルド設定を変える PR でも Linux x64 だけ確認する。
+# UIテストが操作する画面を変える PR も、リリース時に初めて失敗しないように同じく確認する。
 on:
   workflow_call:
   workflow_dispatch:
@@ -15,6 +16,11 @@ on:
       - 'tests/IntegrationTest/**'
       - '.github/actions/publish-kevi/**'
       - '.github/workflows/integration-test.yml'
+      - 'src/KyoshinEewViewer.Desktop/IntegrationTest/**'
+      - 'src/KyoshinEewViewer/Services/Workflows/**'
+      - 'src/KyoshinEewViewer/Views/SettingWindow.axaml'
+      - 'src/KyoshinEewViewer/Views/SettingPages/WorkflowPage.axaml'
+      - 'src/KyoshinEewViewer/Views/Components/TemplateEditorDialog*'
 
 permissions:
   contents: read
@@ -88,6 +94,15 @@ jobs:
           -AppExePath "${{ steps.build-app.outputs.executable }}" \
           -ProfileTemplate tests/IntegrationTest/profiles/profile-smoke.json \
           -ExpectedVersion 0.0.1
+
+    - name: Run UI test
+      shell: bash
+      run: |
+        PREFIX=""
+        if [ "${{ matrix.os }}" = "ubuntu" ]; then PREFIX="xvfb-run -a"; fi
+        $PREFIX pwsh tests/IntegrationTest/run-ui-test.ps1 \
+          -AppExePath "${{ steps.build-app.outputs.executable }}" \
+          -ProfileTemplate tests/IntegrationTest/profiles/profile-smoke.json
 
     - name: Run update test
       shell: bash

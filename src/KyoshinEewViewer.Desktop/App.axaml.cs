@@ -54,6 +54,11 @@ public class App : Application
 	{
 		KyoshinEewViewerApp.Application = this;
 
+#if INTEGRATION_TEST
+		if (StartupOptions.Current?.UiTest == true)
+			IntegrationTest.UiTestDriver.AttachBindingErrorSink();
+#endif
+
 		if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 		{
 			KyoshinEewViewerApp.Selector = ThemeSelector.Create(".");
@@ -123,7 +128,7 @@ public class App : Application
 					if (StartupOptions.Current?.StandaloneSeriesName is null &&
 #if INTEGRATION_TEST
 						// 結合テスト時は既存インスタンスの検知で止まらないようにする
-						StartupOptions.Current?.SmokeTest != true && StartupOptions.Current?.AutoUpdateTest != true &&
+						StartupOptions.Current?.IsIntegrationTestRun != true &&
 #endif
 						Process.GetProcessesByName("KyoshinEewViewer.Desktop").Concat(Process.GetProcessesByName("KyoshinEewViewer")).Count(p => p.Responding) > 1)
 					{
@@ -239,7 +244,7 @@ public class App : Application
 							if (StartupOptions.Current?.StandaloneSeriesName is null
 #if INTEGRATION_TEST
 								// 結合テスト時は既存インスタンスとのパイプ名衝突を避けるため起動しない
-								&& StartupOptions.Current?.SmokeTest != true && StartupOptions.Current?.AutoUpdateTest != true
+								&& StartupOptions.Current?.IsIntegrationTestRun != true
 #endif
 							)
 							{
@@ -260,6 +265,8 @@ public class App : Application
 									await Dispatcher.UIThread.InvokeAsync(() => desktop.Shutdown());
 								});
 							}
+							if (StartupOptions.Current?.UiTest == true)
+								_ = IntegrationTest.UiTestDriver.RunAsync(desktop);
 #endif
 						};
 						MainWindow.Show();
