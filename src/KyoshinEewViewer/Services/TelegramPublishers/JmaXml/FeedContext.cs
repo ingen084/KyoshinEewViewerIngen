@@ -11,5 +11,9 @@ internal class FeedContext
 	public DateTimeOffset? LongFeedLastModified { get; set; }
 	public DateTimeOffset? ShortFeedLastModified { get; set; }
 	public DateTime LastFetched { get; set; } = DateTime.MinValue;
+	/// <summary>
+	/// 短期フィードの定期取得に連続して失敗した回数
+	/// </summary>
+	public int FailCount { get; set; }
 	public List<Telegram> LatestTelegrams { get; } = [];
 }

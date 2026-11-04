@@ -144,7 +144,9 @@ public partial class EewTelegramSubscriber : ObservableObject
 			(s, t) =>
 			{
 				WarningOnlyEnabled = !Enabled;
-				IsDisconnected = false;
+				// 予報を受信している場合、切断の表示は予報の受信状態に合わせる
+				if (!Enabled)
+					IsDisconnected = false;
 				return Task.CompletedTask;
 			},
 			async t =>
@@ -222,7 +224,9 @@ public partial class EewTelegramSubscriber : ObservableObject
 			{
 				// 死んだ
 				WarningOnlyEnabled = !s.isAllFailed && !Enabled;
-				IsDisconnected = s.isRestorable;
+				// 警報を契約していない場合なども、予報の切断の表示を上書きしない
+				if (!Enabled)
+					IsDisconnected = s.isRestorable;
 			});
 
 		if (Design.IsDesignMode)

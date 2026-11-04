@@ -3,6 +3,7 @@ using DmdataSharp.Redundancy;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
+using KyoshinEewViewer.Tests.Services.Mocks;
 using Moq;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -35,9 +36,8 @@ public class DmdataRedundantTelegramPublisherAdvancedTests : IDisposable
 		_mockController.Setup(x => x.ConnectedEndpoints).Returns(Array.Empty<string>());
 		_mockController.Setup(x => x.IsConnected).Returns(false);
 		
-		var cacheService = new InformationCacheService(NullLogger<InformationCacheService>.Instance);
-		
-		_publisher = new DmdataRedundantTelegramPublisher(NullLogger<DmdataRedundantTelegramPublisher>.Instance, _config, cacheService);
+		// 実際の通信を行わないようにHTTPとWebSocketを差し替える
+		_publisher = DmdataTestEnvironment.CreatePublisher(_config, _mockController.Object);
 	}
 
 	#region 基本的な初期化と設定のテスト
@@ -74,19 +74,27 @@ public class DmdataRedundantTelegramPublisherAdvancedTests : IDisposable
 
 	#region 公開プロパティの動作確認
 
-	[Fact]
-	public async Task GetSupportedCategoriesAsync_認証情報設定時_正常動作する()
+	[Fact(DisplayName = "契約情報から受信できるカテゴリを判定し、WebSocketを使わない場合は緊急地震速報を含めない")]
+	public async Task GetSupportedCategoriesAsync_契約に応じたカテゴリを返す()
 	{
-		// Arrange
-		_config.Dmdata.RefreshToken = "test-token";
-		_config.Dmdata.OAuthClientId = "test-client-id";
-		await _publisher.InitializeAsync();
-		
-		// Act
-		var categories = await _publisher.GetSupportedCategoriesAsync();
-		
-		// Assert - モック環境では空配列が返される
-		Assert.NotNull(categories);
+		foreach (var useWebSocket in new[] { true, false })
+		{
+			var config = new KyoshinEewViewerConfiguration();
+			config.Dmdata.RefreshToken = "test-token";
+			config.Dmdata.OAuthClientId = "test-client-id";
+			config.Dmdata.UseWebSocket = useWebSocket;
+			var http = new StubHttpHandler();
+			http.Respond(DmdataTestEnvironment.ApiBaseUrl + "/v2/contract", DmdataTestEnvironment.ContractList("telegram.earthquake", "eew.forecast"));
+			using var publisher = DmdataTestEnvironment.CreatePublisher(config, _mockController.Object, http);
+			await publisher.InitializeAsync();
+
+			var categories = await publisher.GetSupportedCategoriesAsync();
+
+			InformationCategory[] expected = useWebSocket
+				? [InformationCategory.Earthquake, InformationCategory.Tsunami, InformationCategory.EewForecast]
+				: [InformationCategory.Earthquake, InformationCategory.Tsunami];
+			Assert.Equal(expected.Order(), categories.Order());
+		}
 	}
 
 	#endregion

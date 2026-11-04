@@ -1,3 +1,4 @@
+using DmdataSharp.Exceptions;
 using DmdataSharp.Interfaces;
 using DmdataSharp.Redundancy;
 using DmdataSharp.WebSocketMessages.V2;
@@ -5,6 +6,7 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
+using KyoshinEewViewer.Tests.Services.Mocks;
 using Moq;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -39,10 +41,8 @@ public class DmdataRedundantTelegramPublisherSimpleTests : IDisposable
 		_mockController.Setup(x => x.ApiClient).Returns(_mockApiClient.Object);
 		_mockController.Setup(x => x.LastMessageTime).Returns((DateTime?)null);
 
-		// キャッシュサービスは実際のインスタンス
-		var cacheService = new InformationCacheService(NullLogger<InformationCacheService>.Instance);
-
-		_publisher = new DmdataRedundantTelegramPublisher(NullLogger<DmdataRedundantTelegramPublisher>.Instance, _config, cacheService);
+		// 実際の通信を行わないようにHTTPとWebSocketを差し替える
+		_publisher = DmdataTestEnvironment.CreatePublisher(_config, _mockController.Object);
 	}
 
 	#region 基本機能のテスト
@@ -309,23 +309,29 @@ public class DmdataRedundantTelegramPublisherSimpleTests : IDisposable
 		Assert.NotEmpty(_publisher.SubscribingCategories); // Start は呼ばれている
 	}
 
-	[Fact]
-	public async Task 認証エラー_発生時_設定がクリアされる()
+	[Fact(DisplayName = "認可情報が拒否された場合だけ認可を失効し、認可サーバーの障害や回線断では認可情報を保持する")]
+	public async Task 認可情報が拒否された場合だけ認可を失効する()
 	{
-		// Arrange - 認証情報を設定
-		_config.Dmdata.RefreshToken = "test-refresh-token";
-		_config.Dmdata.OAuthClientId = "test-client-id";
-		await _publisher.InitializeAsync();
+		(Exception Error, bool Rejected)[] cases = [
+			(new DmdataAuthenticationException("アクセストークンの更新に失敗しました invalid_grant(refresh token is invalid)"), true),
+			(new DmdataAuthenticationException("アクセストークンの更新に失敗しました ()"), false),
+			(new HttpRequestException("回線断"), false),
+		];
+		foreach (var (error, rejected) in cases)
+		{
+			var config = new KyoshinEewViewerConfiguration();
+			config.Dmdata.RefreshToken = "test-refresh-token";
+			config.Dmdata.OAuthClientId = "test-client-id";
+			var credential = new FakeOAuthCredential(new HttpClient(new StubHttpHandler())) { TokenError = error };
+			using var publisher = DmdataTestEnvironment.CreatePublisher(config, _mockController.Object, credential: credential);
+			await publisher.InitializeAsync();
 
-		// Act - モック環境での開始処理
-		_publisher.Start([InformationCategory.Earthquake]);
+			var categories = await publisher.GetSupportedCategoriesAsync();
 
-		// 処理完了を待つ
-		await Task.Delay(200);
-
-		// Assert - モック環境では実際の認証エラーが発生しないが、基本動作を確認
-		Assert.NotEmpty(_publisher.SubscribingCategories);
-		Assert.Equal("test-refresh-token", _config.Dmdata.RefreshToken); // モックではクリアされない
+			Assert.Empty(categories);
+			Assert.Equal(rejected ? null : "test-refresh-token", config.Dmdata.RefreshToken);
+			Assert.Equal(rejected ? 1 : 0, credential.RevokeCount);
+		}
 	}
 
 	#endregion

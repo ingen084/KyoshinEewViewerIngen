@@ -4,6 +4,7 @@ using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinEewViewer.Services.TelegramPublishers.JmaXml;
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -35,11 +36,16 @@ public class TelegramProvideService : IDisposable
 		{ InformationCategory.Tsunami, new() },
 		{ InformationCategory.Typhoon, new() },
 	};
-	private Dictionary<InformationCategory, TelegramPublisher?> UsingPublisher { get; } = [];
-	
-	// 失敗処理の同時実行制御用
-	private readonly SemaphoreSlim _failureProcessingSemaphore = new(1, 1);
-	private readonly HashSet<(TelegramPublisher, InformationCategory)> _processingFailures = [];
+	/// <summary>
+	/// カテゴリごとに使用中のPublisher<br/>
+	/// 割り当ての変更は <see cref="_assignmentLock"/> を取得して行い、Publisher の購読状態と一致させる
+	/// </summary>
+	private ConcurrentDictionary<InformationCategory, TelegramPublisher> UsingPublisher { get; } = [];
+
+	/// <summary>
+	/// 割り当ての変更 (失敗時の切り替え・優先度による復帰・復旧) を順番に処理するためのロック
+	/// </summary>
+	private readonly SemaphoreSlim _assignmentLock = new(1, 1);
 
 	private ILogger Logger { get; }
 	private IServiceProvider Services { get; }
@@ -96,49 +102,19 @@ public class TelegramProvideService : IDisposable
 			}
 		}
 
-		// 割り当てられていないカテゴリたち
-		var remainCategories = Subscribers.Where(s => s.Value.Count != 0).Select(s => s.Key).ToList();
-		foreach (var publisher in Publishers)
+		await _assignmentLock.WaitAsync();
+		try
 		{
-			try
-			{
-				var supported = await publisher.GetSupportedCategoriesAsync();
-				var matched = supported.Where(s => remainCategories.Contains(s)).ToArray();
-				if (matched.Length == 0)
-					continue;
+			var remainCategories = await AssignAsync(Subscribers.Where(s => s.Value.Count != 0).Select(s => s.Key).ToList());
+			if (remainCategories.Count == 0)
+				return;
 
-				// 割当
-				foreach (var mc in matched)
-					UsingPublisher[mc] = publisher;
-				// 開始
-				publisher.Start(matched);
-
-				remainCategories.RemoveAll(c => supported.Contains(c));
-			}
-			catch (Exception ex)
-			{
-				Logger.LogError(ex, "電文プロバイダ {Name} の初期化中に例外が発生しました。", publisher.GetType().Name);
-			}
+			Logger.LogWarning("以下のカテゴリに対応するPublisherが見つかりませんでした: {RemainCategories}", string.Join(", ", remainCategories));
+			NotifyFailed(remainCategories, (isAllFailed: true, isRestorable: false));
 		}
-
-		// 処理されなかったカテゴリについて失敗報告
-		if (remainCategories.Count <= 0)
-			return;
-
-		Logger.LogWarning("以下のカテゴリに対応するPublisherが見つかりませんでした: {RemainCategories}", string.Join(", ", remainCategories));
-		foreach (var category in remainCategories)
+		finally
 		{
-			foreach (var subscriber in Subscribers[category])
-			{
-				try
-				{
-					subscriber.Failed((isAllFailed: true, isRestorable: false));
-				}
-				catch (Exception ex)
-				{
-					Logger.LogError(ex, "カテゴリ {Category} のサブスクライバーへの失敗報告中に例外が発生しました", category);
-				}
-			}
+			_assignmentLock.Release();
 		}
 	}
 
@@ -180,96 +156,41 @@ public class TelegramProvideService : IDisposable
 	}
 
 	private void OnFailed(TelegramPublisher sender, InformationCategory[] categories, bool isRestorable)
-		=> Task.Run(async () =>
+	{
+		// リストア可能であれば割り当ては変えずにプロバイダ自身の復旧を待つ
+		// 同じプロバイダから続けて届く履歴の通知と順序が入れ替わらないよう、すぐに通知する
+		if (isRestorable)
 		{
+			NotifyFailed(categories.Where(c => UsingPublisher.TryGetValue(c, out var up) && up == sender).Distinct(), (isAllFailed: false, isRestorable: true));
+			return;
+		}
+
+		_ = Task.Run(async () =>
+		{
+			await _assignmentLock.WaitAsync();
 			try
 			{
-				// 同時実行制御
-				await _failureProcessingSemaphore.WaitAsync();
-				try
-				{
-					// 既に処理中の失敗は重複処理を防ぐ
-					var newFailures = new List<InformationCategory>();
-					foreach (var category in categories)
-					{
-						var key = (sender, category);
-						if (!_processingFailures.Contains(key))
-						{
-							_processingFailures.Add(key);
-							newFailures.Add(category);
-						}
-					}
-
-					if (newFailures.Count == 0)
-					{
-						Logger.LogDebug("プロバイダ {Name} の失敗は既に処理中のため、重複処理をスキップします", sender.GetType().Name);
-						return;
-					}
-
-					categories = newFailures.ToArray();
-				}
-				finally
-				{
-					_failureProcessingSemaphore.Release();
-				}
-
-				// 使用中のもののみフォールバックできるようにする
-				var fallTargetCategories = new List<InformationCategory>();
-				foreach (var category in categories)
-				{
-					// 現在利用中のプロバイダからでなければ無視
-					if (!UsingPublisher.TryGetValue(category, out var up) || up != sender)
-						continue;
-
-					// Failed通知を送信、フロントは操作不能になる
-					foreach (var s in Subscribers[category])
-						s.Failed((false, isRestorable));
-					fallTargetCategories.Add(category);
-				}
-
-				// リストア可能もしくは対象が存在しなければ何もしない
-				if (isRestorable || fallTargetCategories.Count == 0)
+				// 現在利用中のプロバイダからでなければ無視
+				var failedCategories = categories.Where(c => UsingPublisher.TryGetValue(c, out var up) && up == sender).Distinct().ToList();
+				if (failedCategories.Count == 0)
 					return;
 
-				var matchedPublishers = new Dictionary<TelegramPublisher, List<InformationCategory>>();
-				foreach (var category in fallTargetCategories)
-				{
-					var nextPublisher = sender;
-					while (true)
-					{
-						var i = Publishers.IndexOf(nextPublisher);
-						// 次に優先度の高いプロバイダに切り替える
-						if (i >= (Publishers.Count - 1))
-						{
-							// フォールバック先が存在しない
-							UsingPublisher.Remove(category);
-							foreach (var s in Subscribers[category])
-								s.Failed((true, false));
-							break;
-						}
-						nextPublisher = Publishers[i + 1];
+				// Failed通知を送信、フロントは操作不能になる
+				NotifyFailed(failedCategories, (isAllFailed: false, isRestorable: false));
 
-						try
-						{
-							if (!(await nextPublisher.GetSupportedCategoriesAsync()).Contains(category))
-								continue;
-							if (!matchedPublishers.ContainsKey(nextPublisher))
-								matchedPublishers.Add(nextPublisher, []);
-							matchedPublishers[nextPublisher].Add(category);
-							break;
-						}
-						catch (Exception ex)
-						{
-							Logger.LogWarning(ex, "取得失敗による情報ソース切り替え中に例外が発生しました");
-						}
-					}
-				}
-				foreach (var p in matchedPublishers)
-				{
-					foreach (var c in p.Value)
-						UsingPublisher[c] = p.Key;
-					p.Key.Start(p.Value.ToArray());
-				}
+				// 失敗したプロバイダの購読を止めておき、復旧後に開始し直したときに履歴を受け取れるようにする
+				foreach (var category in failedCategories)
+					UsingPublisher.TryRemove(category, out _);
+				sender.Stop(failedCategories.ToArray());
+
+				// 優先度の低いプロバイダに切り替える
+				var remainCategories = await AssignAsync(failedCategories, Publishers.IndexOf(sender) + 1);
+				if (remainCategories.Count == 0)
+					return;
+
+				// フォールバック先が存在しない
+				Logger.LogWarning("以下のカテゴリは受信できる情報源がありません: {RemainCategories}", string.Join(", ", remainCategories));
+				NotifyFailed(remainCategories, (isAllFailed: true, isRestorable: false));
 			}
 			catch (Exception ex)
 			{
@@ -277,30 +198,15 @@ public class TelegramProvideService : IDisposable
 			}
 			finally
 			{
-				// 処理中フラグをクリア
-				try
-				{
-					await _failureProcessingSemaphore.WaitAsync();
-					try
-					{
-						foreach (var category in categories)
-							_processingFailures.Remove((sender, category));
-					}
-					finally
-					{
-						_failureProcessingSemaphore.Release();
-					}
-				}
-				catch (Exception cleanupEx)
-				{
-					Logger.LogError(cleanupEx, "失敗処理のクリーンアップ中に例外が発生しました");
-				}
+				_assignmentLock.Release();
 			}
 		});
+	}
 
 	private void OnInformationCategoryUpdated(TelegramPublisher sender)
 		=> Task.Run(async () =>
 		{
+			await _assignmentLock.WaitAsync();
 			try
 			{
 				var stops = new Dictionary<TelegramPublisher, List<InformationCategory>>();
@@ -320,12 +226,10 @@ public class TelegramProvideService : IDisposable
 						var toReassign = new List<InformationCategory>();
 						foreach (var category in matched)
 						{
-							if (UsingPublisher.TryGetValue(category, out var currentPublisher) && currentPublisher != null)
+							if (UsingPublisher.TryGetValue(category, out var currentPublisher))
 							{
 								// 現在のPublisherより優先度が高い場合（Publishersリストの先頭に近い）
-								var currentIndex = Publishers.IndexOf(currentPublisher);
-								var newIndex = Publishers.IndexOf(publisher);
-								if (newIndex < currentIndex)
+								if (Publishers.IndexOf(publisher) < Publishers.IndexOf(currentPublisher))
 								{
 									toReassign.Add(category);
 									Logger.LogInformation("カテゴリ {Category} を {Name} から {Name2} に切り替えます（優先度による復旧）", category, currentPublisher.GetType().Name, publisher.GetType().Name);
@@ -342,7 +246,7 @@ public class TelegramProvideService : IDisposable
 						// 切り替え処理
 						foreach (var category in toReassign)
 						{
-							if (UsingPublisher.TryGetValue(category, out var oldPublisher) && oldPublisher != null)
+							if (UsingPublisher.TryGetValue(category, out var oldPublisher))
 							{
 								if (!stops.ContainsKey(oldPublisher))
 									stops.Add(oldPublisher, []);
@@ -374,51 +278,51 @@ public class TelegramProvideService : IDisposable
 			{
 				Logger.LogError(ex, "情報カテゴリ更新処理中に例外が発生しました");
 			}
+			finally
+			{
+				_assignmentLock.Release();
+			}
 		});
 
+	/// <summary>
+	/// 受信できていないカテゴリの受信を再試行する<br/>
+	/// 復旧できなかったカテゴリは、購読者へ再度失敗を通知する
+	/// </summary>
 	public async Task RestoreAsync()
 	{
+		await _assignmentLock.WaitAsync();
 		try
 		{
 			Logger.LogInformation("電文プロバイダの復旧処理を開始します");
-			
-			// 復旧対象のカテゴリを収集
+
 			// 1. 割り当てられていないカテゴリ
-			// 2. 現在のPublisherがサポートしていないカテゴリ（障害状態など）
-			var categoriesToRestore = new List<InformationCategory>();
-			
-			foreach (var subscriber in Subscribers.Where(s => s.Value.Count != 0))
+			var categoriesToRestore = Subscribers
+				.Where(s => s.Value.Count != 0 && !UsingPublisher.ContainsKey(s.Key))
+				.Select(s => s.Key)
+				.ToList();
+
+			// 2. 現在のPublisherがサポートしなくなったカテゴリ（障害状態など）
+			foreach (var group in UsingPublisher.GroupBy(u => u.Value, u => u.Key).ToArray())
 			{
-				var category = subscriber.Key;
-				var needsRestore = false;
-				
-				if (!UsingPublisher.TryGetValue(category, out var currentPublisher) || currentPublisher == null)
+				InformationCategory[] supported;
+				try
 				{
-					// 割り当てられていない
-					needsRestore = true;
-					Logger.LogDebug("カテゴリ {Category} は割り当てられていません", category);
+					supported = await group.Key.GetSupportedCategoriesAsync();
 				}
-				else
+				catch (Exception ex)
 				{
-					// 現在のPublisherがサポートしているかチェック
-					try
-					{
-						var supportedCategories = await currentPublisher.GetSupportedCategoriesAsync();
-						if (!supportedCategories.Contains(category))
-						{
-							needsRestore = true;
-							Logger.LogInformation("カテゴリ {Category} は現在のプロバイダ {Name} でサポートされていないため復旧対象とします", category, currentPublisher.GetType().Name);
-						}
-					}
-					catch (Exception ex)
-					{
-						Logger.LogWarning(ex, "プロバイダ {Name} のサポートカテゴリ取得に失敗したため復旧対象とします", currentPublisher.GetType().Name);
-						needsRestore = true;
-					}
+					Logger.LogWarning(ex, "プロバイダ {Name} のサポートカテゴリ取得に失敗したため復旧対象とします", group.Key.GetType().Name);
+					supported = [];
 				}
-				
-				if (needsRestore)
-					categoriesToRestore.Add(category);
+				var unsupported = group.Where(c => !supported.Contains(c)).ToArray();
+				if (unsupported.Length == 0)
+					continue;
+
+				Logger.LogInformation("カテゴリ {Categories} は現在のプロバイダ {Name} でサポートされていないため復旧対象とします", string.Join(", ", unsupported), group.Key.GetType().Name);
+				foreach (var category in unsupported)
+					UsingPublisher.TryRemove(category, out _);
+				group.Key.Stop(unsupported);
+				categoriesToRestore.AddRange(unsupported);
 			}
 
 			if (categoriesToRestore.Count == 0)
@@ -429,60 +333,76 @@ public class TelegramProvideService : IDisposable
 
 			Logger.LogInformation("復旧対象カテゴリ: {CategoriesToRestore}", string.Join(", ", categoriesToRestore));
 
-			// 優先度順でPublisherを試行
-			var stops = new Dictionary<TelegramPublisher, List<InformationCategory>>();
-			foreach (var publisher in Publishers)
-			{
-				try
-				{
-					var supported = await publisher.GetSupportedCategoriesAsync();
-					var matched = supported.Where(categoriesToRestore.Contains).ToArray();
-					if (matched.Length == 0)
-						continue;
-
-					Logger.LogInformation("{Name} で {Matched} を復旧します", publisher.GetType().Name, string.Join(", ", matched));
-
-					// 既存のPublisherを停止リストに追加
-					foreach (var category in matched)
-					{
-						if (UsingPublisher.TryGetValue(category, out var oldPublisher) && oldPublisher != null && oldPublisher != publisher)
-						{
-							if (!stops.ContainsKey(oldPublisher))
-								stops[oldPublisher] = [];
-							stops[oldPublisher].Add(category);
-						}
-						UsingPublisher[category] = publisher;
-					}
-
-					// 開始
-					publisher.Start(matched);
-					categoriesToRestore.RemoveAll(matched.Contains);
-				}
-				catch (Exception ex)
-				{
-					Logger.LogError(ex, "電文プロバイダ {Name} の復旧処理中に例外が発生しました。", publisher.GetType().Name);
-				}
-			}
-
-			// 古いPublisherを停止
-			foreach (var stop in stops)
-			{
-				Logger.LogInformation("{Publisher} の以下のカテゴリを停止します: {Categories}", stop.Key.GetType().Name, string.Join(", ", stop.Value));
-				stop.Key.Stop(stop.Value.ToArray());
-			}
-
-			if (categoriesToRestore.Count > 0)
-			{
-				Logger.LogWarning("復旧できなかったカテゴリ: {CategoriesToRestore}", string.Join(", ", categoriesToRestore));
-			}
-			else
+			var remainCategories = await AssignAsync(categoriesToRestore);
+			if (remainCategories.Count == 0)
 			{
 				Logger.LogInformation("全てのカテゴリの復旧が完了しました");
+				return;
 			}
+
+			Logger.LogWarning("復旧できなかったカテゴリ: {CategoriesToRestore}", string.Join(", ", remainCategories));
+			NotifyFailed(remainCategories, (isAllFailed: true, isRestorable: false));
 		}
 		catch (Exception ex)
 		{
 			Logger.LogError(ex, "復旧処理中に予期しない例外が発生しました");
+		}
+		finally
+		{
+			_assignmentLock.Release();
+		}
+	}
+
+	/// <summary>
+	/// 優先度順にカテゴリをPublisherへ割り当てて受信を開始する<br/>
+	/// <see cref="_assignmentLock"/> を取得した状態で呼び出す
+	/// </summary>
+	/// <param name="startIndex">割り当てを試みる最初のPublisherの位置</param>
+	/// <returns>割り当てられなかったカテゴリ</returns>
+	private async Task<List<InformationCategory>> AssignAsync(List<InformationCategory> categories, int startIndex = 0)
+	{
+		var remainCategories = categories.ToList();
+		foreach (var publisher in Publishers.Skip(startIndex))
+		{
+			if (remainCategories.Count == 0)
+				break;
+			try
+			{
+				var supported = await publisher.GetSupportedCategoriesAsync();
+				var matched = remainCategories.Where(supported.Contains).ToArray();
+				if (matched.Length == 0)
+					continue;
+
+				Logger.LogInformation("{Name} で {Matched} を受信します", publisher.GetType().Name, string.Join(", ", matched));
+				foreach (var category in matched)
+					UsingPublisher[category] = publisher;
+				publisher.Start(matched);
+
+				remainCategories.RemoveAll(matched.Contains);
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "電文プロバイダ {Name} の開始中に例外が発生しました。", publisher.GetType().Name);
+			}
+		}
+		return remainCategories;
+	}
+
+	private void NotifyFailed(IEnumerable<InformationCategory> categories, (bool isAllFailed, bool isRestorable) state)
+	{
+		foreach (var category in categories)
+		{
+			foreach (var subscriber in Subscribers[category])
+			{
+				try
+				{
+					subscriber.Failed(state);
+				}
+				catch (Exception ex)
+				{
+					Logger.LogError(ex, "カテゴリ {Category} のサブスクライバーへの失敗報告中に例外が発生しました", category);
+				}
+			}
 		}
 	}
 
@@ -528,10 +448,10 @@ public class TelegramProvideService : IDisposable
 		Publishers.Clear();
 		UsingPublisher.Clear();
 		Started = false;
-		
+
 		// セマフォの破棄
-		_failureProcessingSemaphore?.Dispose();
-		
+		_assignmentLock?.Dispose();
+
 		GC.SuppressFinalize(this);
 	}
 
