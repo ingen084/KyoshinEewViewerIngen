@@ -67,33 +67,10 @@ $release = [ordered]@{
 }
 $release | ConvertTo-Json -AsArray -Depth 5 | Set-Content (Join-Path $serveDir 'releases.json')
 
-# モックサーバー(静的ファイル配信)を起動
-$python = Get-Command python3 -ErrorAction SilentlyContinue
-if (-not $python) {
-	$python = Get-Command python -ErrorAction Stop
-}
-$serverProc = Start-Process -FilePath $python.Source `
-	-ArgumentList @('-m', 'http.server', "$Port", '--bind', '127.0.0.1') `
-	-WorkingDirectory $serveDir -PassThru `
-	-RedirectStandardOutput (Join-Path $WorkDir 'http-server.log') `
-	-RedirectStandardError (Join-Path $WorkDir 'http-server.err.log')
+$serverProc = Start-MockServer -ServeDir $serveDir -Port $Port -LogDir $WorkDir -ReadyPath 'releases.json'
 
 $proc = $null
 try {
-	$serverReady = $false
-	for ($i = 0; $i -lt 20; $i++) {
-		try {
-			Invoke-WebRequest "$baseUrl/releases.json" | Out-Null
-			$serverReady = $true
-			break
-		}
-		catch {
-			Start-Sleep -Milliseconds 500
-		}
-	}
-	if (-not $serverReady) {
-		throw 'モックサーバーが起動しませんでした'
-	}
 	Write-Host "モックサーバーを起動しました: $baseUrl (アセット: $AssetName, sha256: $hash)"
 
 	$env:KEVI_UPDATE_API_URL = "$baseUrl/releases.json"

@@ -26,6 +26,10 @@ public partial class TemplateEditorDialog : Window
     private CompletionWindow? _completionWindow;
     private Type? _eventType;
 
+#if INTEGRATION_TEST
+    public CompletionWindow? OpenCompletionWindow => _completionWindow;
+#endif
+
     public TemplateEditorDialog()
     {
         InitializeComponent();

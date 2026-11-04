@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using FluentAvalonia.UI.Controls;
 using System;
@@ -41,6 +42,9 @@ internal static class UiOperations
 	public static Task WaitForTextAsync(Visual root, string text)
 		=> WaitUntilAsync(() => VisibleTexts(root).Contains(text), $"テキスト「{text}」");
 
+	public static Task WaitForTextStartingWithAsync(Visual root, string prefix)
+		=> WaitUntilAsync(() => VisibleTexts(root).Any(t => t.StartsWith(prefix, StringComparison.Ordinal)), $"「{prefix}」で始まるテキスト");
+
 	/// <summary>
 	/// 表示されているテキストを列挙する
 	/// </summary>
@@ -49,6 +53,17 @@ internal static class UiOperations
 			.Where(t => t.IsEffectivelyVisible)
 			.Select(t => string.IsNullOrEmpty(t.Text) ? t.Inlines?.Text : t.Text)
 			.OfType<string>()];
+
+	/// <summary>
+	/// 折りたたまれた項目はバインディングが評価されないので、すべて開く
+	/// </summary>
+	public static async Task ExpandAllAsync(Visual root)
+	{
+		await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background);
+		foreach (var expander in root.GetVisualDescendants().OfType<FASettingsExpander>())
+			expander.IsExpanded = true;
+		await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background);
+	}
 
 	/// <summary>
 	/// ツールチップで指定したボタンが表示されるのを待って押す
@@ -67,6 +82,14 @@ internal static class UiOperations
 			$"ボタン「{content}」"));
 
 	/// <summary>
+	/// 同じ文字のボタンが複数あるときに、画面の並びの順番で指定して押す
+	/// </summary>
+	public static async Task ClickByContentAsync(Visual root, string content, int index)
+		=> Click(await WaitForAsync(
+			() => root.GetVisualDescendants().OfType<Button>().Where(b => b.IsEffectivelyVisible && Equals(b.Content, content)).ElementAtOrDefault(index),
+			$"{index + 1}番目のボタン「{content}」"));
+
+	/// <summary>
 	/// ボタンを押す。無効なボタンは実際の操作と同じように押せず、例外になる
 	/// </summary>
 	private static void Click(Button button)
@@ -77,20 +100,28 @@ internal static class UiOperations
 	/// </summary>
 	public static async Task ChooseMenuItemAsync(Button button, IEnumerable<string> expectedItems, string item)
 	{
+		var items = await OpenMenuAsync(button, expectedItems);
+		items[Array.FindIndex(items, i => i.Header as string == item)].RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+		button.Flyout!.Hide();
+	}
+
+	/// <summary>
+	/// ボタンのメニューを開き、表示された項目を確認する
+	/// </summary>
+	public static async Task<MenuItem[]> OpenMenuAsync(Button button, IEnumerable<string> expectedItems)
+	{
 		if (button.Flyout is not MenuFlyout flyout)
 			throw new InvalidOperationException("ボタンにメニューがありません");
 
 		Click(button);
 		var items = await WaitForAsync(
 			() => flyout.Popup.Child?.GetVisualDescendants().OfType<MenuItem>().ToArray() is { Length: > 0 } found ? found : null,
-			$"「{item}」のメニュー");
+			"メニューの項目");
 
 		var headers = items.Select(i => i.Header as string).ToArray();
 		if (!headers.SequenceEqual(expectedItems))
 			throw new InvalidOperationException($"メニューの項目が一致しません: {string.Join(" / ", headers)}");
-
-		items[Array.IndexOf(headers, item)].RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
-		flyout.Hide();
+		return items;
 	}
 
 	/// <summary>

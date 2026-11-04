@@ -18,9 +18,14 @@ on:
       - '.github/workflows/integration-test.yml'
       - 'src/KyoshinEewViewer.Desktop/IntegrationTest/**'
       - 'src/KyoshinEewViewer/Services/Workflows/**'
+      - 'src/KyoshinEewViewer/Series/*/Workflow/**'
+      - 'src/KyoshinEewViewer/Series/*/SettingPages/**'
+      - 'src/KyoshinEewViewer/Services/Voicevox/**'
       - 'src/KyoshinEewViewer/Views/SettingWindow.axaml'
-      - 'src/KyoshinEewViewer/Views/SettingPages/WorkflowPage.axaml'
-      - 'src/KyoshinEewViewer/Views/Components/TemplateEditorDialog*'
+      - 'src/KyoshinEewViewer/Views/SettingPages/**'
+      - 'src/KyoshinEewViewer/Views/*ThemeEditWindow*'
+      - 'src/KyoshinEewViewer/Views/Components/TemplateEditor*'
+      - 'src/KyoshinEewViewer/Views/Components/TemplateEditor/**'
 
 permissions:
   contents: read
@@ -102,7 +107,7 @@ jobs:
         if [ "${{ matrix.os }}" = "ubuntu" ]; then PREFIX="xvfb-run -a"; fi
         $PREFIX pwsh tests/IntegrationTest/run-ui-test.ps1 \
           -AppExePath "${{ steps.build-app.outputs.executable }}" \
-          -ProfileTemplate tests/IntegrationTest/profiles/profile-smoke.json
+          -ProfileTemplate tests/IntegrationTest/profiles/profile-ui.json
 
     - name: Run update test
       shell: bash

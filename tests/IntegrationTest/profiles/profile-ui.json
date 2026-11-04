@@ -1,0 +1,35 @@
+{
+	"ShowWizard": false,
+	"AutoProcessPriority": false,
+	"SeriesEnable": {
+		"kyoshin-monitor": false,
+		"earthquake": false,
+		"tsunami": false,
+		"lightning": false,
+		"qzss": true
+	},
+	"NetworkTime": {
+		"Enable": false
+	},
+	"Logging": {
+		"Enable": true,
+		"Directory": "Logs",
+		"UseCurrentDirectory": true
+	},
+	"Update": {
+		"Enable": false,
+		"UsePreReleaseBuild": false,
+		"UseUnstableBuild": false,
+		"SendCrashReport": false
+	},
+	"Eew": {
+		"EnableWebhookPointForecast": true
+	},
+	"Qzss": {
+		"Connect": false
+	},
+	"Voicevox": {
+		"Enabled": true,
+		"Address": "http://127.0.0.1:8621/"
+	}
+}
