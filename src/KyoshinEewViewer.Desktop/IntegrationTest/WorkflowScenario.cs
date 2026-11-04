@@ -1,15 +1,10 @@
 #if INTEGRATION_TEST
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.VisualTree;
 using AvaloniaEdit;
-using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core;
-using KyoshinEewViewer.Core.Models.Events;
-using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
-using KyoshinEewViewer.ViewModels;
 using KyoshinEewViewer.Views.Components;
 using KyoshinEewViewer.Views.SettingPages;
 using System;
@@ -17,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using static KyoshinEewViewer.Desktop.IntegrationTest.UiOperations;
+using static KyoshinEewViewer.Desktop.IntegrationTest.WorkflowPageOperations;
 
 namespace KyoshinEewViewer.Desktop.IntegrationTest;
 
@@ -25,40 +21,32 @@ namespace KyoshinEewViewer.Desktop.IntegrationTest;
 /// </summary>
 internal static class WorkflowScenario
 {
-	private const string EmptyMessage = "ワークフローがまだありません。";
 	private const string WorkflowName = "新しいワークフロー";
 	private const string TriggerName = "アプリケーション起動時";
 	private const string ActionName = "ログ出力";
-	private const string SaveTip = "ワークフローを保存する";
 	private const string TemplateText = "UI-CHECK|{{ EventType }}|{{ \"05\" | string.slice 1 }}";
 	private const string ExpectedOutput = "UI-CHECK|ApplicationStartup|5";
 	private const string SavedActionType = "\"LogOutput\"";
 
-	public static async Task RunAsync(IClassicDesktopStyleApplicationLifetime desktop, string workflowsFile)
+	public static async Task RunAsync(IClassicDesktopStyleApplicationLifetime desktop, SettingWindowSession settings)
 	{
-		UiTestDriver.Step("設定ウィンドウのワークフロー画面を開く");
-		var subWindows = ServiceLocator.Current.RequireService<ISubWindowsService>();
-		StrongReferenceMessenger.Default.Send(new ShowSettingWindowRequested());
-		var window = await WaitForAsync(() => subWindows.SettingWindow is { IsVisible: true } w ? w : null, "設定ウィンドウ");
-		var viewModel = (SettingWindowViewModel)window.DataContext!;
-		viewModel.SelectedSettingPage = viewModel.SettingPages.Single(p => p.Title == "ワークフロー");
-		var page = await WaitForControlAsync<WorkflowPage>(window);
+		var workflowsFile = Path.Combine(PlatformDirectories.ApplicationData, "workflows.json");
+
+		UiTestDriver.Step("ワークフロー画面を開く");
+		var page = await settings.ShowPageAsync<WorkflowPage>(PageTitle);
 		await WaitForTextAsync(page, EmptyMessage);
 
 		UiTestDriver.Step("ワークフローを追加する");
-		await ClickByTipAsync(page, "新しいワークフローを作成");
+		await AddWorkflowAsync(page);
 		await WaitForTextAsync(page, WorkflowName);
 
 		UiTestDriver.Step("トリガーを選ぶ");
-		var triggerButton = await WaitForAsync(() => FindMenuButton(page), "トリガーの選択ボタン");
-		await ChooseMenuItemAsync(triggerButton, WorkflowService.AllTriggers.Select(t => t.DisplayName), TriggerName);
+		await ChooseTriggerAsync(page, TriggerName);
 		await WaitForTextAsync(page, "アプリケーション起動完了時に一度だけトリガーされます。");
 
 		UiTestDriver.Step("アクションを追加して選ぶ");
 		var actions = await WaitForControlAsync<MultipleActionControl>(page);
-		await ClickByTipAsync(actions, "アクションを追加");
-		var actionButton = await WaitForAsync(() => FindMenuButton(actions), "アクションの選択ボタン");
-		await ChooseMenuItemAsync(actionButton, WorkflowService.AllActions.Select(a => a.DisplayName), ActionName);
+		await AddActionAsync(actions, ActionName);
 		var logOutput = await WaitForControlAsync<LogOutputActionControl>(actions);
 
 		UiTestDriver.Step("テンプレートを編集する");
@@ -82,7 +70,7 @@ internal static class WorkflowScenario
 		UiTestDriver.Step("編集を破棄して保存した状態を読み戻す");
 		(await WaitForControlAsync<TextBox>(page)).Text = "保存していない名前";
 		await WaitForTextAsync(page, "保存していない名前");
-		await ClickByTipAsync(page, "保存した状態を復元する(ファイルの状態を読み戻す)");
+		await ClickByTipAsync(page, RestoreTip);
 		await WaitForTextAsync(page, WorkflowName);
 		await WaitForTextAsync(page, TriggerName);
 		await WaitForTextAsync(page, ActionName);
@@ -91,7 +79,7 @@ internal static class WorkflowScenario
 
 		UiTestDriver.Step("確認ダイアログに答えて削除する");
 		await ClickByTipAsync(page, "削除する");
-		await ConfirmDialogAsync(window);
+		await ConfirmDialogAsync(settings.Window);
 		await WaitForTextAsync(page, EmptyMessage);
 
 		UiTestDriver.Step("削除した状態を保存する");
@@ -99,14 +87,7 @@ internal static class WorkflowScenario
 		saved = await File.ReadAllTextAsync(workflowsFile);
 		if (saved.Contains(SavedActionType))
 			throw new InvalidOperationException($"削除したワークフローが保存されています: {saved}");
-
-		UiTestDriver.Step("設定ウィンドウを閉じる");
-		window.Close();
-		await WaitUntilAsync(() => subWindows.SettingWindow == null, "設定ウィンドウが閉じる");
 	}
-
-	private static Button? FindMenuButton(Visual root)
-		=> root.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.IsEffectivelyVisible && b.Flyout is MenuFlyout);
 
 	private static string? ShownTemplate(LogOutputActionControl control)
 		=> control.GetVisualDescendants().OfType<TextBox>().FirstOrDefault()?.Text;

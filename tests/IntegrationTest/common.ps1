@@ -11,6 +11,33 @@ function Initialize-ProfileDir([string]$WorkDir, [string]$ProfileTemplate) {
 	return (Resolve-Path $profileDir).Path
 }
 
+# 静的ファイルを配信するモックサーバーを起動し、応答できるようになるのを待ってプロセスを返す
+function Start-MockServer([string]$ServeDir, [int]$Port, [string]$LogDir, [string]$ReadyPath) {
+	$python = Get-Command python3 -ErrorAction SilentlyContinue
+	if (-not $python) {
+		$python = Get-Command python -ErrorAction Stop
+	}
+	$server = Start-Process -FilePath $python.Source `
+		-ArgumentList @('-m', 'http.server', "$Port", '--bind', '127.0.0.1') `
+		-WorkingDirectory $ServeDir -PassThru `
+		-RedirectStandardOutput (Join-Path $LogDir 'http-server.log') `
+		-RedirectStandardError (Join-Path $LogDir 'http-server.err.log')
+
+	for ($i = 0; $i -lt 20; $i++) {
+		try {
+			Invoke-WebRequest "http://127.0.0.1:$Port/$ReadyPath" | Out-Null
+			return $server
+		}
+		catch {
+			Start-Sleep -Milliseconds 500
+		}
+	}
+	if (-not $server.HasExited) {
+		$server.Kill($true)
+	}
+	throw 'モックサーバーが起動しませんでした'
+}
+
 # センチネルファイルが作成されるのを待って内容を返す
 function Wait-Sentinel([string]$Path, [int]$TimeoutSec) {
 	$deadline = [DateTime]::UtcNow.AddSeconds($TimeoutSec)
@@ -28,9 +55,9 @@ function Wait-Sentinel([string]$Path, [int]$TimeoutSec) {
 # アプリのログの出力先を返す
 function Get-AppLogDirs([string]$ProfileDir) {
 	$logDirs = @(Join-Path $ProfileDir 'Logs')
-	# macOSは設定に関わらず標準のログディレクトリへ出力する
+	# macOSは設定に関わらず標準のログディレクトリへ出力する。結合テストの実行中はプロファイル内の専用ディレクトリになる
 	if ($IsMacOS) {
-		$logDirs += Join-Path $HOME 'Library/Logs/KyoshinEewViewer'
+		$logDirs += Join-Path $ProfileDir 'appdata/Logs'
 	}
 	return $logDirs
 }

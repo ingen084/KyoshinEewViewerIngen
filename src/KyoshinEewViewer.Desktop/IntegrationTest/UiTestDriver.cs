@@ -22,7 +22,6 @@ namespace KyoshinEewViewer.Desktop.IntegrationTest;
 internal static class UiTestDriver
 {
 	private const string ResultFileName = "kevi-ui-test-result.txt";
-	private const string WorkflowsFileName = "workflows.json";
 
 	private static readonly string ResultPath = Path.GetFullPath(ResultFileName);
 	private static readonly Lock ResultLock = new();
@@ -50,13 +49,26 @@ internal static class UiTestDriver
 		var passed = false;
 		try
 		{
-			// プロファイルにファイルがないと、ユーザーの設定ディレクトリのワークフローを読み書きしてしまう
-			if (!File.Exists(WorkflowsFileName))
-				throw new InvalidOperationException($"プロファイルに {WorkflowsFileName} がないため実行できません: {Environment.CurrentDirectory}");
-
 			await Task.WhenAny(IntegrationTestSentinel.StartupWorkflowsCompleted.Task, Task.Delay(TimeSpan.FromSeconds(30)));
 
-			await WorkflowScenario.RunAsync(desktop, WorkflowsFileName);
+			var settings = await SettingWindowSession.OpenAsync();
+			if (StartupOptions.Current?.UiTestAfterRestart == true)
+			{
+				await WorkflowCatalogScenario.VerifyAfterRestartAsync(settings);
+				await ThemeScenario.VerifyAfterRestartAsync(desktop, settings);
+			}
+			else
+			{
+				await WorkflowScenario.RunAsync(desktop, settings);
+				await TemplateEditorScenario.RunAsync(desktop, settings);
+				await WorkflowCatalogScenario.RunAsync(settings);
+				await SettingPagesScenario.RunAsync(settings);
+				await VoicevoxScenario.RunAsync(settings);
+				await ThemeScenario.RunAsync(desktop, settings);
+				await EarthquakeScenario.RunAsync(desktop);
+				await QzssScenario.RunAsync(desktop, settings);
+			}
+			await settings.CloseAsync();
 
 			var bindingErrors = _bindingErrors?.Errors ?? [];
 			if (bindingErrors.Length > 0)

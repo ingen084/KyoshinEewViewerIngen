@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using Scriban;
@@ -32,4 +33,20 @@ public partial class PlaySoundAction : WorkflowAction
 	public void Play()
 		=> ServiceLocator.Current.RequireService<SoundPlayerService>()
 			.PlayAsync(FilePath, Volume, false).ConfigureAwait(false);
+
+	public async Task OpenSoundFile()
+	{
+		if (KyoshinEewViewerApp.TopLevelControl == null)
+			return;
+		var files = await KyoshinEewViewerApp.TopLevelControl.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
+		{
+			Title = "音声ファイルを開く",
+			FileTypeFilter = [FilePickerFileTypes.All],
+			AllowMultiple = false,
+		});
+		if (files is not { Count: > 0 } || files[0].TryGetLocalPath() is not { } localPath)
+			return;
+
+		FilePath = localPath;
+	}
 }

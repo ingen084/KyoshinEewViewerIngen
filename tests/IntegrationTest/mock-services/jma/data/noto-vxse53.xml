@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Report xmlns="http://xml.kishou.go.jp/jmaxml1/" xmlns:jmx="http://xml.kishou.go.jp/jmaxml1/">
+  <Control>
+    <Title>震源・震度に関する情報</Title>
+    <DateTime>2026-01-01T03:05:00Z</DateTime>
+    <Status>通常</Status>
+    <EditorialOffice>結合テスト</EditorialOffice>
+    <PublishingOffice>結合テスト</PublishingOffice>
+  </Control>
+  <Head xmlns="http://xml.kishou.go.jp/jmaxml1/informationBasis1/">
+    <Title>震源・震度情報</Title>
+    <ReportDateTime>2026-01-01T12:05:00+09:00</ReportDateTime>
+    <TargetDateTime>2026-01-01T12:05:00+09:00</TargetDateTime>
+    <EventID>20260101120000</EventID>
+    <InfoType>発表</InfoType>
+    <Serial>1</Serial>
+    <InfoKind>地震情報</InfoKind>
+    <InfoKindVersion>1.0_1</InfoKindVersion>
+    <Headline>
+      <Text>結合テスト用の電文です。</Text>
+    </Headline>
+  </Head>
+  <Body xmlns="http://xml.kishou.go.jp/jmaxml1/body/seismology1/" xmlns:jmx_eb="http://xml.kishou.go.jp/jmaxml1/elementBasis1/">
+    <Earthquake>
+      <OriginTime>2026-01-01T12:00:00+09:00</OriginTime>
+      <ArrivalTime>2026-01-01T12:00:00+09:00</ArrivalTime>
+      <Hypocenter>
+        <Area>
+          <Name>石川県能登地方</Name>
+          <Code type="震央地名">390</Code>
+          <jmx_eb:Coordinate description="北緯３７．５度　東経１３７．３度　深さ　１０ｋｍ" datum="日本測地系">+37.5+137.3-10000/</jmx_eb:Coordinate>
+        </Area>
+      </Hypocenter>
+      <jmx_eb:Magnitude type="Mj" condition="" description="Ｍ５．１">5.1</jmx_eb:Magnitude>
+    </Earthquake>
+    <Intensity>
+      <Observation>
+        <MaxInt>4</MaxInt>
+        <Pref>
+          <Name>石川県</Name>
+          <Code>17</Code>
+          <MaxInt>4</MaxInt>
+          <Area>
+            <Name>石川県能登</Name>
+            <Code>390</Code>
+            <MaxInt>4</MaxInt>
+            <City>
+              <Name>輪島市</Name>
+              <Code>1720400</Code>
+              <MaxInt>4</MaxInt>
+              <IntensityStation>
+                <Name>結合テスト観測点＊</Name>
+                <Code>1720420</Code>
+                <Int>4</Int>
+              </IntensityStation>
+            </City>
+          </Area>
+        </Pref>
+      </Observation>
+    </Intensity>
+    <Comments>
+      <ForecastComment codeType="固定付加文">
+        <Text>この地震による津波の心配はありません。</Text>
+        <Code>0215</Code>
+      </ForecastComment>
+    </Comments>
+  </Body>
+</Report>

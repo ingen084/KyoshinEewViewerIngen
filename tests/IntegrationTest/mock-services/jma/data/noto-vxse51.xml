@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Report xmlns="http://xml.kishou.go.jp/jmaxml1/" xmlns:jmx="http://xml.kishou.go.jp/jmaxml1/">
+  <Control>
+    <Title>震度速報</Title>
+    <DateTime>2026-01-01T03:02:00Z</DateTime>
+    <Status>通常</Status>
+    <EditorialOffice>結合テスト</EditorialOffice>
+    <PublishingOffice>結合テスト</PublishingOffice>
+  </Control>
+  <Head xmlns="http://xml.kishou.go.jp/jmaxml1/informationBasis1/">
+    <Title>震度速報</Title>
+    <ReportDateTime>2026-01-01T12:02:00+09:00</ReportDateTime>
+    <TargetDateTime>2026-01-01T12:00:00+09:00</TargetDateTime>
+    <EventID>20260101120000</EventID>
+    <InfoType>発表</InfoType>
+    <Serial />
+    <InfoKind>震度速報</InfoKind>
+    <InfoKindVersion>1.0_1</InfoKindVersion>
+    <Headline>
+      <Text>結合テスト用の電文です。</Text>
+    </Headline>
+  </Head>
+  <Body xmlns="http://xml.kishou.go.jp/jmaxml1/body/seismology1/">
+    <Intensity>
+      <Observation>
+        <MaxInt>4</MaxInt>
+        <Pref>
+          <Name>石川県</Name>
+          <Code>17</Code>
+          <MaxInt>4</MaxInt>
+          <Area>
+            <Name>石川県能登</Name>
+            <Code>390</Code>
+            <MaxInt>4</MaxInt>
+          </Area>
+        </Pref>
+      </Observation>
+    </Intensity>
+  </Body>
+</Report>

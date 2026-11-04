@@ -41,6 +41,12 @@ public class StartupOptions
 	public bool UiTest { get; set; }
 
 	/// <summary>
+	/// 結合テストビルド専用: <see cref="UiTest"/> と併用し、前回の実行で保存した内容が残っていることを確認するシナリオを実行する
+	/// </summary>
+	[Option("ui-test-after-restart", Required = false)]
+	public bool UiTestAfterRestart { get; set; }
+
+	/// <summary>
 	/// 既存のインスタンスに影響しないように、多重起動の検知とIPCサーバーを無効にする
 	/// </summary>
 	public bool IsIntegrationTestRun => SmokeTest || AutoUpdateTest || UiTest;

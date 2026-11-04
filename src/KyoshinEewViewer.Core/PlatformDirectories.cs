@@ -31,6 +31,12 @@ public static class PlatformDirectories
 	{
 		get
 		{
+#if INTEGRATION_TEST
+			// 結合テストの実行中はユーザーの設定を読み書きしないように、プロファイル内の専用ディレクトリを使う
+			if (StartupOptions.Current?.IsIntegrationTestRun == true)
+				return Path.Combine(Environment.CurrentDirectory, "appdata");
+#endif
+
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
 			{
 				return Path.Combine(
@@ -67,6 +73,11 @@ public static class PlatformDirectories
 	{
 		get
 		{
+#if INTEGRATION_TEST
+			if (StartupOptions.Current?.IsIntegrationTestRun == true)
+				return Path.Combine(ApplicationData, "Logs");
+#endif
+
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
 			{
 				return Path.Combine(

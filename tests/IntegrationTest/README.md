@@ -12,16 +12,21 @@
 - **結合テストビルド**: `dotnet publish -p:IntegrationTestBuild=true` で `INTEGRATION_TEST` 定数が定義され、
   以下のテストフックが有効になる。リリースビルドにはこれらのコードは一切含まれない。
   - 環境変数 `KEVI_UPDATE_API_URL` による更新チェックエンドポイントの差し替え(統計用リクエストも抑止)
+  - 環境変数 `KEVI_JMA_FEED_BASE_URL` による防災情報 XML フィードの取得先の差し替え
   - `--auto-update-test`: 更新検出時に自動で自己更新を開始する起動引数
   - `--smoke-test`: メインウィンドウ表示後にセンチネルファイルを書き出し、起動時ワークフローの完了を待って自動終了する起動引数
   - `--ui-test`: メインウィンドウ表示後に画面操作のシナリオを実行し、結果を書き出して自動終了する起動引数
+  - `--ui-test-after-restart`: `--ui-test` と併用し、前回の実行で保存した内容が残っていることを確認する起動引数
   - テストモード時は多重起動チェックとIPCサーバー起動をスキップ
+  - テストモード時は `PlatformDirectories.ApplicationData` がプロファイル内の `appdata` に切り替わり、Toast 用のレジストリ登録も行わない。
+    ユーザーの設定や動作中の本番インスタンスの通知に影響しない
 - **センチネルファイル**: 実行ファイルと同じディレクトリの `kevi-startup-sentinel.json`。
   本体(スモークテスト時)とダミー新バージョンが書き出し、テストドライバがポーリングして完了を検出する。
 - **ダミー新バージョン** (`UpdateDummy/`): アップデート適用先となる小さなコンソールアプリ。
   起動するとセンチネルを書いて終了する。「新バージョンが実際に正常起動するか」はスモークテスト側が担保する。
-- **モックサーバー**: GitHub Releases API形式の `releases.json` とアセットzipを `python -m http.server` で配信する。
-  本番のGitHub Releases APIには接続しない。
+- **モックサーバー**: `python -m http.server` で静的ファイルを配信する。アップデートテストは GitHub Releases API形式の
+  `releases.json` とアセットzipを、UIテストは `mock-services/` の VOICEVOX の話者一覧と防災情報 XML のフィードと電文を配信する。
+  本番のサービスには接続しない。
 - **プロファイル** (`profiles/`): 外部サーバーへのアクセスを全て抑止したテスト用config。
   `-c` オプションでプロファイルディレクトリを指定して起動する。
 - **テンプレートの確認** (`profiles/workflows-smoke.json`): トリミングはテストプロジェクトでは起きないので、
@@ -30,10 +35,25 @@
 - **UIテスト** (`src/KyoshinEewViewer.Desktop/IntegrationTest/`): トリミングされた Avalonia の上では `Avalonia.Headless` のテストを実行できないので、
   結合テストビルドのアプリの中にドライバを組み込んで画面を操作する。結果はプロファイルディレクトリの `kevi-ui-test-result.txt` に書き出され、
   最終行が `RESULT: PASSED` でなければ失敗になる。バインディングエラーが1件でも記録された場合も失敗にする。
+  同じプロファイルで2回起動し、2回目は保存したワークフローとテーマが残っていることを確認する。
+  `run-ui-test.ps1` は環境変数で一時ディレクトリも作業ディレクトリ内に切り替える (電文や音声のキャッシュをユーザーのアプリと共有しない)。
   - ドライバから静的に参照したメンバーはトリミングされなくなるので、確認は表示されたテキストと保存されたファイルで行う。
     名前で読まれるメンバー (`ReflectionBinding` の対象など) をドライバから参照すると、消失を検出できなくなる。
-  - `workflows.json` がカレントディレクトリにないと、アプリはユーザーの設定ディレクトリのワークフローを読み書きする。
-    保存操作を含むので、`run-ui-test.ps1` が先にファイルを作り、ドライバもファイルがなければ実行しない。
+    期待値を名前の表から読まず、シナリオに文字列で書くのもこのため。
+  - トリガーかアクションのどちらかを必ず「何もしない」にして、ファイルの実行や通信が動かないようにする。
+  - ネイティブのファイル選択画面はプロセス内から操作できないので、過去 XML の読み込みとファイル選択そのものは確認していない。
+    地震情報の解析と表示はモックサーバーのフィードから確認する。
+
+  | シナリオ | 確認すること |
+  |---|---|
+  | `WorkflowScenario` | ワークフローの作成、テスト実行、保存、読み戻し、削除 |
+  | `TemplateEditorScenario` | テンプレートエディタの補完と構文エラーの警告 |
+  | `WorkflowCatalogScenario` | すべてのトリガーとアクションの選択と表示、選択欄の値の保存と読み戻し |
+  | `SettingPagesScenario` | 設定画面のすべてのページの表示、強震モニタと緊急地震速報と災危通報の選択欄 |
+  | `VoicevoxScenario` | 話者一覧の取得とメニューの表示 |
+  | `ThemeScenario` | 外部テーマの読み込みと選択、テーマ編集画面の編集、破棄、保存 |
+  | `EarthquakeScenario` | フィードの受信と電文の解析、地震情報の画面の表示、一覧からの選択 |
+  | `QzssScenario` | デバッグメニューからの電文の入力と受信履歴の表示 |
 
 ## ローカルでの実行方法 (Windowsの例)
 
@@ -61,10 +81,10 @@ pwsh tests/IntegrationTest/run-smoke-test.ps1 `
     -ProfileTemplate tests/IntegrationTest/profiles/profile-smoke.json `
     -ExpectedVersion 0.0.1
 
-# 4. UIテスト
+# 4. UIテスト (pythonが必要)
 pwsh tests/IntegrationTest/run-ui-test.ps1 `
     -AppExePath tmp/local-int/dist/KyoshinEewViewer.exe `
-    -ProfileTemplate tests/IntegrationTest/profiles/profile-smoke.json
+    -ProfileTemplate tests/IntegrationTest/profiles/profile-ui.json
 
 # 5. アップデートテスト (pythonが必要)
 pwsh tests/IntegrationTest/run-update-test.ps1 `
