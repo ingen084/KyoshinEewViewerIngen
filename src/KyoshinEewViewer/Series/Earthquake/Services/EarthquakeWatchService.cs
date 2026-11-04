@@ -16,6 +16,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Subjects;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -35,6 +36,10 @@ public class EarthquakeWatchService : ObservableObject
 	private readonly Subject<Unit> _failedSubject = new();
 	private readonly Subject<Unit> _sourceSwitchingSubject = new();
 	private readonly Subject<string> _sourceSwitchedSubject = new();
+	/// <summary>
+	/// 地震情報の一覧を更新する処理を直列化する
+	/// </summary>
+	private readonly SemaphoreSlim _processingLock = new(1, 1);
 
 	/// <summary>
 	/// 地震情報が更新された際に通知される
@@ -82,39 +87,42 @@ public class EarthquakeWatchService : ObservableObject
 						Logger.LogError(ex, "地震観測点情報取得中に問題が発生しました");
 					}
 
-				Earthquakes.Clear();
-				foreach (var h in t.OrderBy(h => h.ArrivalTime).ToArray())
+				await RunExclusiveAsync(async () =>
 				{
-					try
+					Earthquakes.Clear();
+					foreach (var h in t.OrderBy(h => h.ArrivalTime).ToArray())
 					{
-						await ProcessInformation(h, hideNotice: true);
-					}
-					catch (Exception ex)
-					{
-						Logger.LogError(ex, "キャッシュ破損疑いのため削除します");
 						try
 						{
-							// キャッシュ破損時用
-							h.Cleanup();
 							await ProcessInformation(h, hideNotice: true);
 						}
-						catch (Exception ex2)
+						catch (Exception ex)
 						{
-							// その他のエラー発生時は処理を中断させる
-							Logger.LogError(ex2, "初回電文取得中に問題が発生しました");
+							Logger.LogError(ex, "キャッシュ破損疑いのため削除します");
+							try
+							{
+								// キャッシュ破損時用
+								h.Cleanup();
+								await ProcessInformation(h, hideNotice: true);
+							}
+							catch (Exception ex2)
+							{
+								// その他のエラー発生時は処理を中断させる
+								Logger.LogError(ex2, "初回電文取得中に問題が発生しました");
+							}
+							return;
 						}
-						return;
 					}
-				}
-				// 電文データがない(震源情報しかないなどの)データを削除する
-				foreach (var eq in Earthquakes.Where(e => e.Fragments.All(f => f is not IntensityInformationFragment and not HypocenterAndIntensityInformationFragment)).ToArray())
-					Earthquakes.Remove(eq);
+					// 電文データがない(震源情報しかないなどの)データを削除する
+					foreach (var eq in Earthquakes.Where(e => e.Fragments.All(f => f is not IntensityInformationFragment and not HypocenterAndIntensityInformationFragment)).ToArray())
+						Earthquakes.Remove(eq);
 
-				foreach (var eq in Earthquakes)
-					_earthquakeUpdatedSubject.OnNext(new EarthquakeUpdate(eq, IsBulkInserting: true, IsDryRun: false, Fragment: null, PreviousMaxIntensity: null));
-				_sourceSwitchedSubject.OnNext(s);
+					foreach (var eq in Earthquakes)
+						_earthquakeUpdatedSubject.OnNext(new EarthquakeUpdate(eq, IsBulkInserting: true, IsDryRun: false, Fragment: null, PreviousMaxIntensity: null));
+					_sourceSwitchedSubject.OnNext(s);
+				});
 			},
-			async t =>
+			t => RunExclusiveAsync(async () =>
 			{
 				var trans = SentrySdk.StartTransaction("earthquake", "arrived");
 				try
@@ -126,7 +134,7 @@ public class EarthquakeWatchService : ObservableObject
 				{
 					trans.Finish(ex);
 				}
-			},
+			}),
 			s =>
 			{
 				if (s.isAllFailed)
@@ -143,19 +151,37 @@ public class EarthquakeWatchService : ObservableObject
 				// 問題が発生したらなんとかする
 				return Task.CompletedTask;
 			},
-			async t =>
+			t =>
 			{
-				try
+				// 購読者は順番に呼ばれるので、ここで処理を待つと津波情報の表示まで遅れる
+				_ = RunExclusiveAsync(async () =>
 				{
-					await ProcessTsunamiInformation(t);
-				}
-				catch (Exception ex)
-				{
-					Logger.LogError(ex, "津波情報による震源情報の更新に失敗しました。");
-				}
+					try
+					{
+						await ProcessTsunamiInformation(t);
+					}
+					catch (Exception ex)
+					{
+						Logger.LogError(ex, "津波情報による震源情報の更新に失敗しました。");
+					}
+				});
+				return Task.CompletedTask;
 			},
 			_ => { }
 		);
+	}
+
+	private async Task RunExclusiveAsync(Func<Task> action)
+	{
+		await _processingLock.WaitAsync();
+		try
+		{
+			await action();
+		}
+		finally
+		{
+			_processingLock.Release();
+		}
 	}
 
 	public async Task ProcessTsunamiInformation(Telegram telegram, bool hideNotice = false)
