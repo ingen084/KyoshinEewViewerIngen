@@ -36,3 +36,11 @@ Desktopエントリでの実publishはGUI起動が絡み、多重起動防止(`F
 - `WorkflowSerializeOption` のControl除外modifier
 
 なお `PublishSingleFile` 自体は無関係（パス解決は `Environment.GetFolderPath` ベースで `Assembly.Location` に依存しないため）。
+
+### テンプレートが名前で読むものの扱い
+
+ワークフローのテンプレート (Scriban) は実行時に名前で解決するので、トリミングの影響をテストプロジェクトでは検出できない。
+
+- **Scriban の組み込み関数**: 消えると実行時エラーになる。`TrimmerRootAssembly` で丸ごと残している
+- **.NET 標準型のメンバー**: 消えても**エラーにならず空文字になる**。`src/KyoshinEewViewer.Desktop/TrimmerRoots.xml` で型ごと残している。テンプレートへ渡す標準型を増やしたら、ここにも追加する
+- **結合テスト**: `tests/IntegrationTest/profiles/workflows-smoke.json` を実バイナリで実行して確認している

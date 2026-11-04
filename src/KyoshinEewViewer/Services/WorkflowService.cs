@@ -91,6 +91,10 @@ public class WorkflowService
 		});
 
 		// ユーザーワークフローとシステムワークフローを並行実行
-		Task.WhenAll(userWorkflowTasks.Concat(systemWorkflowTasks).ToArray()).ConfigureAwait(false);
+		var completed = Task.WhenAll(userWorkflowTasks.Concat(systemWorkflowTasks).ToArray());
+#if INTEGRATION_TEST
+		if (e is Workflows.BuiltinTriggers.ApplicationStartupEvent)
+			completed.ContinueWith(_ => IntegrationTestSentinel.StartupWorkflowsCompleted.TrySetResult(), TaskScheduler.Default);
+#endif
 	}
 }

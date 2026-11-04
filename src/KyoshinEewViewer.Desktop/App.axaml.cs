@@ -254,6 +254,8 @@ public class App : Application
 								IntegrationTestSentinel.Write("main-window-opened");
 								_ = Task.Run(async () =>
 								{
+									// テストドライバが起動時ワークフローの結果をログで確認するので、完了してから終了する
+									await Task.WhenAny(IntegrationTestSentinel.StartupWorkflowsCompleted.Task, Task.Delay(TimeSpan.FromSeconds(30)));
 									await Task.Delay(3000);
 									await Dispatcher.UIThread.InvokeAsync(() => desktop.Shutdown());
 								});
