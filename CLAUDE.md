@@ -148,6 +148,7 @@ bool プロパティに応じたスタイル切り替えには、コンバータ
 - R3 / System.Reactive によるリアクティブストリーム
 - データ更新はスレッドセーフに行う
 - `TelegramProvideService` は同じカテゴリの購読者を順番に `await` する。ハンドラで長く待つと後続の購読者への配信が遅れるので、待つ必要のない処理は完了を待たずに返す
+- **複数のストリームから同じ UI 状態を更新する場合**は、ストリームごとに `ObserveOn` で購読せず、`Observable.Merge` などで1本にまとめてから `ObserveOn` する。System.Reactive の `ObserveOn` は1回のディスパッチで1件しか処理せず、続きを改めてディスパッチャーへ投入するため、別々の購読の間では発行した順に処理されない (例: 先に発行した「取得中」の通知が、後から発行した「取得完了」の通知より後に処理され、表示が「取得中」のまま残る)。実装例は `EarthquakeSeries`
 - **地図レイヤー描画**: CPU側でビットマップに事前ラスタライズしてキャッシュするのではなく、シェーダー (`SKRuntimeEffect`/SKSL) で毎フレーム、メッシュデータから直接画面出力へ変換する方式を優先する。テクスチャとして GPU にデータを渡す場合は「画像キャッシュ」ではなくデータ格納形式として扱う。ズームに応じた LOD (一次メッシュ粒度の切り替えなど) も選択肢に入れる
 
 ### 命名規則
@@ -286,6 +287,13 @@ xUnit を使用。`tests/` ディレクトリに存在するプロジェクト�
 結合テストの実行中 (`StartupOptions.IsIntegrationTestRun`) は、`PlatformDirectories.ApplicationData` がプロファイル内の `appdata` に切り替わり、Toast 用のレジストリ登録も行わない。AppData やレジストリなど、ユーザーごとに1つしかない場所へ書き込む処理を追加するときは、この隔離に入るようにする。
 
 `-c` だけの通常のテスト起動には適用されない。ワークフローとテーマの保存は AppData へ書かれる (`workflows.json` がカレントディレクトリにあれば、ワークフローはそちらへ書かれる)。終了時には Toast のレジストリ登録を削除するので、同じマシンで動いている本番インスタンスの登録まで消える。
+
+### UIテスト
+
+`tests/KyoshinEewViewer.UiTests` は、Avalonia Headless で実際の画面を操作する、外部通信を禁止したテスト。実行方法・書き方・失敗の調べ方は `kevi-ui-tests` スキル (`.claude/skills/kevi-ui-tests/SKILL.md`) を参照する。
+
+- Avalonia Headless は既定でテストごとに Dispatcher を作り直す。static なフィールドに `Dispatcher.UIThread` や、それを捕捉した `SynchronizationContext`・スケジューラーを保持すると、2件目以降のテストでは終了した Dispatcher へ処理が送られて実行されない。処理を送る時点の `Dispatcher.UIThread` を参照する (`UiScheduler` 参照)
+- 数秒〜数分後に動くタイマーを持つクラスは、`TimeProvider` をコンストラクターで受け取れるようにする (本番は `TimeProvider.System`)。テストでは `ManualTimeProvider` で時刻を進め、実時間では待たない
 
 ### テストデータのURL規則
 
