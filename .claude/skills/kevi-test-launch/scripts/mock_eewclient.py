@@ -24,6 +24,7 @@ def eew(serial: int, now: datetime, with_hypo: bool, s_wave_ok: bool, canceled: 
         "author": "気象庁本庁",
         "pressTime": iso(now),
         "processTime": iso(now),
+        "isTest": False,
         "isCanceled": canceled,
         "isLastInfo": last,
         "isPlumOnly": not with_hypo,
@@ -53,7 +54,7 @@ async def handler(ws):
     print("client connected", flush=True)
     await ws.send(json.dumps({"type": "start", "version": "1.4.0"}, ensure_ascii=False))
     # 予想地点の座標 [経度, 緯度] (未設定は None、共有しない場合は False)
-    await ws.send(json.dumps({"type": "user-point", "location": [136.9066, 35.1815]}))
+    await ws.send(json.dumps({"type": "user-point", "location": [135.1111, 35.1111]}))
     # 受信不可の状態を経由してから受信可能にする
     await ws.send(json.dumps({"type": "server-status", "status": "no-auth"}))
     await asyncio.sleep(3)
@@ -63,6 +64,9 @@ async def handler(ws):
     await asyncio.sleep(3)
 
     now = datetime.now(JST)
+    # 訓練データは KEVi 側で処理されない
+    await ws.send(json.dumps({**eew(1, now, with_hypo=True, s_wave_ok=True), "eventId": "20260914012900", "isTest": True}, ensure_ascii=False))
+    await asyncio.sleep(2)
     # 1報目: PLUM のみ、地点予測なし
     await ws.send(json.dumps(eew(1, now, with_hypo=False, s_wave_ok=False), ensure_ascii=False))
     await asyncio.sleep(2)

@@ -38,8 +38,10 @@ public class DmdataEewClientMessage
 	/// 発表官署
 	/// </summary>
 	public string? Author { get; set; }
-	public DateTimeOffset? PressTime { get; set; }
-	public DateTimeOffset? ProcessTime { get; set; }
+	/// <summary>
+	/// 訓練データによるものか
+	/// </summary>
+	public bool IsTest { get; set; }
 	public bool IsCanceled { get; set; }
 	public bool IsLastInfo { get; set; }
 	public bool IsPlumOnly { get; set; }
@@ -61,7 +63,6 @@ public class DmdataEewClientMessage
 	public DmdataEewClientAccuracy? Accuracy { get; set; }
 
 	public DmdataEewClientIntensityRange? MaxInt { get; set; }
-	public DmdataEewClientIntensityRange? MaxLgInt { get; set; }
 
 	/// <summary>
 	/// 細分区域ごとの予測震度
@@ -86,7 +87,6 @@ public class DmdataEewClientAccuracy
 	public int[]? Epicenters { get; set; }
 	public int? Depth { get; set; }
 	public int? MagnitudeCalculation { get; set; }
-	public int? NumberOfMagnitudeCalculation { get; set; }
 }
 
 public class DmdataEewClientIntensityRange
@@ -114,7 +114,6 @@ public class DmdataEewClientRegion
 public class DmdataEewClientPointForecast
 {
 	public DmdataEewClientSWave? SWave { get; set; }
-	public DmdataEewClientLpgm? Lpgm { get; set; }
 	public DmdataEewClientPointIntensity? Intensity { get; set; }
 }
 
@@ -125,12 +124,6 @@ public class DmdataEewClientSWave
 	/// </summary>
 	public string? Status { get; set; }
 	public DateTimeOffset? Time { get; set; }
-}
-
-public class DmdataEewClientLpgm
-{
-	public double? MaxSva { get; set; }
-	public string? LgInt { get; set; }
 }
 
 public class DmdataEewClientPointIntensity

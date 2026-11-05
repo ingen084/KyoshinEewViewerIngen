@@ -58,7 +58,7 @@ public class DmdataEewClientMessageConverterTests
 			 "originTime":"2026-09-11T17:52:32+09:00","arrivalTime":"2026-09-11T17:52:34+09:00",
 			 "accuracy":{"epicenters":["3","9"],"depth":"3","magnitudeCalculation":"1","numberOfMagnitudeCalculation":"4"},
 			 "maxInt":{"from":"5+","to":"over"},"maxLgInt":{"from":"1","to":"1"},
-			 "regions":[{"code":"390","maxInt":"5-"},{"code":"200","maxInt":"1"},{"code":"999","maxInt":"不明"}],
+			 "regions":[{"code":"390","maxInt":"5-"},{"code":"200","maxInt":"1"},{"code":"998","maxInt":"不正な値"},{"code":"999","maxInt":"不明"}],
 			 "pointForecast":{"sWave":{"status":"ok","time":"2026-09-11T17:55:55.634+09:00"},"lpgm":{"maxSva":"0.04","lgInt":"0"},"intensity":{"type":"attenuation","k":"-2.04","int":"0"}}}
 			""");
 
@@ -180,6 +180,23 @@ public class DmdataEewClientMessageConverterTests
 		Assert.Null(eew.Hypocenter);
 
 		Assert.Null(DmdataEewClientMessageConverter.ToPointForecast(message, ReceiveTime, null));
+	}
+
+	[Fact(DisplayName = "使用しない項目に想定外の値が入っていても緊急地震速報を受信でき、解釈できない最大震度は不明になる")]
+	public void 使用しない項目に想定外の値が入っていても緊急地震速報を受信できる()
+	{
+		var message = Parse("""
+			{"type":"eew","eventId":"20240101160608","serial":"2","isTest":true,"isCanceled":false,
+			 "pressTime":"不明","processTime":"","arrivalTime":"2026-09-11T17:52:34+09:00",
+			 "accuracy":{"epicenters":["1","1"],"depth":"1","magnitudeCalculation":"1","numberOfMagnitudeCalculation":"不明"},
+			 "maxInt":{"from":"不正な値","to":"不正な値"},"maxLgInt":"不明",
+			 "pointForecast":{"lpgm":{"maxSva":"","lgInt":5},"intensity":{"type":"attenuation","k":"3.5","int":"4"}}}
+			""");
+
+		Assert.True(message.IsTest);
+		var eew = DmdataEewClientMessageConverter.ToEew(message, ReceiveTime);
+		Assert.Equal(JmaIntensity.Unknown, eew.MaxIntensity);
+		Assert.Equal(3.5, DmdataEewClientMessageConverter.ToPointForecast(message, ReceiveTime, null)?.RealtimeIntensity);
 	}
 
 	[Fact(DisplayName = "ドキュメント上の名称 (regionForecasts / to) でも細分区域の予測震度を読み取れる")]

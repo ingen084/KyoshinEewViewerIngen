@@ -77,6 +77,8 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 			DmdataEewClientNotReceiving = x == DmdataEewClientConnectionState.ConnectedNotReceiving;
 		});
 		DmdataEewClientReceiver.ObservePropertyChanged(x => x.StateDescription).Subscribe(x => DmdataEewClientStateDescription = x);
+		config.Eew.ObservePropertyChanged(x => x.PreferCalculatedIntensityForecast, pushCurrentValueOnSubscribe: false)
+			.Subscribe(_ => EewController.RefreshEewUpdated(TimerService.CurrentTime));
 
 		EewTelegramSubscriber.ObservePropertyChanged(x => x.Enabled).Subscribe(x => DmdataReceiving = x);
 		EewTelegramSubscriber.ObservePropertyChanged(x => x.WarningOnlyEnabled).Subscribe(x => DmdataWarningOnlyReceiving = x);

@@ -267,7 +267,7 @@ public class EewControllerTests
 			Assert.Equal(JmaIntensity.Int5Lower, merged.CalculatedIntensityForecastMap?[100]);
 			Assert.Equal("EEW Client", merged.CalculatedIntensityForecastSource);
 			// EEW Client には含まれない警報地域も予報電文から補われる
-			Assert.Equal(["予報電文地域"], merged.WarningAreas?.Names);
+			Assert.Equal(["予報電文地域"], merged.WarningAreas!.Names);
 
 			// 既定では気象庁の予想震度で塗りつぶす
 			Assert.False(merged.IsFillIntensityForecastCalculated);
@@ -292,6 +292,100 @@ public class EewControllerTests
 		var calculatedOnly = updatedEews.Last().Single();
 		Assert.Null(calculatedOnly.IntensityForecastMap);
 		Assert.True(calculatedOnly.IsFillIntensityForecastCalculated);
+	}
+
+	[Fact(DisplayName = "EEW Client の同じ報数の再配信で計算値が更新され、他の受信元から補った予想震度と警報地域は残る")]
+	public void EEWClientの同じ報数の再配信で計算値が更新される()
+	{
+		var controller = CreateController();
+		var updatedEews = new List<Eew[]>();
+		controller.EewUpdated += (_, eews) => updatedEews.Add(eews);
+		var baseTime = new DateTime(2026, 9, 24, 12, 0, 0);
+
+		var telegramEew = CreateEew(baseTime) with
+		{
+			Source = EewSource.Dmdata,
+			DisplaySource = "DM-D.S.S 予報電文",
+			IntensityForecastMap = new() { [100] = JmaIntensity.Int4 },
+			WarningAreas = new EewWarningAreas { DisplaySource = "DM-D.S.S 予報電文", SerialNo = 1, Codes = [100], Names = ["予報電文地域"] },
+		};
+		var eewClientEew = CreateEew(baseTime) with
+		{
+			Source = EewSource.DmdataEewClient,
+			DisplaySource = "EEW Client",
+			CalculatedIntensityForecastMap = new() { [100] = JmaIntensity.Int3 },
+			CalculatedIntensityForecastSource = "EEW Client",
+		};
+		var redelivered = eewClientEew with
+		{
+			CalculatedIntensityForecastMap = new() { [100] = JmaIntensity.Int5Lower },
+			ReceiveTime = baseTime.AddSeconds(2),
+		};
+
+		foreach (var (first, second) in new[] { (telegramEew, eewClientEew), (eewClientEew, telegramEew) })
+		{
+			controller.Clear();
+			controller.Update(first, baseTime);
+			controller.Update(second, baseTime.AddSeconds(1));
+			controller.Update(redelivered, baseTime.AddSeconds(2));
+
+			var merged = updatedEews.Last().Single();
+			Assert.Equal(first.Source, merged.Source);
+			Assert.Equal(JmaIntensity.Int5Lower, merged.CalculatedIntensityForecastMap?[100]);
+			Assert.Equal(JmaIntensity.Int4, merged.IntensityForecastMap?[100]);
+			Assert.Equal(["予報電文地域"], merged.WarningAreas!.Names);
+		}
+	}
+
+	[Fact(DisplayName = "SNP の警報地域は EEW Client と同じ報数で統合しても受信順によらず失われない")]
+	public void SNPの警報地域はEEWClientと統合しても失われない()
+	{
+		var controller = CreateController();
+		var updatedEews = new List<Eew[]>();
+		controller.EewUpdated += (_, eews) => updatedEews.Add(eews);
+		var baseTime = new DateTime(2026, 9, 24, 12, 0, 0);
+
+		var snpEew = CreateEew(baseTime) with
+		{
+			Source = EewSource.SignalNowProfessional,
+			DisplaySource = "SignalNowProfessional",
+			WarningAreas = new EewWarningAreas { DisplaySource = "SNP", SerialNo = 1, Codes = [100], Names = ["SNP地域"] },
+		};
+		var eewClientEew = CreateEew(baseTime.AddSeconds(1)) with
+		{
+			Source = EewSource.DmdataEewClient,
+			DisplaySource = "EEW Client",
+		};
+
+		foreach (var (first, second) in new[] { (snpEew, eewClientEew), (eewClientEew, snpEew) })
+		{
+			controller.Clear();
+			controller.Update(first, baseTime);
+			controller.Update(second, baseTime.AddSeconds(1));
+
+			var merged = updatedEews.Last().Single();
+			Assert.Equal(EewSource.DmdataEewClient, merged.Source);
+			Assert.Equal(["SNP地域"], merged.WarningAreas!.Names);
+		}
+	}
+
+	[Fact(DisplayName = "計算値が空の場合は計算値として扱わず、気象庁の予想震度で塗りつぶす")]
+	public void 計算値が空の場合は計算値として扱わない()
+	{
+		var jmaForecast = new Dictionary<int, JmaIntensity> { [100] = JmaIntensity.Int4 };
+		var eew = CreateEew(new DateTime(2026, 9, 24, 12, 0, 0)) with
+		{
+			CalculatedIntensityForecastMap = [],
+			CalculatedIntensityForecastSource = "EEW Client",
+			PreferCalculatedIntensityForecast = true,
+		};
+
+		Assert.False(eew.IsFillIntensityForecastCalculated);
+		Assert.Null(eew.FillIntensityForecastMap);
+
+		var withJmaForecast = eew with { IntensityForecastMap = jmaForecast };
+		Assert.False(withJmaForecast.IsFillIntensityForecastCalculated);
+		Assert.Same(jmaForecast, withJmaForecast.FillIntensityForecastMap);
 	}
 
 	[Fact(DisplayName = "EEWの期限切れ処理でも警報のみのEEWは通知に含まれる")]

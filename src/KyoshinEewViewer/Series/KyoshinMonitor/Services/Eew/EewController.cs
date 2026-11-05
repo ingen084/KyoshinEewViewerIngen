@@ -345,12 +345,26 @@ public class EewController : IEewController
 				=> (EewUpdateReason.MorePriority, MergeCancellation(current, received, received)),
 
 			// EEW Client は dmdata の情報を中継したものなので dmdata と同等に扱い、強震モニタ･SNP･AXIS より優先させる
+			// EEW Client には警報地域が含まれないため、SNP から受け取っていた分を引き継ぐ
 			(EewSource.KyoshinMonitor, EewSource.DmdataEewClient) or (EewSource.SignalNowProfessional, EewSource.DmdataEewClient) or (EewSource.Axis, EewSource.DmdataEewClient)
-				=> (EewUpdateReason.MorePriority, MergeCancellation(current, received, received)),
+				=> (EewUpdateReason.MorePriority, MergeCancellation(current, received, received with { WarningAreas = current.WarningAreas })),
+			(EewSource.DmdataEewClient, EewSource.SignalNowProfessional) when current.WarningAreas == null && received.WarningAreas != null
+				=> (EewUpdateReason.ForecastSupport, MergeCancellation(current, received, current with { WarningAreas = received.WarningAreas })),
+
+			// EEW Client は PLUM 法の予想が発生すると同じ報数を再配信し、予想震度が変わることがある
+			(EewSource.DmdataEewClient, EewSource.DmdataEewClient)
+				=> (EewUpdateReason.ForecastSupport, MergeCancellation(
+					current,
+					received,
+					received with
+					{
+						IntensityForecastMap = current.IntensityForecastMap,
+						WarningAreas = current.WarningAreas,
+					})),
 
 			// dmdata の予報電文と EEW Client は同じ報数であれば同じ電文に由来し震源が一致するため、予想震度を補い合う
 			// EEW Client には警報地域も含まれないため、予報電文から補う
-			(EewSource.Dmdata, EewSource.DmdataEewClient) when current.CalculatedIntensityForecastMap == null && received.CalculatedIntensityForecastMap != null
+			(EewSource.Dmdata, EewSource.DmdataEewClient) when received.CalculatedIntensityForecastMap != null
 				=> (EewUpdateReason.ForecastSupport, MergeCancellation(
 					current,
 					received,

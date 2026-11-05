@@ -91,7 +91,7 @@ public record Eew
 	/// 地図の塗りつぶしに計算値を使用するか
 	/// </summary>
 	public bool IsFillIntensityForecastCalculated
-		=> CalculatedIntensityForecastMap != null && (PreferCalculatedIntensityForecast || IntensityForecastMap == null);
+		=> CalculatedIntensityForecastMap is { Count: > 0 } && (PreferCalculatedIntensityForecast || IntensityForecastMap == null);
 
 	/// <summary>
 	/// 地図の塗りつぶしに使用する予想震度

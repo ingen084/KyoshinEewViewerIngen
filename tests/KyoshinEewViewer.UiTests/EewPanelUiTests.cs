@@ -79,6 +79,24 @@ public sealed class EewPanelUiTests
 			["不明"],
 			["規模未受信"],
 			false),
+		new("EEW Client の計算値で塗りつぶす報", Forecast with
+		{
+			DisplaySource = "EEW Client(気象庁本庁)",
+			CalculatedIntensityForecastMap = new() { [390] = JmaIntensity.Int5Lower },
+			CalculatedIntensityForecastSource = "EEW Client",
+		},
+			["受信元: EEW Client(気象庁本庁)", "地域の予想震度: EEW Client 計算値"],
+			[],
+			false),
+		new("気象庁の予想震度で塗りつぶす報", Forecast with
+		{
+			IntensityForecastMap = new() { [390] = JmaIntensity.Int4 },
+			CalculatedIntensityForecastMap = new() { [390] = JmaIntensity.Int5Lower },
+			CalculatedIntensityForecastSource = "EEW Client",
+		},
+			["受信元: 強震モニタ"],
+			["地域の予想震度: EEW Client 計算値"],
+			false),
 		new("取消報", Forecast with { IsCancelled = true, IsTrueCancelled = true },
 			["キャンセルされました"],
 			["キャンセルまたは受信範囲外"],

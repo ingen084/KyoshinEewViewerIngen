@@ -45,6 +45,17 @@ public partial class DmdataEewClientReceiver : ObservableObject, IDisposable
 	private static readonly TimeSpan MaxReconnectInterval = TimeSpan.FromSeconds(60);
 
 	/// <summary>
+	/// 接続の確立を待つ時間 ポートは開いているが応答しない場合に再接続へ進む
+	/// </summary>
+	private static readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(10);
+
+	/// <summary>
+	/// 死活確認の間隔と応答を待つ時間 EEW Client が応答しなくなっても受信中と表示し続けないようにする
+	/// </summary>
+	private static readonly TimeSpan KeepAliveInterval = TimeSpan.FromSeconds(15);
+	private static readonly TimeSpan KeepAliveTimeout = TimeSpan.FromSeconds(15);
+
+	/// <summary>
 	/// 受信バッファの上限 細分区域の予測を含むメッセージでも十分な大きさ
 	/// </summary>
 	private const int MaxMessageSize = 1024 * 1024;
@@ -104,7 +115,8 @@ public partial class DmdataEewClientReceiver : ObservableObject, IDisposable
 	{
 		lock (_lock)
 		{
-			if (_isDisposed)
+			// タイムシフトなどからリアルタイムへ戻るたびに呼ばれるため、受信を途切れさせないよう接続し直さない
+			if (_isDisposed || _isStarted)
 				return;
 			_isStarted = true;
 			RestartCore();
@@ -130,17 +142,18 @@ public partial class DmdataEewClientReceiver : ObservableObject, IDisposable
 
 		var config = Config.Eew.DmdataEewClient;
 		IsEnabled = config.Enable && config.Port is > 0 and <= ushort.MaxValue;
+		// 接続先が変わった場合に、接続を確認できるまで前の状態を表示し続けないようにする
+		State = DmdataEewClientConnectionState.Disconnected;
+		ServerStatus = null;
+		UpdateStateDescription();
 		if (!IsEnabled)
-		{
-			State = DmdataEewClientConnectionState.Disconnected;
-			ServerStatus = null;
-			UpdateStateDescription();
 			return;
-		}
 
 		var tokenSource = new CancellationTokenSource();
 		_tokenSource = tokenSource;
-		_ = Task.Run(() => ConnectLoopAsync(new Uri($"ws://127.0.0.1:{config.Port}"), tokenSource.Token), tokenSource.Token);
+		var token = tokenSource.Token;
+		var uri = new Uri($"ws://127.0.0.1:{config.Port}");
+		_ = Task.Run(() => ConnectLoopAsync(uri, token), token);
 	}
 
 	private void StopCore()
@@ -164,9 +177,15 @@ public partial class DmdataEewClientReceiver : ObservableObject, IDisposable
 		while (!token.IsCancellationRequested)
 		{
 			using var webSocket = new ClientWebSocket();
+			webSocket.Options.KeepAliveInterval = KeepAliveInterval;
+			webSocket.Options.KeepAliveTimeout = KeepAliveTimeout;
 			try
 			{
-				await webSocket.ConnectAsync(uri, token);
+				using (var connectTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token))
+				{
+					connectTokenSource.CancelAfter(ConnectTimeout);
+					await webSocket.ConnectAsync(uri, connectTokenSource.Token);
+				}
 				Logger.LogInformation("EEW Clientに接続しました: {Uri}", uri);
 				reconnectInterval = InitialReconnectInterval;
 				isFailureLogged = false;
@@ -223,13 +242,13 @@ public partial class DmdataEewClientReceiver : ObservableObject, IDisposable
 				result = await webSocket.ReceiveAsync(buffer.AsMemory(), token);
 				if (result.MessageType == WebSocketMessageType.Close)
 				{
-					await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, token);
+					await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, null, token);
 					return;
 				}
 				if (messageStream.Length + result.Count > MaxMessageSize)
 				{
 					Logger.LogWarning("EEW Clientから受信したメッセージが大きすぎるため切断します");
-					await webSocket.CloseAsync(WebSocketCloseStatus.MessageTooBig, null, token);
+					await webSocket.CloseOutputAsync(WebSocketCloseStatus.MessageTooBig, null, token);
 					return;
 				}
 				messageStream.Write(buffer, 0, result.Count);
@@ -250,7 +269,7 @@ public partial class DmdataEewClientReceiver : ObservableObject, IDisposable
 		}
 	}
 
-	private void HandleMessage(ReadOnlySpan<byte> json, CancellationToken token)
+	internal void HandleMessage(ReadOnlySpan<byte> json, CancellationToken token)
 	{
 		var message = JsonSerializer.Deserialize(json, DmdataEewClientSerializerContext.Default.DmdataEewClientMessage);
 		if (message == null)
@@ -287,6 +306,13 @@ public partial class DmdataEewClientReceiver : ObservableObject, IDisposable
 
 	private void HandleEew(DmdataEewClientMessage message)
 	{
+		// EEW Client で利用者が実行した訓練のデータも配信される
+		if (message.IsTest)
+		{
+			Logger.LogInformation("EEW Clientから訓練データを受信したため処理しませんでした: {EventId} {SerialNo}報", message.EventId, message.Serial);
+			return;
+		}
+
 		var receiveTime = Timer.CurrentTime;
 		var eew = DmdataEewClientMessageConverter.ToEew(message, receiveTime);
 		Logger.LogInformation("EEW Clientから緊急地震速報を受信しました: {EventId} {SerialNo}報", eew.Id, eew.SerialNo);
@@ -299,14 +325,17 @@ public partial class DmdataEewClientReceiver : ObservableObject, IDisposable
 		}
 		EewController.Update(eew, receiveTime);
 
-		if (DmdataEewClientMessageConverter.ToPointForecast(message, receiveTime, _userPointLocation) is not { } forecast)
-			return;
 		if (EewController.PointForecastController is not { } pointForecastController)
 			return;
 		// 精度が低いなどの理由で EEW 自体が取り込まれなかった場合は地点予測も取り込まない
 		if (!EewController.TryGetEew(eew.Id, out _))
 			return;
-		pointForecastController.Update([forecast]);
+
+		if (DmdataEewClientMessageConverter.ToPointForecast(message, receiveTime, _userPointLocation) is { } forecast)
+			pointForecastController.Update([forecast]);
+		else
+			// 予想が得られなくなった報で前の報の予想を表示し続けない
+			pointForecastController.RemoveSource(eew.Id, DmdataEewClientMessageConverter.PointForecastSourceKey);
 	}
 
 	private void SetServerStatus(string? status, CancellationToken token)
@@ -338,7 +367,9 @@ public partial class DmdataEewClientReceiver : ObservableObject, IDisposable
 	{
 		if (!IsEnabled)
 		{
-			StateDescription = "EEW Client連携は無効です。";
+			StateDescription = Config.Eew.DmdataEewClient.Enable
+				? "EEW Clientの外部連携機能のポート番号を設定してください。"
+				: "EEW Client連携は無効です。";
 			return;
 		}
 		StateDescription = State switch
