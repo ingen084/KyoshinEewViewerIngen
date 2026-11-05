@@ -39,6 +39,8 @@ launcher はコマンドライン引数をKEVi本体に転送するため、laun
 - **`templates/test-profile.json`**: 汎用のテスト起動用。`SeriesEnable`（kyoshin-monitor/earthquake/tsunami/lightning）を全てfalseにし、外部サーバーアクセスを全抑制済み。
 - **`templates/test-profile-eq.json`**: earthquakeシリーズのみ有効化した派生版。地震情報レイヤーの描画・ホバー確認用。起動時にJMA XMLフィードの取得が1回走る点が汎用テンプレートと異なる。`<repo>\tmp\test-profile-eq\config.json` へコピーして使う。
 - **`templates/test-profile-qzss.json`**: qzss(災危通報)シリーズのみ有効化し、起動時にそのタブを選択する派生版。設定ウィンドウの「デバッグメニュー」にある災危通報 HEX 入力から電文を手動投入して表示確認する用途。`<repo>\tmp\test-profile-qzss\config.json` へコピーして使う。
+- **`templates/test-profile-eewclient.json`**: kyoshin-monitorシリーズを有効化しつつ強震モニタ取得(`ReceiveMode=0`)・観測点更新・強震モニタ経由EEWを止め、EEW Client by DMDATA.JP 連携 (`Eew.DmdataEewClient`、ポート58325) だけを有効にした派生版。`scripts/mock_eewclient.py` (要 `pip install websockets`) を `python -X utf8 scripts/mock_eewclient.py 58325` で起動しておくと、接続直後に `start` → `server-status` (no-auth → connecting → open) → 訓練データ 1報 (処理されない) → EEW 3報 (同一通番の再配信含む、地点予測付き) を模擬配信する。`<repo>\tmp\test-profile-eewclient\config.json` へコピーして使う。接続状態はメインウィンドウ時刻横の「EEW Client」インジケータとログ (`DmdataEewClientReceiver`) で確認できる。
+- **`scripts/open_setting_page.ps1`**: 起動中のKEVi (`-AppPid`) の歯車ボタンを実クリックして設定ウィンドウを開き、`-Category` (例: 強震モニタ) → `-PageName` (例: 外部アプリ連携) の順に NavigationViewItem を UIA で探してクリックし、`-OutDir\settings_page.png` に撮影する。設定ページの表示確認に使う。
 
 各テンプレートには以下を設定済み:
 - `SeriesEnable`: 対象シリーズをfalse（デフォルト有効シリーズの無効化）
@@ -54,4 +56,5 @@ launcher はコマンドライン引数をKEVi本体に転送するため、laun
 - `EnableKyoshinMonitor` はEEW用フラグで、強震モニタのリアルタイム取得停止には `SeriesEnable` の方を使うこと（混同しやすい）。
 - **本番インスタンスの通知に注意 (Windows)**: テスト起動した KEVi は、終了時に Toast 用のレジストリ登録を削除する。登録はユーザーごとに1つなので、同じマシンで動いている本番インスタンスの登録まで消える。テスト起動のあとは本番インスタンスの再起動が必要になる。`-p:IntegrationTestBuild=true` のビルドを `--ui-test` などで起動する結合テストでは発生しない。
 - **多重起動検知に注意**: 別のKEVi（`KyoshinEewViewer.exe` / `KyoshinEewViewer.Desktop.exe`）が既に稼働していると、Releaseビルドは `FocusExistingInstanceOnDuplicate` により既存インスタンスへIPC送信して**ダイアログもログも出さず静かに自動終了**する（Debugビルドではこの分岐は無効）。「起動したはずなのにプロセスがいない・ログが空」のときはまずこれを疑う。既存インスタンスを止めたくない場合は、exeを別名（例: `KEViSmokeTest.exe`）にコピーして起動すればプロセス名ベースの検知を回避できる。
+- Visual Studio から起動した KEVi が動いていると Desktop プロジェクトの `bin\Debug` がロックされ通常のビルドが失敗する。その場合は `dotnet build src\KyoshinEewViewer.Desktop\KyoshinEewViewer.Desktop.csproj -f net10.0-windows10.0.19041.0 -o tmp\smoke-build` のように別の出力先へビルドし、そこの exe を起動する (ユーザーのプロセスは止めない)。
 - 新しいシリーズだけを確認したい場合は、既存テンプレートを複製してそのシリーズだけ `SeriesEnable` をtrueにした派生テンプレートを `templates/` に作るとよい（`test-profile-eq.json` が前例）。

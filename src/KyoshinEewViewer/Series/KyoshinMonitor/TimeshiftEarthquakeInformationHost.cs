@@ -73,7 +73,7 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 			Eews = eews.OrderByDescending(eew => eew.Hypocenter?.OccurrenceTime).ToArray();
 
 			// 塗りつぶし地域組み立て
-			var intensityAreas = eews.SelectMany(e => e.IntensityForecastMap ?? [])
+			var intensityAreas = eews.SelectMany(e => e.FillIntensityForecastMap ?? [])
 				.GroupBy(p => p.Key, p => p.Value).ToDictionary(p => p.Key, p => p.Max());
 			var warningAreaCodes = eews.SelectMany(e => e.WarningAreas?.Codes ?? []).Distinct().ToArray();
 			if (Config.Eew.FillForecastIntensity && intensityAreas.Count != 0)

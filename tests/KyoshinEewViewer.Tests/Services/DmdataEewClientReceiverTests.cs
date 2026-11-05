@@ -1,0 +1,209 @@
+using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Series.KyoshinMonitor.Models;
+using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
+using KyoshinEewViewer.Services;
+using KyoshinMonitorLib;
+using Microsoft.Extensions.Logging.Abstractions;
+using System.Net;
+using System.Net.Sockets;
+using System.Net.WebSockets;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
+
+namespace KyoshinEewViewer.Tests.Services;
+
+public class DmdataEewClientReceiverTests
+{
+	private const string EventId = "20260914013000";
+
+	private sealed record Fixture(
+		KyoshinEewViewerConfiguration Config,
+		EewController Controller,
+		DmdataEewClientReceiver Receiver,
+		List<Eew[]> Updates) : IDisposable
+	{
+		public void Receive(string json) => Receiver.HandleMessage(Encoding.UTF8.GetBytes(json), CancellationToken.None);
+
+		public void Dispose() => Receiver.Dispose();
+	}
+
+	private static Fixture CreateFixture()
+	{
+		var config = new KyoshinEewViewerConfiguration();
+		var timer = new TimerService(NullLogger<TimerService>.Instance, config);
+		var controller = new EewController(
+			NullLogger<EewController>.Instance,
+			null!,
+			config,
+			new SoundPlayerService(config, NullLogger<SoundPlayerService>.Instance),
+			new WorkflowService(NullLogger<WorkflowService>.Instance));
+		_ = new EewPointForecastController(NullLogger<EewPointForecastController>.Instance, config, controller, timer);
+		var updates = new List<Eew[]>();
+		controller.EewUpdated += (_, eews) => updates.Add(eews);
+		return new(config, controller, new(NullLogger<DmdataEewClientReceiver>.Instance, config, controller, timer), updates);
+	}
+
+	private static string EewMessage(int serial, string maxInt = "3", string regionInt = "3", bool isTest = false, bool isCanceled = false, string pointForecast = "")
+		=> $$"""
+			{"type":"eew","eventId":"{{EventId}}","serial":"{{serial}}","author":"気象庁本庁",
+			 "isTest":{{(isTest ? "true" : "false")}},"isCanceled":{{(isCanceled ? "true" : "false")}},"isLastInfo":false,"isPlumOnly":false,"isLevelOver":false,"isWarning":false,
+			 "epicenterName":"石川県能登地方","epicenterLocation":[137.2,37.5],"depth":10,"magnitude":5.7,
+			 "originTime":"2026-09-14T01:30:00+09:00","arrivalTime":"2026-09-14T01:30:02+09:00",
+			 "accuracy":{"epicenters":["3","3"],"depth":"3","magnitudeCalculation":"2"},
+			 "maxInt":{"from":"{{maxInt}}","to":"{{maxInt}}"},
+			 "regions":[{"code":"390","maxInt":"{{regionInt}}"}]{{pointForecast}}}
+			""";
+
+	private static string PointForecast(string? k)
+		=> $$$""","pointForecast":{"sWave":{"status":"not-calculated","time":null},"intensity":{"type":"attenuation","k":{{{(k == null ? "null" : $"\"{k}\"")}}},"int":null}}""";
+
+	[Fact(DisplayName = "訓練データは EEW として処理せず、同じイベントの実際の報を更新・取消もしない")]
+	public void 訓練データはEEWとして処理しない()
+	{
+		using var fixture = CreateFixture();
+
+		fixture.Receive(EewMessage(1, isTest: true));
+		Assert.Empty(fixture.Updates);
+		Assert.False(fixture.Controller.TryGetEew(EventId, out _));
+
+		fixture.Receive(EewMessage(1));
+		var updateCount = fixture.Updates.Count;
+		Assert.True(updateCount > 0);
+
+		fixture.Receive(EewMessage(2, maxInt: "7", isTest: true));
+		fixture.Receive(EewMessage(3, isTest: true, isCanceled: true));
+
+		Assert.Equal(updateCount, fixture.Updates.Count);
+		Assert.True(fixture.Controller.TryGetEew(EventId, out var eew));
+		Assert.Equal(1, eew?.SerialNo);
+		Assert.Equal(JmaIntensity.Int3, eew?.MaxIntensity);
+		Assert.False(eew?.IsCancelled);
+	}
+
+	[Fact(DisplayName = "同じ報数の再配信で予想震度と地点予測が更新され、予想が無くなった報では地点予測を残さない")]
+	public void 同じ報数の再配信で予想震度と地点予測が更新される()
+	{
+		using var fixture = CreateFixture();
+
+		fixture.Receive(EewMessage(1, pointForecast: PointForecast("2.6")));
+		fixture.Receive(EewMessage(1, maxInt: "5-", regionInt: "5-", pointForecast: PointForecast("4.6")));
+
+		var redelivered = Assert.Single(fixture.Updates.Last());
+		Assert.Equal(JmaIntensity.Int5Lower, redelivered.MaxIntensity);
+		Assert.Equal(JmaIntensity.Int5Lower, redelivered.CalculatedIntensityForecastMap?[390]);
+		Assert.Equal(4.6, Assert.Single(redelivered.PointForecasts!).RealtimeIntensity);
+
+		// 予測震度が null の場合と、pointForecast 自体が無い場合
+		foreach (var (serial, pointForecast) in new[] { (2, PointForecast(null)), (4, "") })
+		{
+			fixture.Receive(EewMessage(serial, pointForecast: pointForecast));
+			Assert.Null(Assert.Single(fixture.Updates.Last()).PointForecasts);
+
+			fixture.Receive(EewMessage(serial + 1, pointForecast: PointForecast("3.6")));
+			Assert.Single(Assert.Single(fixture.Updates.Last()).PointForecasts!);
+		}
+	}
+
+	[Fact(DisplayName = "接続状態は EEW Client の通知に追従し、設定の変更では前の状態を残さず接続し直し、再度の開始では接続を維持する")]
+	public async Task 接続状態はEEWClientの通知と設定の変更に追従する()
+	{
+		using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+		var token = timeout.Token;
+		using var fixture = CreateFixture();
+		var receiver = fixture.Receiver;
+		var config = fixture.Config.Eew.DmdataEewClient;
+		using var first = new LoopbackEewClient();
+		using var second = new LoopbackEewClient();
+
+		config.Enable = true;
+		config.Port = first.Port;
+		receiver.Start();
+		var firstSocket = await first.AcceptAsync(token);
+		await WaitUntilAsync(() => receiver.State == DmdataEewClientConnectionState.ConnectedNotReceiving, "接続", token);
+
+		await SendAsync(firstSocket, """{"type":"server-status","status":"no-contract"}""", token);
+		await WaitUntilAsync(() => receiver.StateDescription.Contains("契約"), "受信できない理由の表示", token);
+		Assert.Equal(DmdataEewClientConnectionState.ConnectedNotReceiving, receiver.State);
+
+		await SendAsync(firstSocket, """{"type":"server-status","status":"open"}""", token);
+		await WaitUntilAsync(() => receiver.State == DmdataEewClientConnectionState.Receiving, "受信可能", token);
+
+		// リアルタイムへ戻るたびに呼ばれても同じ接続で受信を続ける
+		receiver.Start();
+		await SendAsync(firstSocket, EewMessage(1), token);
+		await WaitUntilAsync(() => fixture.Controller.TryGetEew(EventId, out _), "EEWの受信", token);
+		Assert.Equal(DmdataEewClientConnectionState.Receiving, receiver.State);
+
+		// 新しい接続先へ接続できるまで受信中と表示しない
+		config.Port = second.Port;
+		Assert.Equal(DmdataEewClientConnectionState.Disconnected, receiver.State);
+		var secondSocket = await second.AcceptAsync(token);
+		await WaitUntilAsync(() => receiver.State == DmdataEewClientConnectionState.ConnectedNotReceiving, "別のポートへの接続", token);
+
+		await secondSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, token);
+		await WaitUntilAsync(() => receiver.State == DmdataEewClientConnectionState.Disconnected, "切断の検知", token);
+
+		config.Port = 0;
+		Assert.False(receiver.IsEnabled);
+		Assert.Contains("ポート番号", receiver.StateDescription);
+
+		config.Enable = false;
+		Assert.Contains("無効", receiver.StateDescription);
+	}
+
+	private static async Task WaitUntilAsync(Func<bool> condition, string description, CancellationToken token)
+	{
+		while (!condition())
+		{
+			if (token.IsCancellationRequested)
+				throw new TimeoutException($"{description}を待っている間に時間切れになりました");
+			await Task.Delay(10, CancellationToken.None);
+		}
+	}
+
+	private static Task SendAsync(WebSocket socket, string json, CancellationToken token)
+		=> socket.SendAsync(Encoding.UTF8.GetBytes(json), WebSocketMessageType.Text, true, token);
+
+	/// <summary>
+	/// EEW Client の外部連携機能の代わりにループバックで待ち受ける WebSocket サーバー
+	/// </summary>
+	private sealed class LoopbackEewClient : IDisposable
+	{
+		private readonly TcpListener _listener = new(IPAddress.Loopback, 0);
+		private readonly List<TcpClient> _clients = [];
+
+		public LoopbackEewClient() => _listener.Start();
+
+		public int Port => ((IPEndPoint)_listener.LocalEndpoint).Port;
+
+		public async Task<WebSocket> AcceptAsync(CancellationToken token)
+		{
+			var client = await _listener.AcceptTcpClientAsync(token);
+			_clients.Add(client);
+			var stream = client.GetStream();
+
+			var buffer = new byte[4096];
+			var length = 0;
+			while (!Encoding.ASCII.GetString(buffer, 0, length).EndsWith("\r\n\r\n", StringComparison.Ordinal))
+			{
+				var read = await stream.ReadAsync(buffer.AsMemory(length), token);
+				if (read == 0)
+					throw new IOException("ハンドシェイクの途中で切断されました");
+				length += read;
+			}
+
+			var key = Regex.Match(Encoding.ASCII.GetString(buffer, 0, length), @"Sec-WebSocket-Key:\s*(\S+)", RegexOptions.IgnoreCase).Groups[1].Value;
+			var accept = Convert.ToBase64String(SHA1.HashData(Encoding.ASCII.GetBytes(key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")));
+			await stream.WriteAsync(Encoding.ASCII.GetBytes($"HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: {accept}\r\n\r\n"), token);
+			return WebSocket.CreateFromStream(stream, isServer: true, subProtocol: null, keepAliveInterval: Timeout.InfiniteTimeSpan);
+		}
+
+		public void Dispose()
+		{
+			foreach (var client in _clients)
+				client.Dispose();
+			_listener.Stop();
+		}
+	}
+}

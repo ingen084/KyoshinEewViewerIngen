@@ -29,6 +29,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 	private EewController EewController { get; }
 	public KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }
 	private SignalNowFileWatcher SignalNowEewReceiver { get; }
+	public DmdataEewClientReceiver DmdataEewClientReceiver { get; }
 	public EewTelegramSubscriber EewTelegramSubscriber { get; }
 	private AxisEewReceiver AxisEewReceiver { get; }
 	public AxisInformationProvider AxisInformationProvider { get; }
@@ -67,6 +68,17 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		SignalNowEewReceiver = new SignalNowFileWatcher(AppLog.Create<SignalNowFileWatcher>(), config, EewController, TimerService);
 		EewTelegramSubscriber = new EewTelegramSubscriber(AppLog.Create<EewTelegramSubscriber>(), EewController, telegramProvider, TimerService);
 		AxisEewReceiver = new AxisEewReceiver(AppLog.Create<AxisEewReceiver>(), EewController);
+		DmdataEewClientReceiver = new DmdataEewClientReceiver(AppLog.Create<DmdataEewClientReceiver>(), config, EewController, TimerService);
+
+		DmdataEewClientReceiver.ObservePropertyChanged(x => x.IsEnabled).Subscribe(x => DmdataEewClientEnabled = x);
+		DmdataEewClientReceiver.ObservePropertyChanged(x => x.State).Subscribe(x =>
+		{
+			DmdataEewClientDisconnected = x == DmdataEewClientConnectionState.Disconnected;
+			DmdataEewClientNotReceiving = x == DmdataEewClientConnectionState.ConnectedNotReceiving;
+		});
+		DmdataEewClientReceiver.ObservePropertyChanged(x => x.StateDescription).Subscribe(x => DmdataEewClientStateDescription = x);
+		config.Eew.ObservePropertyChanged(x => x.PreferCalculatedIntensityForecast, pushCurrentValueOnSubscribe: false)
+			.Subscribe(_ => EewController.RefreshEewUpdated(TimerService.CurrentTime));
 
 		EewTelegramSubscriber.ObservePropertyChanged(x => x.Enabled).Subscribe(x => DmdataReceiving = x);
 		EewTelegramSubscriber.ObservePropertyChanged(x => x.WarningOnlyEnabled).Subscribe(x => DmdataWarningOnlyReceiving = x);
@@ -82,7 +94,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 			Eews = eews.OrderByDescending(eew => eew.Hypocenter?.OccurrenceTime).ToArray();
 
 			// 塗りつぶし地域組み立て
-			var intensityAreas = eews.SelectMany(e => e.IntensityForecastMap ?? [])
+			var intensityAreas = eews.SelectMany(e => e.FillIntensityForecastMap ?? [])
 				.GroupBy(p => p.Key, p => p.Value).ToDictionary(p => p.Key, p => p.Max());
 			var warningAreaCodes = eews.SelectMany(e => e.WarningAreas?.Codes ?? []).Distinct().ToArray();
 			if (Config.Eew.FillForecastIntensity && intensityAreas.Count != 0)
@@ -171,12 +183,16 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 				this.ObservePropertyChanged(x => x.IsSignalNowEewReceiving).AsUnitObservable(),
 				this.ObservePropertyChanged(x => x.DmdataReceiving).AsUnitObservable(),
 				this.ObservePropertyChanged(x => x.DmdataDisconnected).AsUnitObservable(),
+				this.ObservePropertyChanged(x => x.DmdataEewClientEnabled).AsUnitObservable(),
+				this.ObservePropertyChanged(x => x.DmdataEewClientDisconnected).AsUnitObservable(),
+				this.ObservePropertyChanged(x => x.DmdataEewClientNotReceiving).AsUnitObservable(),
 				this.ObservePropertyChanged(x => x.Config, x => x.Eew, x => x.EnableKyoshinMonitor).AsUnitObservable(),
 				this.ObservePropertyChanged(x => x.Config, x => x.KyoshinMonitor, x => x.ReceiveMode).AsUnitObservable())
 			.Subscribe(e => {
 				AllEewSourceFailed = (!AxisReceiving || AxisDisconnected) &&
 									 !IsSignalNowEewReceiving &&
 									 (!DmdataReceiving || DmdataDisconnected) &&
+									 (!DmdataEewClientEnabled || DmdataEewClientDisconnected || DmdataEewClientNotReceiving) &&
 									 (!Config.Eew.EnableKyoshinMonitor || Config.KyoshinMonitor.ReceiveMode == KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.None);
 			});
 	}
@@ -186,6 +202,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		if (IsRunning)
 			return;
 		IsRunning = true;
+		DmdataEewClientReceiver.Start();
 
 		KyoshinEvents = [];
 		ShakeDetectedRegions = [];

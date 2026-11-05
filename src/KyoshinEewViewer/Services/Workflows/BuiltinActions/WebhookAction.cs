@@ -58,6 +58,13 @@ public partial class WebhookAction : WorkflowAction
 	[UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
 	public async override Task ExecuteAsync(WorkflowEvent content)
 	{
+		// 利用条件で外部への送信が禁止されている情報は送信しない
+		if (content.IsExternalRelayProhibited)
+		{
+			LatestResponse = "外部送信禁止の内容が含まれているため送信をスキップしました。";
+			return;
+		}
+
 		// 地点予測として取り込む場合はレスポンスを待つ意味が薄れるため、短いタイムアウトを設定する
 		var isInjectTarget = InjectPointForecast && CanInjectPointForecast && content is EewEvent { IsTest: false };
 		using var timeoutSource = isInjectTarget ? new CancellationTokenSource(PointForecastTimeout) : null;

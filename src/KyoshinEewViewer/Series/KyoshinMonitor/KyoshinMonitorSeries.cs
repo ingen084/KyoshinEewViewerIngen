@@ -47,11 +47,13 @@ public partial class KyoshinMonitorSeries : SeriesBase
 	public override Control DisplayControl => _control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
 
 	private KyoshinMonitorReplaySettingPage ReplaySettingPage { get; }
+	private ExternalAppSettingPage ExternalAppSettingPage { get; }
 	public override ISettingPage[] SettingPages => [
 		new BasicSettingPage<KyoshinMonitorPage>("\xf108", "強震モニタ", [
 			ReplaySettingPage,
 			new BasicSettingPage<KyoshinMonitorMapPage>(null, "地図アイコン", []),
 			new BasicSettingPage<KyoshinMonitorEewPage>(null, "緊急地震速報", []),
+			ExternalAppSettingPage,
 			new BasicSettingPage<ObservationPointsDataPage>(null, "観測点データ", []),
 		]),
 	];
@@ -204,6 +206,7 @@ public partial class KyoshinMonitorSeries : SeriesBase
 		var eewController = new Services.Eew.EewController(AppLog.Create<Services.Eew.EewController>(), this, config, soundPlayer, workflowService);
 		PointForecastController = new(AppLog.Create<Services.Eew.EewPointForecastController>(), config, eewController, timerService);
 		CurrentInformationHost = RealtimeInformationHost = new(AppLog.Create<RealtimeEarthquakeInformationHost>(), config, eewController, timerService, telegramProvideService, axis, observationPointsUpdateService);
+		ExternalAppSettingPage = new ExternalAppSettingPage(Config, RealtimeInformationHost.DmdataEewClientReceiver);
 		RegisterSystemWorkflows();
 		RealtimeInformationHost.KyoshinEventUpdated += e =>
 		{
