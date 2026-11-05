@@ -237,6 +237,29 @@ public partial class KyoshinEewViewerConfiguration : ObservableObject, IWindowPl
 
 		[ObservableProperty]
 		public partial bool ShowPointForecastOnMap { get; set; } = true;
+
+		/// <summary>
+		/// 地図の塗りつぶしで、外部アプリが計算した予想震度を気象庁の予想震度より優先する
+		/// </summary>
+		[ObservableProperty]
+		public partial bool PreferCalculatedIntensityForecast { get; set; }
+
+		[ObservableProperty]
+		public partial DmdataEewClientConfig DmdataEewClient { get; set; } = new();
+		/// <summary>
+		/// EEW Client by DMDATA.JP の外部連携機能との接続設定
+		/// </summary>
+		public partial class DmdataEewClientConfig : ObservableObject
+		{
+			[ObservableProperty]
+			public partial bool Enable { get; set; }
+
+			/// <summary>
+			/// EEW Client が待ち受けているポート番号 0 の場合は未設定として扱う
+			/// </summary>
+			[ObservableProperty]
+			public partial int Port { get; set; }
+		}
 	}
 
 	[ObservableProperty]

@@ -74,6 +74,30 @@ public abstract partial class EarthquakeInformationHost(bool isReplay, KyoshinEe
 	[ObservableProperty]
 	public partial bool AxisDisconnected { get; set; }
 
+	/// <summary>
+	/// EEW Client 連携が有効か
+	/// </summary>
+	[ObservableProperty]
+	public partial bool DmdataEewClientEnabled { get; set; }
+
+	/// <summary>
+	/// EEW Client に接続できていないか
+	/// </summary>
+	[ObservableProperty]
+	public partial bool DmdataEewClientDisconnected { get; set; }
+
+	/// <summary>
+	/// EEW Client には接続できているが受信できる状態ではないか
+	/// </summary>
+	[ObservableProperty]
+	public partial bool DmdataEewClientNotReceiving { get; set; }
+
+	/// <summary>
+	/// EEW Client の接続状態の説明
+	/// </summary>
+	[ObservableProperty]
+	public partial string DmdataEewClientStateDescription { get; set; } = "";
+
 	[ObservableProperty]
 	public partial bool AllEewSourceFailed { get; set; }
 
@@ -181,9 +205,9 @@ public abstract partial class EarthquakeInformationHost(bool isReplay, KyoshinEe
 			// 各地域の範囲
 			if (MapData?.TryGetLayer(LandLayerType.EarthquakeInformationSubdivisionArea, out var layer) ?? false)
 			{
-				if (Config.Eew.FillForecastIntensity && e.IntensityForecastMap != null)
+				if (Config.Eew.FillForecastIntensity && e.FillIntensityForecastMap is { } forecastMap)
 				{
-					foreach (var a in e.IntensityForecastMap)
+					foreach (var a in forecastMap)
 					{
 						foreach (var p in layer.FindPolygon(a.Key))
 						{

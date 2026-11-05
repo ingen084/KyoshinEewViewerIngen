@@ -293,6 +293,7 @@ public class EewController : IEewController
 		NewerSerial,
 		AccuracySupport,
 		MorePriority,
+		ForecastSupport,
 		CancelCleared,
 	}
 
@@ -342,6 +343,31 @@ public class EewController : IEewController
 			// SNP･AXIS より dmdata を優先させる
 			(EewSource.SignalNowProfessional, EewSource.Dmdata) or (EewSource.Axis, EewSource.Dmdata)
 				=> (EewUpdateReason.MorePriority, MergeCancellation(current, received, received)),
+
+			// EEW Client は dmdata の情報を中継したものなので dmdata と同等に扱い、強震モニタ･SNP･AXIS より優先させる
+			(EewSource.KyoshinMonitor, EewSource.DmdataEewClient) or (EewSource.SignalNowProfessional, EewSource.DmdataEewClient) or (EewSource.Axis, EewSource.DmdataEewClient)
+				=> (EewUpdateReason.MorePriority, MergeCancellation(current, received, received)),
+
+			// dmdata の予報電文と EEW Client は同じ報数であれば同じ電文に由来し震源が一致するため、予想震度を補い合う
+			// EEW Client には警報地域も含まれないため、予報電文から補う
+			(EewSource.Dmdata, EewSource.DmdataEewClient) when current.CalculatedIntensityForecastMap == null && received.CalculatedIntensityForecastMap != null
+				=> (EewUpdateReason.ForecastSupport, MergeCancellation(
+					current,
+					received,
+					current with
+					{
+						CalculatedIntensityForecastMap = received.CalculatedIntensityForecastMap,
+						CalculatedIntensityForecastSource = received.CalculatedIntensityForecastSource,
+					})),
+			(EewSource.DmdataEewClient, EewSource.Dmdata) when (current.IntensityForecastMap == null && received.IntensityForecastMap != null) || (current.WarningAreas == null && received.WarningAreas != null)
+				=> (EewUpdateReason.ForecastSupport, MergeCancellation(
+					current,
+					received,
+					current with
+					{
+						IntensityForecastMap = current.IntensityForecastMap ?? received.IntensityForecastMap,
+						WarningAreas = current.WarningAreas ?? received.WarningAreas,
+					})),
 
 			_ when ShouldClearCancel(current, received)
 				=> (EewUpdateReason.CancelCleared, MergeCancellation(current, received, received)),
@@ -407,6 +433,11 @@ public class EewController : IEewController
 				continue;
 			eews.Add(e);
 		}
+
+		var preferCalculated = Config.Eew.PreferCalculatedIntensityForecast;
+		for (var i = 0; i < eews.Count; i++)
+			if (eews[i].PreferCalculatedIntensityForecast != preferCalculated)
+				eews[i] = eews[i] with { PreferCalculatedIntensityForecast = preferCalculated };
 
 		if (MergeAdditionalInformation is { } merge)
 			for (var i = 0; i < eews.Count; i++)

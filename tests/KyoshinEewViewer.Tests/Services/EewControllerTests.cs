@@ -224,6 +224,76 @@ public class EewControllerTests
 		Assert.Equal(["警報電文地域"], actualWarningAreas.Names);
 	}
 
+	[Fact(DisplayName = "同じ報数の予報電文と EEW Client の予想震度・警報地域を補い合い、塗りつぶしは設定に応じて選ばれ、報数が進むと引き継がない")]
+	public void 同じ報数の予報電文とEEWClientの予想震度を補い合う()
+	{
+		var config = new KyoshinEewViewerConfiguration();
+		var controller = CreateController(config, new SoundPlayerService(config, NullLogger<SoundPlayerService>.Instance));
+		var updatedEews = new List<Eew[]>();
+		controller.EewUpdated += (_, eews) => updatedEews.Add(eews);
+		var baseTime = new DateTime(2026, 9, 24, 12, 0, 0);
+
+		var telegramEew = CreateEew(baseTime) with
+		{
+			Source = EewSource.Dmdata,
+			DisplaySource = "DM-D.S.S 予報電文",
+			IntensityForecastMap = new() { [100] = JmaIntensity.Int4 },
+			WarningAreas = new EewWarningAreas
+			{
+				DisplaySource = "DM-D.S.S 予報電文",
+				SerialNo = 1,
+				Codes = [100],
+				Names = ["予報電文地域"],
+			},
+		};
+		var eewClientEew = CreateEew(baseTime.AddSeconds(1)) with
+		{
+			Source = EewSource.DmdataEewClient,
+			DisplaySource = "EEW Client",
+			CalculatedIntensityForecastMap = new() { [100] = JmaIntensity.Int5Lower, [200] = JmaIntensity.Int1 },
+			CalculatedIntensityForecastSource = "EEW Client",
+		};
+
+		// どちらが先に届いても、先に受信した方の内容に他方の予想震度が補われる
+		foreach (var (first, second) in new[] { (telegramEew, eewClientEew), (eewClientEew, telegramEew) })
+		{
+			controller.Clear();
+			controller.Update(first, first.ReceiveTime);
+			controller.Update(second, second.ReceiveTime);
+
+			var merged = updatedEews.Last().Single();
+			Assert.Equal(first.DisplaySource, merged.DisplaySource);
+			Assert.Equal(JmaIntensity.Int4, merged.IntensityForecastMap?[100]);
+			Assert.Equal(JmaIntensity.Int5Lower, merged.CalculatedIntensityForecastMap?[100]);
+			Assert.Equal("EEW Client", merged.CalculatedIntensityForecastSource);
+			// EEW Client には含まれない警報地域も予報電文から補われる
+			Assert.Equal(["予報電文地域"], merged.WarningAreas?.Names);
+
+			// 既定では気象庁の予想震度で塗りつぶす
+			Assert.False(merged.IsFillIntensityForecastCalculated);
+			Assert.Same(merged.IntensityForecastMap, merged.FillIntensityForecastMap);
+		}
+
+		// 優先する設定にすると計算値で塗りつぶす
+		config.Eew.PreferCalculatedIntensityForecast = true;
+		controller.RefreshEewUpdated(baseTime.AddSeconds(2));
+		var preferred = updatedEews.Last().Single();
+		Assert.True(preferred.IsFillIntensityForecastCalculated);
+		Assert.Same(preferred.CalculatedIntensityForecastMap, preferred.FillIntensityForecastMap);
+
+		// 新しい報数では震源が変わりうるため、前の報の予想震度は引き継がない
+		config.Eew.PreferCalculatedIntensityForecast = false;
+		controller.Update(telegramEew with { SerialNo = 2, ReceiveTime = baseTime.AddSeconds(3) }, baseTime.AddSeconds(3));
+		var next = updatedEews.Last().Single();
+		Assert.Null(next.CalculatedIntensityForecastMap);
+
+		// 気象庁の予想震度が無い場合は設定によらず計算値で塗りつぶす
+		controller.Update(eewClientEew with { SerialNo = 3, ReceiveTime = baseTime.AddSeconds(4) }, baseTime.AddSeconds(4));
+		var calculatedOnly = updatedEews.Last().Single();
+		Assert.Null(calculatedOnly.IntensityForecastMap);
+		Assert.True(calculatedOnly.IsFillIntensityForecastCalculated);
+	}
+
 	[Fact(DisplayName = "EEWの期限切れ処理でも警報のみのEEWは通知に含まれる")]
 	public void EEWの期限切れ処理でも警報のみのEEWは通知に含まれる()
 	{

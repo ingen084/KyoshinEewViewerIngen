@@ -49,6 +49,13 @@ public partial class ExecuteFileAction : WorkflowAction
 		if (string.IsNullOrWhiteSpace(FilePath))
 			return;
 
+		// 利用条件で外部への送信が禁止されている情報は、起動したプロセスから転送されうるため実行しない
+		if (content.IsExternalRelayProhibited)
+		{
+			LatestExecuteResult = "外部送信禁止の内容が含まれているため実行をスキップしました。";
+			return;
+		}
+
 		// テンプレートをレンダリング
 		var renderedFilePath = (await Template.Parse(FilePath).RenderAsync(content, m => m.Name)).Trim().Replace("\n", "");
 		var renderedArguments = (await Template.Parse(Arguments).RenderAsync(content, m => m.Name)).Trim();

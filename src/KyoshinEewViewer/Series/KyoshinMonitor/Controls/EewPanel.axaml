@@ -203,7 +203,10 @@
 			</Border>
 		</StackPanel>
         <Border Grid.Row="3" Classes="separator" CornerRadius="0,0,4,4">
-			<TextBlock Text="{Binding DisplaySource, StringFormat={}受信元: {0}}" FontSize="12" Margin="5,0" />
+			<WrapPanel Margin="5,0">
+				<TextBlock Text="{Binding DisplaySource, StringFormat={}受信元: {0}}" FontSize="12" Margin="0,0,10,0" />
+				<TextBlock IsVisible="{Binding IsFillIntensityForecastCalculated}" Text="{Binding CalculatedIntensityForecastSource, StringFormat={}地域の予想震度: {0} 計算値, Mode=OneWay}" FontSize="12" />
+			</WrapPanel>
 		</Border>
         <Panel Grid.Row="1" Grid.RowSpan="2" Classes="container" IsVisible="{Binding IsCancelled}" VerticalAlignment="Stretch">
             <TextBlock IsVisible="{Binding !IsTrueCancelled}" Text="キャンセルまたは受信範囲外" FontSize="22" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center" />

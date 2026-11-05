@@ -83,6 +83,8 @@ public class EewEvent(KyoshinMonitorSeries? series, EewEventType subType) : Work
 		=> new(series, type)
 		{
 			SourceEewController = sourceEewController,
+			// EEW Client の利用条件により、受信した情報を外部へ送信してはならない
+			IsExternalRelayProhibited = eew.Source == Models.EewSource.DmdataEewClient,
 			OccurrenceAt = eew.Hypocenter?.OccurrenceTime,
 			EewId = eew.Id,
 			EewSource = eew.DisplaySource,
