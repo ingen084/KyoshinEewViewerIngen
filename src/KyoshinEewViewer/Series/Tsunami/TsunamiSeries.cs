@@ -125,6 +125,7 @@ public partial class TsunamiSeries : SeriesBase
 				try
 				{
 					SourceName = s;
+					IsFault = false;
 
 					// 最後の津波予報から順番に処理
 					var last = t.LastOrDefault(t => t.Title == "津波警報・注意報・予報a");
@@ -161,7 +162,8 @@ public partial class TsunamiSeries : SeriesBase
 			s =>
 			{
 				SourceName = null;
-				// TODO: 状態管理はもうちょっとちゃんとやる必要がある
+				// 受信できる情報源がなくなった場合は再試行できるようにする
+				IsFault = s.isAllFailed;
 			}
 		);
 

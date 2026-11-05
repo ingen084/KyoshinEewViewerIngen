@@ -27,10 +27,12 @@ fi
 
 dotnet_cmd="${KEVI_UI_TEST_DOTNET:-dotnet}"
 skip_build=false
+test_filter=''
 while (($#)); do
   case "$1" in
     --dotnet) dotnet_cmd="$2"; shift 2 ;;
     --skip-build) skip_build=true; shift ;;
+    --filter) test_filter="$2"; shift 2 ;;
     *) printf '不明な引数です: %s\n' "$1" >&2; exit 2 ;;
   esac
 done
@@ -69,6 +71,14 @@ run_case() {
   local name="$1" filter="$2" probe="$3"
   "${isolator[@]}" bash "$script_dir/run.sh" --inside "$dotnet_exe" "$build_dir" "$output/$name" "$filter" "$probe" "$parent_netns" "$packages"
 }
+
+if [[ -n "$test_filter" ]]; then
+  # 開発中に一部のテストだけを確認する。通信禁止の失敗検査は全体の実行で行う。
+  run_case positive "FullyQualifiedName!~CaughtByAppStillFails&($test_filter)" ''
+  python3 "$script_dir/verify-results.py" "$output/positive" passed 1
+  printf '指定したUIテストが完了しました (通信禁止の失敗検査は省略しました)。結果: %s\n' "$output"
+  exit 0
+fi
 
 run_case positive 'FullyQualifiedName!~CaughtByAppStillFails' ''
 python3 "$script_dir/verify-results.py" "$output/positive" passed
