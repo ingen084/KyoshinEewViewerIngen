@@ -58,7 +58,7 @@ public class DmdataEewClientReceiverTests
 	private static string PointForecast(string? k)
 		=> $$$""","pointForecast":{"sWave":{"status":"not-calculated","time":null},"intensity":{"type":"attenuation","k":{{{(k == null ? "null" : $"\"{k}\"")}}},"int":null}}""";
 
-	[Fact(DisplayName = "訓練データは EEW として処理せず、同じイベントの実際の報を更新・取消もしない")]
+	[Fact(DisplayName = "訓練データは EEW として処理せず、同じイベントの実際の EEW を更新・取消もしない")]
 	public void 訓練データはEEWとして処理しない()
 	{
 		using var fixture = CreateFixture();
@@ -81,7 +81,7 @@ public class DmdataEewClientReceiverTests
 		Assert.False(eew?.IsCancelled);
 	}
 
-	[Fact(DisplayName = "同じ報数の再配信で予想震度と地点予測が更新され、予想が無くなった報では地点予測を残さない")]
+	[Fact(DisplayName = "同じ報数の再配信で予想震度と地点予測が更新され、予想が無くなると地点予測を残さない")]
 	public void 同じ報数の再配信で予想震度と地点予測が更新される()
 	{
 		using var fixture = CreateFixture();
@@ -103,6 +103,29 @@ public class DmdataEewClientReceiverTests
 			fixture.Receive(EewMessage(serial + 1, pointForecast: PointForecast("3.6")));
 			Assert.Single(Assert.Single(fixture.Updates.Last()).PointForecasts!);
 		}
+	}
+
+	[Fact(DisplayName = "取消報は他の受信元から受信した EEW に適用した場合も外部への送信を禁止する")]
+	public void 取消報は他の受信元のEEWに適用した場合も外部への送信を禁止する()
+	{
+		using var fixture = CreateFixture();
+		var time = new DateTime(2026, 9, 14, 1, 30, 5);
+		fixture.Controller.Update(EewMock.NORMAL with
+		{
+			Id = EventId,
+			Source = EewSource.KyoshinMonitor,
+			SerialNo = 1,
+			IsCancelled = false,
+			IsTrueCancelled = false,
+			ReceiveTime = time,
+		}, time);
+
+		fixture.Receive(EewMessage(2, isCanceled: true));
+
+		Assert.True(fixture.Controller.TryGetEew(EventId, out var eew));
+		Assert.Equal(EewSource.KyoshinMonitor, eew?.Source);
+		Assert.True(eew?.IsTrueCancelled);
+		Assert.True(eew?.IsCancellationRelayProhibited);
 	}
 
 	[Fact(DisplayName = "接続状態は EEW Client の通知に追従し、設定の変更では前の状態を残さず接続し直し、再度の開始では接続を維持する")]

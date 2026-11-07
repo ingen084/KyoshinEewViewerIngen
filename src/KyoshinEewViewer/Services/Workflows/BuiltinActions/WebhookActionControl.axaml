@@ -10,7 +10,7 @@
     <StackPanel>
         <TextBlock Text="URL" />
         <TextBox Text="{Binding Url}" HorizontalAlignment="Stretch" />
-        <TextBlock Text="EEW Client by DMDATA.JP から受信した緊急地震速報は、利用条件により送信されません。" FontSize="12" TextWrapping="Wrap" />
+        <TextBlock Text="EEW Client by DMDATA.JP から受信した緊急地震速報は、利用条件により送信されません。EEW Client と他の受信元を併用している場合は、更新が欠けたり、取消が届かなかったりすることがあります。" FontSize="12" TextWrapping="Wrap" />
         <StackPanel IsVisible="{Binding CanInjectPointForecast}" Margin="0,5,0,0">
             <CheckBox Content="レスポンスを緊急地震速報の地点予測として取り込む" IsChecked="{Binding InjectPointForecast}" />
             <TextBlock Text="緊急地震速報のトリガーでのみ動作します。レスポンスの JSON に含まれる計測震度と到達時刻をそのまま表示します。&#xA;推定の内容についてはレスポンスを返すアプリケーション側の責任となります。"

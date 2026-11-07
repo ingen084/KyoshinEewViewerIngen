@@ -32,6 +32,11 @@ public record Eew
 	public bool IsTrueCancelled { get; init; }
 
 	/// <summary>
+	/// キャンセルの情報元が外部への送信を禁止しているか
+	/// </summary>
+	public bool IsCancellationRelayProhibited { get; init; }
+
+	/// <summary>
 	/// 受信時刻
 	/// </summary>
 	public required DateTime ReceiveTime { get; init; }

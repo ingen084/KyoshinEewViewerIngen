@@ -320,7 +320,7 @@ public partial class DmdataEewClientReceiver : ObservableObject, IDisposable
 		// 取消報は Update では同一報番号として弾かれてしまうため、専用のキャンセル経路に流す
 		if (eew.IsTrueCancelled)
 		{
-			EewController.Cancelled(eew.Id, receiveTime);
+			EewController.CancelledWithRelayProhibited(eew.Id, receiveTime);
 			return;
 		}
 		EewController.Update(eew, receiveTime);
@@ -334,7 +334,7 @@ public partial class DmdataEewClientReceiver : ObservableObject, IDisposable
 		if (DmdataEewClientMessageConverter.ToPointForecast(message, receiveTime, _userPointLocation) is { } forecast)
 			pointForecastController.Update([forecast]);
 		else
-			// 予想が得られなくなった報で前の報の予想を表示し続けない
+			// 予想が得られなくなったら、それ以前の予想を表示し続けない
 			pointForecastController.RemoveSource(eew.Id, DmdataEewClientMessageConverter.PointForecastSourceKey);
 	}
 

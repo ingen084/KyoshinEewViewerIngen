@@ -222,27 +222,44 @@ public class EewController : IEewController
 				return;
 			}
 
-			if (!EewCache.TryGetValue(eventId, out var eew) || eew.IsTrueCancelled)
-				return;
-
-			var newEew2 = eew with { IsCancelled = true, IsTrueCancelled = true, ReceiveTime = updatedTime };
-			// 擬似キャンセル済みの場合は通知を済ませているため、確定キャンセルへの格上げのみ行う
-			if (eew.IsCancelled)
-			{
-				Logger.LogInformation("擬似キャンセル中のEEWを確定キャンセルにしました: {EventId}", eventId);
-				EewCache[eventId] = newEew2;
-				InvokeEewUpdated(updatedTime);
-				return;
-			}
-
-			Logger.LogInformation("EEWをキャンセルしました: {EventId}", eventId);
-			EewCache[eventId] = newEew2;
-			var intstr = newEew2.MaxIntensity.ToShortString().Replace('*', '-');
-			if (!EewCanceledSound.Play())
-				EewReceivedSound.Play(new() { { "int", intstr } });
-			WorkflowService.PublishEvent(EewEvent.FromEewModel(Series, EewEventType.Cancel, newEew2, IsReplay, this));
-			InvokeEewUpdated(updatedTime);
+			ApplyTrueCancel(eventId, updatedTime, false);
 		}
+	}
+
+	/// <summary>
+	/// 外部への送信が禁止されている受信元から受信したキャンセルを適用する
+	/// キャンセルされた事実も受信した情報のため、他の受信元から受信した EEW に適用した場合も外部へ送信しない
+	/// </summary>
+	/// <param name="eventId">キャンセルされた EEW の ID</param>
+	/// <param name="updatedTime">そのEEWを受信した時刻</param>
+	public void CancelledWithRelayProhibited(string eventId, DateTime updatedTime)
+	{
+		lock (_lock)
+			ApplyTrueCancel(eventId, updatedTime, true);
+	}
+
+	private void ApplyTrueCancel(string eventId, DateTime updatedTime, bool isRelayProhibited)
+	{
+		if (!EewCache.TryGetValue(eventId, out var eew) || eew.IsTrueCancelled)
+			return;
+
+		var newEew = eew with { IsCancelled = true, IsTrueCancelled = true, IsCancellationRelayProhibited = isRelayProhibited, ReceiveTime = updatedTime };
+		// 擬似キャンセル済みの場合は通知を済ませているため、確定キャンセルへの格上げのみ行う
+		if (eew.IsCancelled)
+		{
+			Logger.LogInformation("擬似キャンセル中のEEWを確定キャンセルにしました: {EventId}", eventId);
+			EewCache[eventId] = newEew;
+			InvokeEewUpdated(updatedTime);
+			return;
+		}
+
+		Logger.LogInformation("EEWをキャンセルしました: {EventId}", eventId);
+		EewCache[eventId] = newEew;
+		var intstr = newEew.MaxIntensity.ToShortString().Replace('*', '-');
+		if (!EewCanceledSound.Play())
+			EewReceivedSound.Play(new() { { "int", intstr } });
+		WorkflowService.PublishEvent(EewEvent.FromEewModel(Series, EewEventType.Cancel, newEew, IsReplay, this));
+		InvokeEewUpdated(updatedTime);
 	}
 
 	/// <summary>
@@ -402,6 +419,7 @@ public class EewController : IEewController
 		{
 			IsCancelled = isTrueCancelled || received.IsCancelled,
 			IsTrueCancelled = isTrueCancelled,
+			IsCancellationRelayProhibited = current.IsCancellationRelayProhibited,
 		};
 	}
 

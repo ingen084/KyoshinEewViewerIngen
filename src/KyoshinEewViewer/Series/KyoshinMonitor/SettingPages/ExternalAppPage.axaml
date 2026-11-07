@@ -25,7 +25,62 @@
     </UserControl.Styles>
     <ScrollViewer>
         <StackPanel>
-            <TextBlock Text="SignalNow Professional" FontWeight="Bold" Margin="10,10,10,5" />
+            <TextBlock Text="EEW Client" FontWeight="Bold" Margin="10,10,10,5" />
+            <Expander Margin="10,5">
+                <Expander.Header>
+                    <Grid ColumnDefinitions="40,*" RowDefinitions="*,auto" Margin="0,15">
+                        <ui:FAFontIcon Glyph="&#xf52e;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" Grid.RowSpan="2" />
+                        <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" Spacing="5">
+                            <control:HyperlinkTextBlock Text="EEW Client by DMDATA.JP" Uri="https://dmdata.jp/docs/eewclient-external-server/" FontSize="14" />
+                            <TextBlock Text="(クリックで外部連携機能の説明ページを開く)" FontSize="12" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Grid.Row="1" Text="EEW Client の外部連携機能から緊急地震速報と、EEW Client に設定した予想地点の予測震度･到達予想時刻を受信します。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+                    </Grid>
+                </Expander.Header>
+                <control:MarkdownViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/EewClientAbout.md" />
+            </Expander>
+
+            <!-- 接続状態 -->
+            <Border
+                Background="{DynamicResource ExpanderHeaderBackground}"
+                MinHeight="72"
+                Padding="{DynamicResource SettingsExpanderItemPadding}"
+                BorderThickness="1" BorderBrush="#19000000"
+                CornerRadius="4" Margin="10,3,10,0">
+                <Grid ColumnDefinitions="45,*" VerticalAlignment="Center">
+                    <ui:FAFontIcon IsVisible="{Binding IsReceiving}" Glyph="&#xf09e;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
+                    <ui:FAFontIcon IsVisible="{Binding IsConnectedNotReceiving}" Classes="warning" Glyph="&#xf071;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
+                    <ui:FAFontIcon IsVisible="{Binding IsDisconnected}" Classes="warning" Glyph="&#xf127;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
+                    <StackPanel Grid.Column="1" Spacing="2">
+                        <TextBlock Text="接続状態" />
+                        <TextBlock Text="{Binding Receiver.StateDescription}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <ui:FASettingsExpander Header="連携機能を利用する" Description="設定の変更は即座に反映されます。接続状況はメインウィンドウの時刻情報の横にも表示されます。" IsExpanded="True">
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf1e6;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+                <ui:FASettingsExpander.Footer>
+                    <ToggleSwitch IsChecked="{Binding Config.Eew.DmdataEewClient.Enable}" OnContent="する" OffContent="しない" />
+                </ui:FASettingsExpander.Footer>
+
+                <ui:FASettingsExpanderItem Content="ポート番号" Description="EEW Client の外部連携機能の設定に表示されているポート番号を入力してください。" IsEnabled="{Binding Config.Eew.DmdataEewClient.Enable}">
+                    <ui:FASettingsExpanderItem.Footer>
+                        <NumericUpDown Value="{Binding Config.Eew.DmdataEewClient.Port}" Minimum="0" Maximum="65535" Increment="1" FormatString="0" Width="140" />
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+                <ui:FASettingsExpanderItem Content="地図の塗りつぶしに EEW Client の予想震度を優先する" Description="しない場合、DM-D.S.S の電文から気象庁の予想震度を受信していればそちらを使用します。&#xa;「各地域の予想最大震度を地図上に表示する」が有効な場合に使用されます。" IsEnabled="{Binding Config.Eew.DmdataEewClient.Enable}">
+                    <ui:FASettingsExpanderItem.Footer>
+                        <ToggleSwitch IsChecked="{Binding Config.Eew.PreferCalculatedIntensityForecast}" OnContent="する" OffContent="しない" />
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+            </ui:FASettingsExpander>
+
+            <TextBlock Text="地点予測の表示方法は「緊急地震速報」の設定ページで変更できます。" FontSize="12" Margin="10,10,10,0" Foreground="{DynamicResource SubForegroundColor}" />
+
+            <TextBlock Text="SignalNow Professional" FontWeight="Bold" Margin="10,20,10,5" />
             <ui:FASettingsExpander Description="別途ソフトウェアの購入+ソフトウェア本体のインストール･起動が必要です。" IsExpanded="True">
                 <ui:FASettingsExpander.Header>
                     <StackPanel Orientation="Horizontal">
@@ -61,68 +116,6 @@
                        FontWeight="Bold" FontSize="12" />
                 </ui:FASettingsExpanderItem>
             </ui:FASettingsExpander>
-
-            <TextBlock Text="EEW Client" FontWeight="Bold" Margin="10,20,10,5" />
-            <Expander Margin="10,5">
-                <Expander.Header>
-                    <Grid ColumnDefinitions="40,*" RowDefinitions="*,auto" Margin="0,15">
-                        <ui:FAFontIcon Glyph="&#xf52e;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" Grid.RowSpan="2" />
-                        <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" Spacing="5">
-                            <control:HyperlinkTextBlock Text="EEW Client by DMDATA.JP" Uri="https://dmdata.jp/docs/eewclient-external-server/" FontSize="14" />
-                            <TextBlock Text="(クリックで外部連携機能の説明ページを開く)" FontSize="12" />
-                        </StackPanel>
-                        <TextBlock Grid.Column="1" Grid.Row="1" Text="EEW Client の外部連携機能から緊急地震速報と、EEW Client に設定した予想地点の予測震度･到達予想時刻を受信します。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
-                    </Grid>
-                </Expander.Header>
-                <StackPanel>
-                    <TextBlock Text="別途 EEW Client のインストール･起動と、DM-D.S.S の緊急地震速報プランの契約が必要です。" FontSize="12" />
-                    <TextBlock Text="EEW Client 側で外部連携機能を有効にし、予想地点を設定しておく必要があります。" FontSize="12" />
-                    <TextBlock Text="EEW Client 側で予想地点の共有を許可している場合、地点予測を地図上にも表示します。" FontSize="12" />
-                    <TextBlock Text="細分区域ごとの予想震度は気象庁の発表ではなく、EEW Client が計算した値です。" FontSize="12" />
-                    <TextBlock Text="細分区域ごとの警報の有無は送信されないため、警報地域の塗りつぶしには使用されません。" FontSize="12" />
-                    <TextBlock Text="EEW Client の利用条件により、受信した情報ではワークフローの Webhook 送信･ファイル実行アクションは動作しません。" FontSize="12" />
-                </StackPanel>
-            </Expander>
-
-            <!-- 接続状態 -->
-            <Border
-                Background="{DynamicResource ExpanderHeaderBackground}"
-                MinHeight="72"
-                Padding="{DynamicResource SettingsExpanderItemPadding}"
-                BorderThickness="1" BorderBrush="#19000000"
-                CornerRadius="4" Margin="10,3,10,0">
-                <Grid ColumnDefinitions="45,*" VerticalAlignment="Center">
-                    <ui:FAFontIcon IsVisible="{Binding IsReceiving}" Glyph="&#xf09e;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
-                    <ui:FAFontIcon IsVisible="{Binding IsConnectedNotReceiving}" Classes="warning" Glyph="&#xf071;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
-                    <ui:FAFontIcon IsVisible="{Binding IsDisconnected}" Classes="warning" Glyph="&#xf127;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
-                    <StackPanel Grid.Column="1" Spacing="2">
-                        <TextBlock Text="接続状態" />
-                        <TextBlock Text="{Binding Receiver.StateDescription}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
-                    </StackPanel>
-                </Grid>
-            </Border>
-
-            <ui:FASettingsExpander Header="連携機能を利用する" Description="設定の変更は即座に反映されます。接続状況はメインウィンドウの時刻情報の横にも表示されます。" IsExpanded="True">
-                <ui:FASettingsExpander.IconSource>
-                    <ui:FAFontIconSource Glyph="&#xf1e6;" FontFamily="{StaticResource IconFont}" />
-                </ui:FASettingsExpander.IconSource>
-                <ui:FASettingsExpander.Footer>
-                    <ToggleSwitch IsChecked="{Binding Config.Eew.DmdataEewClient.Enable}" OnContent="する" OffContent="しない" />
-                </ui:FASettingsExpander.Footer>
-
-                <ui:FASettingsExpanderItem Content="ポート番号" Description="EEW Client の外部連携機能の設定に表示されているポート番号を入力してください。" IsEnabled="{Binding Config.Eew.DmdataEewClient.Enable}">
-                    <ui:FASettingsExpanderItem.Footer>
-                        <NumericUpDown Value="{Binding Config.Eew.DmdataEewClient.Port}" Minimum="0" Maximum="65535" Increment="1" FormatString="0" Width="140" />
-                    </ui:FASettingsExpanderItem.Footer>
-                </ui:FASettingsExpanderItem>
-                <ui:FASettingsExpanderItem Content="地図の塗りつぶしに EEW Client の予想震度を優先する" Description="しない場合、DM-D.S.S の電文から気象庁の予想震度を受信している報ではそちらを使用します。&#xa;「各地域の予想最大震度を地図上に表示する」が有効な場合に使用されます。" IsEnabled="{Binding Config.Eew.DmdataEewClient.Enable}">
-                    <ui:FASettingsExpanderItem.Footer>
-                        <ToggleSwitch IsChecked="{Binding Config.Eew.PreferCalculatedIntensityForecast}" OnContent="する" OffContent="しない" />
-                    </ui:FASettingsExpanderItem.Footer>
-                </ui:FASettingsExpanderItem>
-            </ui:FASettingsExpander>
-
-            <TextBlock Text="地点予測の表示方法は「緊急地震速報」の設定ページで変更できます。" FontSize="12" Margin="10,10,10,0" Foreground="{DynamicResource SubForegroundColor}" />
         </StackPanel>
     </ScrollViewer>
 </UserControl>

@@ -49,13 +49,6 @@ public partial class ExecuteFileAction : WorkflowAction
 		if (string.IsNullOrWhiteSpace(FilePath))
 			return;
 
-		// 利用条件で外部への送信が禁止されている情報は、起動したプロセスから転送されうるため実行しない
-		if (content.IsExternalRelayProhibited)
-		{
-			LatestExecuteResult = "外部送信禁止の内容が含まれているため実行をスキップしました。";
-			return;
-		}
-
 		// テンプレートをレンダリング
 		var renderedFilePath = (await Template.Parse(FilePath).RenderAsync(content, m => m.Name)).Trim().Replace("\n", "");
 		var renderedArguments = (await Template.Parse(Arguments).RenderAsync(content, m => m.Name)).Trim();
@@ -64,7 +57,12 @@ public partial class ExecuteFileAction : WorkflowAction
 			: (await Template.Parse(WorkingDirectory).RenderAsync(content, m => m.Name)).Trim().Replace("\n", "");
 
 		var info = CreateProcessStartInfo(renderedFilePath, renderedArguments, renderedWorkingDirectory);
-		info.EnvironmentVariables["KEVI_EVENT_DATA"] = JsonSerializer.Serialize(content, JsonSerializerOptions);
+		// 利用条件で外部への送信が禁止されている情報は環境変数で渡さない
+		// 親プロセスから継承した値も残さないよう削除する
+		if (content.IsExternalRelayProhibited)
+			info.EnvironmentVariables.Remove("KEVI_EVENT_DATA");
+		else
+			info.EnvironmentVariables["KEVI_EVENT_DATA"] = JsonSerializer.Serialize(content, JsonSerializerOptions);
 
 		var task = Task.Run(() =>
 		{

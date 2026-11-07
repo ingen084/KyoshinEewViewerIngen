@@ -281,7 +281,7 @@ public class EewControllerTests
 		Assert.True(preferred.IsFillIntensityForecastCalculated);
 		Assert.Same(preferred.CalculatedIntensityForecastMap, preferred.FillIntensityForecastMap);
 
-		// 新しい報数では震源が変わりうるため、前の報の予想震度は引き継がない
+		// 報数が進むと震源が変わりうるため、前の報数の予想震度は引き継がない
 		config.Eew.PreferCalculatedIntensityForecast = false;
 		controller.Update(telegramEew with { SerialNo = 2, ReceiveTime = baseTime.AddSeconds(3) }, baseTime.AddSeconds(3));
 		var next = updatedEews.Last().Single();
