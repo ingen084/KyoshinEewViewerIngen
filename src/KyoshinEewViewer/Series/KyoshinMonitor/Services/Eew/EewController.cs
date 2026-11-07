@@ -57,11 +57,11 @@ public class EewController : IEewController
 		IsReplay = isReplay;
 		SoundMode = isReplay ? "replay" : "realtime";
 
-		EewReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewReceived", "緊急地震速報受信", "{int}: 最大震度 [？,0,1,...,6-,6+,7]\n{training}: 訓練か [true, false]", new() { { "int", "4" }, { "training", "false" }, });
-		EewBeginReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewBeginReceived", "緊急地震速報受信(初回)", "{int}: 最大震度 [-,0,1,...,6-,6+,7]\n{training}: 訓練か [true, false]", new() { { "int", "5+" }, { "training", "false" }, });
-		EewFinalReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewFinalReceived", "緊急地震速報受信(最終)", "{int}: 最大震度 [-,0,1,...,6-,6+,7]\n{training}: 訓練か [true, false]", new() { { "int", "-" }, { "training", "false" }, });
-		EewCanceledSound = soundPlayer.RegisterSound(SoundCategory, "EewCanceled", "緊急地震速報受信(キャンセル)", "{training}: 訓練か [true, false]", new() { { "training", "false" }, });
-		EewWarningAnnouncedSound = soundPlayer.RegisterSound(SoundCategory, "EewWarningAnnounced", "緊急地震速報(警報)発表･レベル到達時", "{int}: 最大震度 [？,0,1,...,6-,6+,7]\n{mode}: 再生モード [replay, realtime]\n{training}: 訓練か [true, false]", new() { { "int", "5-" }, { "mode", "replay" }, { "training", "false" }, });
+		EewReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewReceived", "緊急地震速報受信", "{int}: 最大震度 [？,0,1,...,6-,6+,7]\n{training}: 訓練かどうか [training, normal]", new() { { "int", "4" }, { "training", "normal" }, });
+		EewBeginReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewBeginReceived", "緊急地震速報受信(初回)", "{int}: 最大震度 [-,0,1,...,6-,6+,7]\n{training}: 訓練かどうか [training, normal]", new() { { "int", "5+" }, { "training", "normal" }, });
+		EewFinalReceivedSound = soundPlayer.RegisterSound(SoundCategory, "EewFinalReceived", "緊急地震速報受信(最終)", "{int}: 最大震度 [-,0,1,...,6-,6+,7]\n{training}: 訓練かどうか [training, normal]", new() { { "int", "-" }, { "training", "normal" }, });
+		EewCanceledSound = soundPlayer.RegisterSound(SoundCategory, "EewCanceled", "緊急地震速報受信(キャンセル)", "{training}: 訓練かどうか [training, normal]", new() { { "training", "normal" }, });
+		EewWarningAnnouncedSound = soundPlayer.RegisterSound(SoundCategory, "EewWarningAnnounced", "緊急地震速報(警報)発表･レベル到達時", "{int}: 最大震度 [？,0,1,...,6-,6+,7]\n{mode}: 再生モード [replay, realtime]\n{training}: 訓練かどうか [training, normal]", new() { { "int", "5-" }, { "mode", "replay" }, { "training", "normal" }, });
 
 	}
 
@@ -391,7 +391,7 @@ public class EewController : IEewController
 	/// 音声ファイルのパスで訓練かどうかを区別するためのパラメータ値
 	/// </summary>
 	private static string ToTrainingSoundParameter(Models.Eew eew)
-		=> eew.IsTraining ? "true" : "false";
+		=> eew.IsTraining ? "training" : "normal";
 
 	private enum EewUpdateReason
 	{
