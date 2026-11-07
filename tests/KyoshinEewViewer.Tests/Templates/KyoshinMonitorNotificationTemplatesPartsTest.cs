@@ -25,7 +25,7 @@ public class KyoshinMonitorNotificationTemplatesPartsTest
 			new ()
 			{
 				TestName = "EewVoiceParts_New_Normal",
-				ExpectedResult = ["", "緊急地震速報", "最大震度4", "テスト県西部"],
+				ExpectedResult = ["", "", "緊急地震速報", "最大震度4", "テスト県西部"],
 				EventData = new EewEvent(null, EewEventType.New)
 				{
 					EewId = "20241225123456",
@@ -48,7 +48,7 @@ public class KyoshinMonitorNotificationTemplatesPartsTest
 			new ()
 			{
 				TestName = "EewVoiceParts_Replay",
-				ExpectedResult = ["リプレイ中です", "緊急地震速報", "最大震度4", "テスト県"],
+				ExpectedResult = ["", "リプレイ中です", "緊急地震速報", "最大震度4", "テスト県"],
 				EventData = new EewEvent(null, EewEventType.New)
 				{
 					EewId = "20241225123456",
@@ -71,7 +71,7 @@ public class KyoshinMonitorNotificationTemplatesPartsTest
 			new ()
 			{
 				TestName = "EewVoiceParts_Cancel",
-				ExpectedResult = ["", "緊急地震速報は取り消されました", "", ""],
+				ExpectedResult = ["", "", "緊急地震速報は取り消されました", "", ""],
 				EventData = new EewEvent(null, EewEventType.Cancel)
 				{
 					EewId = "20241225123456",
@@ -87,7 +87,7 @@ public class KyoshinMonitorNotificationTemplatesPartsTest
 			new ()
 			{
 				TestName = "EewVoiceParts_Final",
-				ExpectedResult = ["", "緊急地震速報最終報", "最大震度3", "架空県南部"],
+				ExpectedResult = ["", "", "緊急地震速報最終報", "最大震度3", "架空県南部"],
 				EventData = new EewEvent(null, EewEventType.Final)
 				{
 					EewId = "20241225123456",
@@ -110,7 +110,7 @@ public class KyoshinMonitorNotificationTemplatesPartsTest
 			new ()
 			{
 				TestName = "EewVoiceParts_IntensityOver",
-				ExpectedResult = ["", "緊急地震速報", "最大震度5強以上", "サンプル県東部"],
+				ExpectedResult = ["", "", "緊急地震速報", "最大震度5強以上", "サンプル県東部"],
 				EventData = new EewEvent(null, EewEventType.UpdateNewSerial)
 				{
 					EewId = "20241225123456",
@@ -128,6 +128,30 @@ public class KyoshinMonitorNotificationTemplatesPartsTest
 					IsFinal = false,
 					IsCancelled = false,
 					IsReplay = false
+				}
+			},
+			new ()
+			{
+				TestName = "EewVoiceParts_Training",
+				ExpectedResult = ["これは訓練です", "", "緊急地震速報", "最大震度7", "石川県能登地方"],
+				EventData = new EewEvent(null, EewEventType.New)
+				{
+					EewId = "20240101160608",
+					EewSource = "EEW Client(気象庁本庁)",
+					SerialNo = 1,
+					IsTrueCancelled = false,
+					Intensity = JmaIntensity.Int7,
+					IsIntensityOver = false,
+					EpicenterPlaceName = "石川県能登地方",
+					EpicenterLocation = new Location(37.5f, 137.2f),
+					Magnitude = 7.6f,
+					Depth = 10,
+					IsTemporaryEpicenter = false,
+					IsWarning = true,
+					IsFinal = false,
+					IsCancelled = false,
+					IsReplay = false,
+					IsTraining = true
 				}
 			},
 		];

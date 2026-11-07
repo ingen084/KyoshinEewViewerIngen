@@ -1,0 +1,141 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:control="clr-namespace:KyoshinEewViewer.Controls;assembly=KyoshinEewViewer"
+             xmlns:vm="using:KyoshinEewViewer.Series.KyoshinMonitor.SettingPages"
+             xmlns:eew="using:KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew"
+             xmlns:ui="using:FluentAvalonia.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
+             x:DataType="vm:ExternalAppSettingPage" x:CompileBindings="True"
+             x:Class="KyoshinEewViewer.Series.KyoshinMonitor.SettingPages.ExternalAppPage">
+    <UserControl.Resources>
+        <!-- EEW Client のアイコン: 角丸四角から斜体の E と Q をくり抜いたもの -->
+        <StreamGeometry x:Key="EewClientIcon">M5,0 H68 A5,5 0 0 1 73,5 V68 A5,5 0 0 1 68,73 H5 A5,5 0 0 1 0,68 V5 A5,5 0 0 1 5,0 Z M20.11,32.1 L22.39,16.9 L41.5,16.9 L41.5,13.1 L19.11,13.1 L13.55,50.17 L18.32,54.9 L33.62,54.9 L32.98,59.17 L38.21,64.4 L50.79,64.4 L55.29,59.9 L55.6,57.79 L58.16,60.34 L60.84,57.66 L56.3,53.12 L58.89,35.9 L61.5,35.9 L61.5,32.1 L41.29,32.1 L36.29,37.1 L34.19,51.1 L19.88,51.1 L17.6,48.83 L19.54,35.9 L35.5,35.9 L35.5,32.1 Z M51.16,53.34 L52.26,54.45 L51.71,58.1 L49.21,60.6 L39.79,60.6 L37.02,57.83 L39.86,38.9 L42.86,35.9 L55.04,35.9 L52.65,51.85 Z</StreamGeometry>
+    </UserControl.Resources>
+    <UserControl.Styles>
+        <Style Selector="Label">
+            <Setter Property="Foreground" Value="{DynamicResource MainForegroundColor}" />
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style Selector="ui|FASettingsExpander">
+            <Setter Property="Margin" Value="10,3,10,0" />
+        </Style>
+        <Style Selector="ui|FAFontIcon.warning">
+            <Setter Property="Foreground" Value="{DynamicResource EmphasisForegroundColor}" />
+        </Style>
+    </UserControl.Styles>
+    <ScrollViewer>
+        <StackPanel>
+            <TextBlock Text="EEW Client" FontWeight="Bold" Margin="10,10,10,5" />
+            <Expander Margin="10,5">
+                <Expander.Header>
+                    <Grid ColumnDefinitions="40,*" RowDefinitions="*,auto" Margin="0,15">
+                        <PathIcon Data="{StaticResource EewClientIcon}" Width="20" Height="20" HorizontalAlignment="Left" Grid.RowSpan="2" />
+                        <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" Spacing="5">
+                            <control:HyperlinkTextBlock Text="EEW Client by DMDATA.JP" Uri="https://dmdata.jp/docs/eewclient-external-server/" FontSize="14" />
+                            <TextBlock Text="(クリックで外部連携機能の説明ページを開く)" FontSize="12" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Grid.Row="1" Text="EEW Client の外部連携機能から緊急地震速報と、EEW Client に設定した予想地点の予測震度･到達予想時刻を受信します。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+                    </Grid>
+                </Expander.Header>
+                <control:MarkdownViewer HorizontalAlignment="Stretch" Source="avares://KyoshinEewViewer/Assets/EewClientAbout.md" />
+            </Expander>
+
+            <!-- 接続状態 -->
+            <Border
+                Background="{DynamicResource ExpanderHeaderBackground}"
+                MinHeight="72"
+                Padding="{DynamicResource SettingsExpanderItemPadding}"
+                BorderThickness="1" BorderBrush="#19000000"
+                CornerRadius="4" Margin="10,3,10,0">
+                <Grid ColumnDefinitions="45,*" VerticalAlignment="Center">
+                    <ui:FAFontIcon IsVisible="{Binding IsReceiving}" Glyph="&#xf09e;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
+                    <ui:FAFontIcon IsVisible="{Binding IsConnectedNotReceiving}" Classes="warning" Glyph="&#xf071;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
+                    <ui:FAFontIcon IsVisible="{Binding IsDisconnected}" Classes="warning" Glyph="&#xf127;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" />
+                    <StackPanel Grid.Column="1" Spacing="2">
+                        <TextBlock Text="接続状態" />
+                        <TextBlock Text="{Binding Receiver.StateDescription}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <ui:FASettingsExpander Header="連携機能を利用する" Description="設定の変更は即座に反映されます。接続状況はメインウィンドウの時刻情報の横にも表示されます。" IsExpanded="True">
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf1e6;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+                <ui:FASettingsExpander.Footer>
+                    <ToggleSwitch IsChecked="{Binding Config.Eew.DmdataEewClient.Enable}" OnContent="する" OffContent="しない" />
+                </ui:FASettingsExpander.Footer>
+
+                <ui:FASettingsExpanderItem Content="ポート番号" Description="EEW Client の外部連携機能の設定に表示されているポート番号を入力してください。" IsEnabled="{Binding Config.Eew.DmdataEewClient.Enable}">
+                    <ui:FASettingsExpanderItem.Footer>
+                        <NumericUpDown Value="{Binding Config.Eew.DmdataEewClient.Port}" Minimum="0" Maximum="65535" Increment="1" FormatString="0" Width="140" />
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+                <ui:FASettingsExpanderItem Content="予想地点の名前" Description="地点予測に表示する名前です。" IsEnabled="{Binding Config.Eew.DmdataEewClient.Enable}">
+                    <ui:FASettingsExpanderItem.Footer>
+                        <TextBox Text="{Binding Config.Eew.DmdataEewClient.PointName}" PlaceholderText="{x:Static eew:DmdataEewClientMessageConverter.DefaultPointName}" Width="200" />
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+                <ui:FASettingsExpanderItem Content="設定された予想地点を地図上に常に表示する" Description="EEW Client 側で予想地点の共有を許可している場合、緊急地震速報を受信していないときも地図上に表示します。" IsEnabled="{Binding Config.Eew.DmdataEewClient.Enable}">
+                    <ui:FASettingsExpanderItem.Footer>
+                        <ToggleSwitch IsChecked="{Binding Config.Eew.DmdataEewClient.ShowPointOnMap}" OnContent="する" OffContent="しない" />
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+                <ui:FASettingsExpanderItem Content="地図の塗りつぶしに EEW Client の予想震度を優先する" Description="しない場合、DM-D.S.S の電文から気象庁の予想震度を受信していればそちらを使用します。&#xa;「各地域の予想最大震度を地図上に表示する」が有効な場合に使用されます。" IsEnabled="{Binding Config.Eew.DmdataEewClient.Enable}">
+                    <ui:FASettingsExpanderItem.Footer>
+                        <ToggleSwitch IsChecked="{Binding Config.Eew.PreferCalculatedIntensityForecast}" OnContent="する" OffContent="しない" />
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+                <ui:FASettingsExpanderItem Content="訓練を受信する" Description="EEW Client で実行した訓練の緊急地震速報を、「訓練」と明示して表示・通知します。&#xa;作成したワークフローは、トリガーで「訓練も対象にする」を有効にした場合のみ動作します。" IsEnabled="{Binding Config.Eew.DmdataEewClient.Enable}">
+                    <ui:FASettingsExpanderItem.Footer>
+                        <ToggleSwitch IsChecked="{Binding Config.Eew.DmdataEewClient.ReceiveTraining}" OnContent="する" OffContent="しない" />
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+            </ui:FASettingsExpander>
+
+            <TextBlock Text="地点予測の表示方法は「緊急地震速報」の設定ページで変更できます。" FontSize="12" Margin="10,10,10,0" Foreground="{DynamicResource SubForegroundColor}" />
+
+            <TextBlock Text="SignalNow Professional" FontWeight="Bold" Margin="10,20,10,5" />
+            <ui:FASettingsExpander Description="別途ソフトウェアの購入+ソフトウェア本体のインストール･起動が必要です。" IsExpanded="True">
+                <ui:FASettingsExpander.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <control:HyperlinkTextBlock Text="SignalNow Professional" Uri="https://www.kobayashiyoko-com.jp/sn/" />
+                        <TextBlock Text="(クリックで製品ページを開く)" FontSize="12" />
+                    </StackPanel>
+                </ui:FASettingsExpander.Header>
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf52e;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+
+                <ui:FASettingsExpanderItem Content="利用可能であれば連携機能を利用する" Description="再起動後反映されます。">
+                    <ui:FASettingsExpanderItem.Footer>
+                        <ToggleSwitch IsChecked="{Binding Config.Eew.EnableSignalNowProfessional}" OnContent="する" OffContent="しない" />
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+                <ui:FASettingsExpanderItem Content="設定された所在地(予想地点)を地図上に表示する">
+                    <ui:FASettingsExpanderItem.Footer>
+                        <ToggleSwitch IsChecked="{Binding Config.Eew.EnableSignalNowProfessionalLocation}" OnContent="する" OffContent="しない" />
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+                <ui:FASettingsExpanderItem Content="算出された到達予想時間を使用する(実装予定)">
+                    <ui:FASettingsExpanderItem.Footer>
+                        <ToggleSwitch IsEnabled="False" OnContent="する" OffContent="しない" />
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+
+                <ui:FASettingsExpanderItem Content="注意事項" Description="現在地の震度を計算する情報しか送信されない仕様上、地名と予想最大震度は表示されず不明扱いになります。" />
+                <ui:FASettingsExpanderItem>
+                    <TextBlock Text="また、SignalNowProfessionalが起動していない場合でもログファイルが読み取れる場合受信中の表記になります。ご注意ください。"
+                       Background="{DynamicResource WarningBackgroundColor}"
+                       Foreground="{DynamicResource WarningForegroundColor}"
+                       FontWeight="Bold" FontSize="12" />
+                </ui:FASettingsExpanderItem>
+            </ui:FASettingsExpander>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

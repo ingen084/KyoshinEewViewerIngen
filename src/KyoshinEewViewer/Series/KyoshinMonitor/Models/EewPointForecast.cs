@@ -12,7 +12,7 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Models;
 public partial class EewPointForecast : ObservableObject
 {
 	/// <summary>
-	/// 紐づく EEW の地震ID
+	/// 紐づく EEW のキー (<see cref="Eew.Key"/>)
 	/// </summary>
 	public required string EventId { get; init; }
 

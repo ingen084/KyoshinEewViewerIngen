@@ -57,7 +57,12 @@ public partial class ExecuteFileAction : WorkflowAction
 			: (await Template.Parse(WorkingDirectory).RenderAsync(content, m => m.Name)).Trim().Replace("\n", "");
 
 		var info = CreateProcessStartInfo(renderedFilePath, renderedArguments, renderedWorkingDirectory);
-		info.EnvironmentVariables["KEVI_EVENT_DATA"] = JsonSerializer.Serialize(content, JsonSerializerOptions);
+		// 利用条件で外部への送信が禁止されている情報は環境変数で渡さない
+		// 親プロセスから継承した値も残さないよう削除する
+		if (content.IsExternalRelayProhibited)
+			info.EnvironmentVariables.Remove("KEVI_EVENT_DATA");
+		else
+			info.EnvironmentVariables["KEVI_EVENT_DATA"] = JsonSerializer.Serialize(content, JsonSerializerOptions);
 
 		var task = Task.Run(() =>
 		{

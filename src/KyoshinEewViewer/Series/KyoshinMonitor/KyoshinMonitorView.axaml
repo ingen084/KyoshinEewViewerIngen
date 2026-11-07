@@ -153,6 +153,20 @@
                                 <TextBlock IsVisible="{Binding CurrentInformationHost.AxisDisconnected}" Text="&#xf127;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
                                 <TextBlock FontSize="11" Margin="3,0" Text="AXIS" ToolTip.Tip="AXISから緊急地震速報を受信しています。" />
                             </StackPanel>
+                            <StackPanel Orientation="Horizontal" IsVisible="{Binding CurrentInformationHost.DmdataEewClientEnabled}" VerticalAlignment="Top" HorizontalAlignment="Left"
+                                        Classes.disconnected="{Binding CurrentInformationHost.DmdataEewClientDisconnected}"
+                                        Classes.notReceiving="{Binding CurrentInformationHost.DmdataEewClientNotReceiving}"
+                                        ToolTip.Tip="{Binding CurrentInformationHost.DmdataEewClientStateDescription}" ToolTip.ShowDelay="0">
+                                <StackPanel.Styles>
+                                    <Style Selector="StackPanel.notReceiving">
+                                        <Setter Property="TextElement.Foreground" Value="{DynamicResource EmphasisForegroundColor}" />
+                                    </Style>
+                                </StackPanel.Styles>
+                                <TextBlock IsVisible="{Binding !CurrentInformationHost.DmdataEewClientDisconnected}" Text="&#xf09e;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
+                                <TextBlock IsVisible="{Binding CurrentInformationHost.DmdataEewClientDisconnected}" Text="&#xf127;" Classes="icon" FontSize="11" VerticalAlignment="Center" />
+                                <TextBlock IsVisible="{Binding CurrentInformationHost.DmdataEewClientNotReceiving}" Text="&#xf071;" Classes="icon" FontSize="11" VerticalAlignment="Center" Margin="2,0,0,0" />
+                                <TextBlock FontSize="11" Margin="3,0" Text="EEW Client" />
+                            </StackPanel>
                         </UniformGrid>
                     </StackPanel>
                     <TextBlock IsVisible="{Binding CurrentInformationHost.AllEewSourceFailed}" Text="緊急地震速報を受信していません" FontSize="18" HorizontalAlignment="Center" Foreground="{DynamicResource EmphasisForegroundColor}" />

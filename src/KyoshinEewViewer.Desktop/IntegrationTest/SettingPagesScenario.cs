@@ -1,8 +1,11 @@
 #if INTEGRATION_TEST
 using Avalonia.Controls;
 using FluentAvalonia.UI.Controls;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Series;
+using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Series.KyoshinMonitor.SettingPages;
+using KyoshinEewViewer.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,7 +49,15 @@ internal static class SettingPagesScenario
 		await ShowInWindowAsync(settings, new KyoshinMonitorPage(), ["強震モニタ", "普通(震度1程度以上)", "表示しない", "点滅"]);
 
 		UiTestDriver.Step("緊急地震速報の設定の選択欄を確認する");
-		await ShowInWindowAsync(settings, new KyoshinMonitorEewPage(), ["震度5弱以上"]);
+		var config = settings.ViewModel.Config;
+		var eewController = new EewController(
+			AppLog.Create<EewController>(),
+			null!,
+			config,
+			ServiceLocator.Current.RequireService<SoundPlayerService>(),
+			ServiceLocator.Current.RequireService<WorkflowService>());
+		var eewSettingPage = new KyoshinMonitorEewSettingPage(config, eewController, ServiceLocator.Current.RequireService<TimerService>());
+		await ShowInWindowAsync(settings, eewSettingPage.DisplayControl, ["震度5弱以上", "訓練の緊急地震速報を終了する"]);
 	}
 
 	private static async Task ShowInWindowAsync(SettingWindowSession settings, Control page, string[] expectedTexts)

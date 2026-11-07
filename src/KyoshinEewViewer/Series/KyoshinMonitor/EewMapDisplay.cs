@@ -56,10 +56,11 @@ internal static class EewMapDisplay
 		=> color.WithAlpha((byte)((color.Alpha * opacity + 127) / byte.MaxValue));
 
 	/// <summary>
-	/// 震源ラベルを「#報数(状態) 震央地名 Mx.x 最大震度x」の形式で組み立てる。
+	/// 震源ラベルを「#報数(状態) 震央地名 Mx.x 最大震度x」の形式で組み立てる。訓練の場合は先頭に [訓練] を付ける。
 	/// </summary>
 	internal static string BuildLabel(Eew eew)
 	{
+		var training = eew.IsTraining ? "[訓練] " : "";
 		var status = eew.IsCancelled
 			? eew.IsTrueCancelled ? "(取消)" : "(取消?)"
 			: eew.IsFinal ? "(終)" : "";
@@ -73,7 +74,7 @@ internal static class EewMapDisplay
 		if (eew.IsIntensityOver && eew.MaxIntensity != KyoshinMonitorLib.JmaIntensity.Unknown)
 			intensity += "以上";
 
-		return $"#{eew.SerialNo}{status} {place} M{magnitude} 最大震度{intensity}";
+		return $"{training}#{eew.SerialNo}{status} {place} M{magnitude} 最大震度{intensity}";
 	}
 
 	/// <summary>

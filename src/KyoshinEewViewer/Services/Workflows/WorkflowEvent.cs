@@ -34,4 +34,10 @@ public abstract class WorkflowEvent(string eventType, SeriesBase? eventedSeries)
 
 	[Description("テスト実行で発火したイベントかどうか")]
 	public bool IsTest { get; init; }
+
+	/// <summary>
+	/// 外部への送信が禁止されている情報を含むか
+	/// </summary>
+	[JsonIgnore]
+	public bool IsExternalRelayProhibited { get; init; }
 }

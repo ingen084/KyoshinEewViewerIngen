@@ -58,6 +58,7 @@ public static class KyoshinMonitorNotificationTemplates
 	/// </summary>
 	public const string EewNotificationTitle = """
 		{{if IsCancelled; "[取消] "; end
+		if IsTraining; "[訓練] "; end
 		if IsReplay; "[リプレイ] "; end
 		"緊急地震速報"
 		if IsFinal; "(最終"; else; "("; end
@@ -77,6 +78,7 @@ public static class KyoshinMonitorNotificationTemplates
 	/// EEW音声読み上げ用分離テンプレート
 	/// </summary>
 	public static readonly string[] EewVoiceNotificationParts = [
+		"{{if IsTraining}}これは訓練です{{end}}",
 		"{{if IsReplay}}リプレイ中です{{end}}",
 		"{{if IsCancelled}}緊急地震速報は取り消されました{{else if EventSubType == \"Final\"}}緊急地震速報最終報{{else}}緊急地震速報{{end}}",
 		"{{if !IsCancelled && EventSubType != \"Cancel\" && EventSubType != \"CancelWarning\"}}最大{{IntensityLongName}}{{if IsIntensityOver}}以上{{end}}{{end}}",
