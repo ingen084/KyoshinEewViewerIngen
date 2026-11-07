@@ -231,6 +231,20 @@ public partial class KyoshinMonitorSeries : SeriesBase
 		ReplayFileInformationHost.PointForecastController.DisplayValuesUpdated += () => KyoshinMonitorLayer.RefreshPointForecast();
 		MapDisplayParameter = new() { OverlayLayers = [ShakeDetectionAreaLayer, KyoshinMonitorLayer] };
 
+		// 外部アプリに設定された地点は、緊急地震速報を受信していないときも地図上に表示する
+		Observable.CombineLatest(
+				RealtimeInformationHost.SignalNowEewReceiver.ObservePropertyChanged(x => x.CurrentLocation),
+				config.Eew.ObservePropertyChanged(x => x.EnableSignalNowProfessionalLocation),
+				RealtimeInformationHost.DmdataEewClientReceiver.ObservePropertyChanged(x => x.UserPointLocation),
+				config.Eew.ObservePropertyChanged(x => x.DmdataEewClient, x => x.Enable),
+				config.Eew.ObservePropertyChanged(x => x.DmdataEewClient, x => x.ShowPointOnMap),
+				(snpLocation, showSnpLocation, eewClientLocation, eewClientEnabled, showEewClientLocation) => new[]
+				{
+					showSnpLocation ? snpLocation : null,
+					eewClientEnabled && showEewClientLocation ? eewClientLocation : null,
+				}.OfType<KyoshinMonitorLib.Location>().ToArray())
+			.Subscribe(locations => KyoshinMonitorLayer.UserLocations = locations);
+
 		config.Eew.ObservePropertyChanged(x => x.ShowDetails).Subscribe(x => ShowEewAccuracy = x);
 		config.KyoshinMonitor.ObservePropertyChanged(x => x.ShowColorSample).Subscribe(x => ShowColorSample = x);
 		config.ObservePropertyChanged(x => x.KyoshinMonitor, x => x.ReceiveMode).Subscribe(_ => UpdateSocketPoolState());

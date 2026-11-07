@@ -57,12 +57,15 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 	public void RefreshPointForecast()
 		=> RefreshRequest();
 
-	private Location? _currentLocation;
-	public Location? CurrentLocation
+	private Location[] _userLocations = [];
+	/// <summary>
+	/// 利用者が外部アプリに設定した地点 (SignalNow Professional の所在地・EEW Client の予想地点)
+	/// </summary>
+	public Location[] UserLocations
 	{
-		get => _currentLocation;
+		get => _userLocations;
 		set {
-			_currentLocation = value;
+			_userLocations = value;
 			RefreshRequest();
 		}
 	}
@@ -740,11 +743,11 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 				}
 			}
 
-			if (CurrentLocation != null)
+			foreach (var userLocation in UserLocations)
 			{
 				var size = 5;
 
-				var basePoint = CurrentLocation.ToPixel(param.Zoom);
+				var basePoint = userLocation.ToPixel(param.Zoom);
 
 				canvas.DrawLine((basePoint - new PointD(0, size)).AsSkPoint(), (basePoint + new PointD(0, size)).AsSkPoint(), CurrentLocationPen);
 				canvas.DrawLine((basePoint - new PointD(size, 0)).AsSkPoint(), (basePoint + new PointD(size, 0)).AsSkPoint(), CurrentLocationPen);

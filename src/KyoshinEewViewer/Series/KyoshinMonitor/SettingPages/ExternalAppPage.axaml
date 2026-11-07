@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:control="clr-namespace:KyoshinEewViewer.Controls;assembly=KyoshinEewViewer"
              xmlns:vm="using:KyoshinEewViewer.Series.KyoshinMonitor.SettingPages"
+             xmlns:eew="using:KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew"
              xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
              x:DataType="vm:ExternalAppSettingPage" x:CompileBindings="True"
@@ -73,6 +74,16 @@
                 <ui:FASettingsExpanderItem Content="ポート番号" Description="EEW Client の外部連携機能の設定に表示されているポート番号を入力してください。" IsEnabled="{Binding Config.Eew.DmdataEewClient.Enable}">
                     <ui:FASettingsExpanderItem.Footer>
                         <NumericUpDown Value="{Binding Config.Eew.DmdataEewClient.Port}" Minimum="0" Maximum="65535" Increment="1" FormatString="0" Width="140" />
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+                <ui:FASettingsExpanderItem Content="予想地点の名前" Description="地点予測に表示する名前です。" IsEnabled="{Binding Config.Eew.DmdataEewClient.Enable}">
+                    <ui:FASettingsExpanderItem.Footer>
+                        <TextBox Text="{Binding Config.Eew.DmdataEewClient.PointName}" PlaceholderText="{x:Static eew:DmdataEewClientMessageConverter.DefaultPointName}" Width="200" />
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
+                <ui:FASettingsExpanderItem Content="設定された予想地点を地図上に常に表示する" Description="EEW Client 側で予想地点の共有を許可している場合、緊急地震速報を受信していないときも地図上に表示します。" IsEnabled="{Binding Config.Eew.DmdataEewClient.Enable}">
+                    <ui:FASettingsExpanderItem.Footer>
+                        <ToggleSwitch IsChecked="{Binding Config.Eew.DmdataEewClient.ShowPointOnMap}" OnContent="する" OffContent="しない" />
                     </ui:FASettingsExpanderItem.Footer>
                 </ui:FASettingsExpanderItem>
                 <ui:FASettingsExpanderItem Content="地図の塗りつぶしに EEW Client の予想震度を優先する" Description="しない場合、DM-D.S.S の電文から気象庁の予想震度を受信していればそちらを使用します。&#xa;「各地域の予想最大震度を地図上に表示する」が有効な場合に使用されます。" IsEnabled="{Binding Config.Eew.DmdataEewClient.Enable}">

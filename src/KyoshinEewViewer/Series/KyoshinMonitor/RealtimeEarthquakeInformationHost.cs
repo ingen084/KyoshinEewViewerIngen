@@ -28,7 +28,7 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 
 	private EewController EewController { get; }
 	public KyoshinMonitorWatchService KyoshinMonitorWatcher { get; }
-	private SignalNowFileWatcher SignalNowEewReceiver { get; }
+	public SignalNowFileWatcher SignalNowEewReceiver { get; }
 	public DmdataEewClientReceiver DmdataEewClientReceiver { get; }
 	public EewTelegramSubscriber EewTelegramSubscriber { get; }
 	private AxisEewReceiver AxisEewReceiver { get; }

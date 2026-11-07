@@ -99,11 +99,11 @@ public class DmdataEewClientMessageConverterTests
 		Assert.Null(eew.WarningAreas);
 
 		var userPointLocation = new Location(35.1111f, 135.1111f);
-		var forecast = Assert.IsType<EewPointForecast>(DmdataEewClientMessageConverter.ToPointForecast(message, ReceiveTime, userPointLocation));
+		var forecast = Assert.IsType<EewPointForecast>(DmdataEewClientMessageConverter.ToPointForecast(message, ReceiveTime, userPointLocation, DmdataEewClientMessageConverter.DefaultPointName));
 		Assert.Equal("20240101160608", forecast.EventId);
 		Assert.Equal(DmdataEewClientMessageConverter.PointForecastSourceKey, forecast.SourceKey);
 		Assert.Equal("EEW Client", forecast.DisplaySource);
-		Assert.Equal(DmdataEewClientMessageConverter.PointName, forecast.PointName);
+		Assert.Equal(DmdataEewClientMessageConverter.DefaultPointName, forecast.PointName);
 		Assert.Equal(4, forecast.SerialNo);
 		// user-point で共有された座標が使われる
 		Assert.Equal(userPointLocation, forecast.Location);
@@ -137,7 +137,7 @@ public class DmdataEewClientMessageConverterTests
 		Assert.NotNull(eew.CalculatedIntensityForecastMap);
 		Assert.Empty(eew.CalculatedIntensityForecastMap);
 
-		Assert.Null(DmdataEewClientMessageConverter.ToPointForecast(message, ReceiveTime, null));
+		Assert.Null(DmdataEewClientMessageConverter.ToPointForecast(message, ReceiveTime, null, DmdataEewClientMessageConverter.DefaultPointName));
 	}
 
 	[Fact(DisplayName = "計測震度が無い場合は震度階級の下限値で代用し、到達時刻が未計算なら到達時刻なしになる")]
@@ -154,7 +154,7 @@ public class DmdataEewClientMessageConverterTests
 				 "arrivalTime":"2026-09-11T17:52:34+09:00",
 				 "pointForecast":{"sWave":{"status":"not-calculated","time":"2026-09-11T17:55:55+09:00"},"intensity":{"type":"plum","k":null,"int":"{{{{intensity}}}}"}}}
 				""");
-			var forecast = Assert.IsType<EewPointForecast>(DmdataEewClientMessageConverter.ToPointForecast(message, ReceiveTime, null));
+			var forecast = Assert.IsType<EewPointForecast>(DmdataEewClientMessageConverter.ToPointForecast(message, ReceiveTime, null, DmdataEewClientMessageConverter.DefaultPointName));
 			Assert.Equal(expected, forecast.RealtimeIntensity);
 			Assert.Equal("EEW Client (PLUM)", forecast.DisplaySource);
 			// status が ok でない場合は time があっても採用しない
@@ -179,7 +179,7 @@ public class DmdataEewClientMessageConverterTests
 		Assert.Equal(5, eew.SerialNo);
 		Assert.Null(eew.Hypocenter);
 
-		Assert.Null(DmdataEewClientMessageConverter.ToPointForecast(message, ReceiveTime, null));
+		Assert.Null(DmdataEewClientMessageConverter.ToPointForecast(message, ReceiveTime, null, DmdataEewClientMessageConverter.DefaultPointName));
 	}
 
 	[Fact(DisplayName = "使用しない項目に想定外の値が入っていても緊急地震速報を受信でき、解釈できない最大震度は不明になる")]
@@ -196,7 +196,7 @@ public class DmdataEewClientMessageConverterTests
 		Assert.True(message.IsTest);
 		var eew = DmdataEewClientMessageConverter.ToEew(message, ReceiveTime);
 		Assert.Equal(JmaIntensity.Unknown, eew.MaxIntensity);
-		Assert.Equal(3.5, DmdataEewClientMessageConverter.ToPointForecast(message, ReceiveTime, null)?.RealtimeIntensity);
+		Assert.Equal(3.5, DmdataEewClientMessageConverter.ToPointForecast(message, ReceiveTime, null, DmdataEewClientMessageConverter.DefaultPointName)?.RealtimeIntensity);
 	}
 
 	[Fact(DisplayName = "ドキュメント上の名称 (regionForecasts / to) でも細分区域の予測震度を読み取れる")]

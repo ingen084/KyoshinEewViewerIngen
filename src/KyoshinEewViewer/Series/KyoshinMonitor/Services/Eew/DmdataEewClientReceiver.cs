@@ -88,9 +88,16 @@ public partial class DmdataEewClientReceiver : ObservableObject, IDisposable
 
 	/// <summary>
 	/// EEW Client から共有された予想地点の座標 接続ごとに通知されるため接続時に破棄する
+	/// 受信ループからのみ書き込む
+	/// </summary>
+	[ObservableProperty]
+	public partial Location? UserPointLocation { get; private set; }
+
+	/// <summary>
+	/// 直前に地点予測へ使用した予想地点の名前 名前が変わったら前の名前の地点予測を消すために使う
 	/// 受信ループからのみ読み書きする
 	/// </summary>
-	private Location? _userPointLocation;
+	private string? _lastPointName;
 
 	private readonly Lock _lock = new();
 	private CancellationTokenSource? _tokenSource;
@@ -125,8 +132,8 @@ public partial class DmdataEewClientReceiver : ObservableObject, IDisposable
 
 	private void OnConfigChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		// 訓練を受信するかは受信時に判定するため、接続し直さない
-		if (e.PropertyName == nameof(KyoshinEewViewerConfiguration.EewConfig.DmdataEewClientConfig.ReceiveTraining))
+		// 接続先に関わらない設定は受信時や表示時に参照するため、接続し直さない
+		if (e.PropertyName is not (nameof(KyoshinEewViewerConfiguration.EewConfig.DmdataEewClientConfig.Enable) or nameof(KyoshinEewViewerConfiguration.EewConfig.DmdataEewClientConfig.Port)))
 			return;
 
 		lock (_lock)
@@ -193,7 +200,7 @@ public partial class DmdataEewClientReceiver : ObservableObject, IDisposable
 				Logger.LogInformation("EEW Clientに接続しました: {Uri}", uri);
 				reconnectInterval = InitialReconnectInterval;
 				isFailureLogged = false;
-				_userPointLocation = null;
+				UserPointLocation = null;
 				UpdateState(token, DmdataEewClientConnectionState.ConnectedNotReceiving, null);
 
 				await ReceiveLoopAsync(webSocket, token);
@@ -301,8 +308,8 @@ public partial class DmdataEewClientReceiver : ObservableObject, IDisposable
 
 	private void HandleUserPoint(DmdataEewClientMessage message)
 	{
-		_userPointLocation = DmdataEewClientMessageConverter.ToUserPointLocation(message);
-		if (_userPointLocation is { } location)
+		UserPointLocation = DmdataEewClientMessageConverter.ToUserPointLocation(message);
+		if (UserPointLocation is { } location)
 			Logger.LogInformation("EEW Clientから予想地点の座標を受信しました: {Latitude:0.000}, {Longitude:0.000}", location.Latitude, location.Longitude);
 		else
 			Logger.LogInformation("EEW Clientから予想地点の座標は共有されませんでした: {ValueKind}", message.Location?.ValueKind ?? JsonValueKind.Null);
@@ -338,7 +345,15 @@ public partial class DmdataEewClientReceiver : ObservableObject, IDisposable
 		if (!EewController.TryGetEew(eew.Key, out _))
 			return;
 
-		if (DmdataEewClientMessageConverter.ToPointForecast(message, receiveTime, _userPointLocation) is { } forecast)
+		var pointName = string.IsNullOrWhiteSpace(Config.Eew.DmdataEewClient.PointName)
+			? DmdataEewClientMessageConverter.DefaultPointName
+			: Config.Eew.DmdataEewClient.PointName.Trim();
+		// 地点予測は名前ごとに保持されるため、名前を変えたら前の名前の地点予測を残さない
+		if (_lastPointName is { } lastPointName && lastPointName != pointName)
+			pointForecastController.RemoveSource(eew.Key, DmdataEewClientMessageConverter.PointForecastSourceKey);
+		_lastPointName = pointName;
+
+		if (DmdataEewClientMessageConverter.ToPointForecast(message, receiveTime, UserPointLocation, pointName) is { } forecast)
 			pointForecastController.Update([forecast]);
 		else
 			// 予想が得られなくなったら、それ以前の予想を表示し続けない

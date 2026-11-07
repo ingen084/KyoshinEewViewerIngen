@@ -265,6 +265,18 @@ public partial class KyoshinEewViewerConfiguration : ObservableObject, IWindowPl
 			/// </summary>
 			[ObservableProperty]
 			public partial bool ReceiveTraining { get; set; }
+
+			/// <summary>
+			/// EEW Client から共有された予想地点を、緊急地震速報の受信時以外も地図上に表示するか
+			/// </summary>
+			[ObservableProperty]
+			public partial bool ShowPointOnMap { get; set; }
+
+			/// <summary>
+			/// 地点予測に表示する予想地点の名前 空の場合は既定の名前を使用する
+			/// </summary>
+			[ObservableProperty]
+			public partial string PointName { get; set; } = "";
 		}
 	}
 

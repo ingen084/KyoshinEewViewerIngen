@@ -81,6 +81,29 @@ public class DmdataEewClientReceiverTests
 		Assert.False(eew?.IsCancelled);
 	}
 
+	[Fact(DisplayName = "共有された予想地点を公開し、地点予測には設定した名前を使い、名前を変えると前の名前の地点予測を残さない")]
+	public void 地点予測には設定した予想地点の名前を使う()
+	{
+		using var fixture = CreateFixture();
+		Assert.Null(fixture.Receiver.UserPointLocation);
+
+		fixture.Receive("""{"type":"user-point","location":[139.7,35.6]}""");
+		var location = fixture.Receiver.UserPointLocation;
+		Assert.NotNull(location);
+		Assert.Equal((35.6f, 139.7f), (location.Latitude, location.Longitude));
+
+		fixture.Receive(EewMessage(1, pointForecast: PointForecast("2.6")));
+		var forecast = Assert.Single(Assert.Single(fixture.Updates.Last()).PointForecasts!);
+		Assert.Equal(DmdataEewClientMessageConverter.DefaultPointName, forecast.PointName);
+		Assert.Same(location, forecast.Location);
+
+		fixture.Config.Eew.DmdataEewClient.PointName = " 自宅 ";
+		fixture.Receive(EewMessage(2, pointForecast: PointForecast("3.6")));
+		forecast = Assert.Single(Assert.Single(fixture.Updates.Last()).PointForecasts!);
+		Assert.Equal("自宅", forecast.PointName);
+		Assert.Equal(3.6, forecast.RealtimeIntensity);
+	}
+
 	[Fact(DisplayName = "訓練を受信する設定では、訓練を同じ地震IDの実際の EEW と区別し、実際の EEW を受信すると訓練を終了して報数・地点予測・取消を引き継がない")]
 	public void 訓練を受信する設定では訓練を実際のEEWと区別する()
 	{
@@ -153,7 +176,7 @@ public class DmdataEewClientReceiverTests
 		Assert.True(eew?.IsCancellationRelayProhibited);
 	}
 
-	[Fact(DisplayName = "接続状態は EEW Client の通知に追従し、接続先の設定の変更では前の状態を残さず接続し直し、再度の開始と訓練の切り替えでは接続を維持する")]
+	[Fact(DisplayName = "接続状態は EEW Client の通知に追従し、接続先の設定の変更では前の状態を残さず接続し直し、再度の開始と接続先に関わらない設定の変更では接続を維持する")]
 	public async Task 接続状態はEEWClientの通知と設定の変更に追従する()
 	{
 		using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
@@ -177,8 +200,10 @@ public class DmdataEewClientReceiverTests
 		await SendAsync(firstSocket, """{"type":"server-status","status":"open"}""", token);
 		await WaitUntilAsync(() => receiver.State == DmdataEewClientConnectionState.Receiving, "受信可能", token);
 
-		// 訓練を受信するかは受信時に判定するため、切り替えても同じ接続で受信を続ける
+		// 接続先に関わらない設定は、切り替えても同じ接続で受信を続ける
 		config.ReceiveTraining = true;
+		config.PointName = "自宅";
+		config.ShowPointOnMap = true;
 		Assert.Equal(DmdataEewClientConnectionState.Receiving, receiver.State);
 		await SendAsync(firstSocket, EewMessage(1, isTest: true), token);
 		await WaitUntilAsync(() => fixture.Controller.TryGetEew(Eew.GetKey(EventId, true), out _), "訓練の受信", token);

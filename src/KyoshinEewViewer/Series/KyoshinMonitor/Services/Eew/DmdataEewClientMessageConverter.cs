@@ -22,9 +22,9 @@ public static class DmdataEewClientMessageConverter
 	public const string DisplaySourceName = "EEW Client";
 
 	/// <summary>
-	/// EEW Client からは地点名が送られてこないため固定の名称を使用する
+	/// EEW Client からは地点名が送られてこないため、設定で名前を指定していない場合に使用する名前
 	/// </summary>
-	public const string PointName = "EEW Client 予想地点";
+	public const string DefaultPointName = "EEW Client 予想地点";
 
 	private static readonly TimeSpan JstOffset = TimeSpan.FromHours(9);
 
@@ -101,8 +101,9 @@ public static class DmdataEewClientMessageConverter
 	/// <param name="message">type が eew のメッセージ</param>
 	/// <param name="receiveTime">受信時刻</param>
 	/// <param name="userPointLocation">user-point で共有された予想地点の座標 共有されていない場合は null</param>
+	/// <param name="pointName">表示に使用する予想地点の名前</param>
 	/// <returns>予想地点が設定されていない、または予測震度が得られない場合は null</returns>
-	public static EewPointForecast? ToPointForecast(DmdataEewClientMessage message, DateTime receiveTime, Location? userPointLocation)
+	public static EewPointForecast? ToPointForecast(DmdataEewClientMessage message, DateTime receiveTime, Location? userPointLocation, string pointName)
 	{
 		if (string.IsNullOrWhiteSpace(message.EventId) || message.IsCanceled)
 			return null;
@@ -118,7 +119,7 @@ public static class DmdataEewClientMessageConverter
 			SourceKey = PointForecastSourceKey,
 			DisplaySource = intensity.Type == "plum" ? $"{DisplaySourceName} (PLUM)" : DisplaySourceName,
 			SerialNo = message.Serial,
-			PointName = PointName,
+			PointName = pointName,
 			// 座標が共有されていない場合は地図には表示しない
 			Location = userPointLocation,
 			RealtimeIntensity = realtimeIntensity,
