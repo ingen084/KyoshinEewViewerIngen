@@ -8,6 +8,10 @@
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
              x:DataType="vm:ExternalAppSettingPage" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.SettingPages.ExternalAppPage">
+    <UserControl.Resources>
+        <!-- EEW Client のアイコン: 角丸四角から斜体の E と Q をくり抜いたもの -->
+        <StreamGeometry x:Key="EewClientIcon">M5,0 H68 A5,5 0 0 1 73,5 V68 A5,5 0 0 1 68,73 H5 A5,5 0 0 1 0,68 V5 A5,5 0 0 1 5,0 Z M20.11,32.1 L22.39,16.9 L41.5,16.9 L41.5,13.1 L19.11,13.1 L13.55,50.17 L18.32,54.9 L33.62,54.9 L32.98,59.17 L38.21,64.4 L50.79,64.4 L55.29,59.9 L55.6,57.79 L58.16,60.34 L60.84,57.66 L56.3,53.12 L58.89,35.9 L61.5,35.9 L61.5,32.1 L41.29,32.1 L36.29,37.1 L34.19,51.1 L19.88,51.1 L17.6,48.83 L19.54,35.9 L35.5,35.9 L35.5,32.1 Z M51.16,53.34 L52.26,54.45 L51.71,58.1 L49.21,60.6 L39.79,60.6 L37.02,57.83 L39.86,38.9 L42.86,35.9 L55.04,35.9 L52.65,51.85 Z</StreamGeometry>
+    </UserControl.Resources>
     <UserControl.Styles>
         <Style Selector="Label">
             <Setter Property="Foreground" Value="{DynamicResource MainForegroundColor}" />
@@ -29,7 +33,7 @@
             <Expander Margin="10,5">
                 <Expander.Header>
                     <Grid ColumnDefinitions="40,*" RowDefinitions="*,auto" Margin="0,15">
-                        <ui:FAFontIcon Glyph="&#xf52e;" FontFamily="{StaticResource IconFont}" FontSize="20" HorizontalAlignment="Left" Grid.RowSpan="2" />
+                        <PathIcon Data="{StaticResource EewClientIcon}" Width="20" Height="20" HorizontalAlignment="Left" Grid.RowSpan="2" />
                         <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal" Spacing="5">
                             <control:HyperlinkTextBlock Text="EEW Client by DMDATA.JP" Uri="https://dmdata.jp/docs/eewclient-external-server/" FontSize="14" />
                             <TextBlock Text="(クリックで外部連携機能の説明ページを開く)" FontSize="12" />
