@@ -14,6 +14,10 @@ public static class InterProcessMessages
 	/// <summary>メインウィンドウを表示させる</summary>
 	public static InterProcessMessageType<InterProcessEmpty, InterProcessEmpty> ShowMainWindow { get; }
 		= new("ShowMainWindow", InterProcessMessageJsonContext.Default.InterProcessEmpty, InterProcessMessageJsonContext.Default.InterProcessEmpty);
+
+	/// <summary>クリックされた通知を、通知を出したインスタンスへ届ける</summary>
+	public static InterProcessMessageType<NotificationActivatedRequest, InterProcessEmpty> NotificationActivated { get; }
+		= new("NotificationActivated", InterProcessMessageJsonContext.Default.NotificationActivatedRequest, InterProcessMessageJsonContext.Default.InterProcessEmpty);
 }
 
 /// <summary>内容を持たない要求・応答</summary>
@@ -28,7 +32,12 @@ public sealed record InterProcessEmpty
 /// <param name="Version">バージョン</param>
 public sealed record InstanceInfo(int ProcessId, string? StandaloneSeriesName, string Version);
 
+/// <summary>クリックされた通知</summary>
+/// <param name="Arguments">通知に埋め込んだ引数</param>
+public sealed record NotificationActivatedRequest(string Arguments);
+
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 [JsonSerializable(typeof(InterProcessEmpty))]
 [JsonSerializable(typeof(InstanceInfo))]
+[JsonSerializable(typeof(NotificationActivatedRequest))]
 internal partial class InterProcessMessageJsonContext : JsonSerializerContext;

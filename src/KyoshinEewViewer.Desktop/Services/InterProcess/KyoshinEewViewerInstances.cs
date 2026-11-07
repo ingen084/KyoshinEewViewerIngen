@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models.Events;
+using KyoshinEewViewer.Desktop.Notification;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -51,6 +52,11 @@ public static class KyoshinEewViewerInstances
 		messenger.Register(InterProcessMessages.ShowMainWindow, (_, _) =>
 		{
 			StrongReferenceMessenger.Default.Send(new ShowMainWindowRequested());
+			return Task.FromResult(InterProcessEmpty.Instance);
+		});
+		messenger.Register(InterProcessMessages.NotificationActivated, (request, _) =>
+		{
+			NotificationActivation.Handle(request.Arguments);
 			return Task.FromResult(InterProcessEmpty.Instance);
 		});
 
