@@ -59,7 +59,7 @@ public class KyoshinMonitorLayer(KyoshinEewViewerConfiguration config, KyoshinMo
 
 	private Location[] _userLocations = [];
 	/// <summary>
-	/// 利用者が外部アプリに設定した地点 (SignalNow Professional の所在地・EEW Client の予想地点)
+	/// 利用者が外部アプリに設定した地点
 	/// </summary>
 	public Location[] UserLocations
 	{

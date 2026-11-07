@@ -60,7 +60,7 @@
                 <ui:FASettingsExpander.Footer>
                     <Button Content="終了する" Command="{Binding EndTraining}" IsEnabled="{Binding IsTrainingDisplayed}" />
                 </ui:FASettingsExpander.Footer>
-                <TextBlock Text="訓練は、外部アプリ連携の EEW Client と、DM-D.S.S の「訓練報(テスト等)の受信を行う」を有効にした場合に受信します。&#xA;訓練以外の緊急地震速報を受信すると訓練は自動で終了し、訓練以外の緊急地震速報の表示中は訓練を受信しても表示しません。" FontSize="12" Margin="5,-9,0,0" />
+                <TextBlock Text="訓練は、別途受信ソースで訓練報(テスト等)の受信を行う設定を有効にした場合に受信します。&#xA;訓練以外の緊急地震速報を受信すると訓練は自動で終了し、訓練以外の緊急地震速報の表示中は訓練を受信しても表示しません。" FontSize="12" Margin="5,-9,0,0" />
             </ui:FASettingsExpander>
 
             <TextBlock Text="表示設定" FontWeight="Bold" Margin="10,20,10,5" />
@@ -112,7 +112,7 @@
             </ui:FASettingsExpander>
 
             <!-- 地点予測を提供する連携機能が有効な場合のみ表示する -->
-            <ui:FASettingsExpander Header="地点予測の表示" Description="外部アプリから提供された地点ごとの予測震度と到達までのカウントダウンの表示方法です。" IsExpanded="True">
+            <ui:FASettingsExpander Header="地点予測の表示" Description="外部アプリなどから提供された地点ごとの予測震度と到達までのカウントダウンの表示方法です。" IsExpanded="True">
                 <ui:FASettingsExpander.IsVisible>
                     <MultiBinding Converter="{x:Static BoolConverters.Or}">
                         <Binding Path="Config.Eew.DmdataEewClient.Enable" />
