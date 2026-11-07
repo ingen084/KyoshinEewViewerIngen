@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using U8Xml;
@@ -12,7 +13,7 @@ public struct HypocenterArea(XmlNode node)
 	/// <summary>
 	/// 震央地名
 	/// </summary>
-	public string Name => _name ??= (Node.TryFindStringNode(Literals.Name(), out var n) ? n : throw new JmaXmlParseException("Area ノードが存在しません"));
+	public string Name => _name ??= (Node.TryFindStringNode(Literals.Name(), out var n) ? n : throw new JmaXmlParseException("Name ノードが存在しません"));
 
 	private string? _code = null;
 	/// <summary>
@@ -24,14 +25,14 @@ public struct HypocenterArea(XmlNode node)
 	/// <summary>
 	/// 震源要素(複数ある場合は1件目のみ)
 	/// </summary>
-	public Coordinate Coordinate => _coordinate ??= (Node.TryFindChild(Literals.JmxEbCoordinate(), out var n) ? new(n) : throw new JmaXmlParseException("Coordinate ノードが存在しません"));
+	public Coordinate Coordinate => _coordinate ??= (Node.TryFindElementBasis("Coordinate"u8, out var n) ? new(n) : throw new JmaXmlParseException("Coordinate ノードが存在しません"));
 
 	/// <summary>
 	/// 震源要素<br/>
 	/// 顕著な地震の震源要素更新のお知らせ の場合は1件以上となる
 	/// </summary>
 	public IEnumerable<Coordinate> Coordinates
-		=> Node.Children.Where(c => c.Name == Literals.JmxEbCoordinate()).Select(c => new Coordinate(c));
+		=> Node.Children.Where(c => c.IsElementBasis("Coordinate"u8)).Select(c => new Coordinate(c));
 
 	private string? _reduceName = null;
 	/// <summary>
@@ -82,11 +83,63 @@ public struct HypocenterArea(XmlNode node)
 	/// </summary>
 	public string? NameFromMark => _nameFromMark ??= (Node.TryFindStringNode(Literals.NameFromMark(), out var n) ? n : null);
 
+	private string? _markCode = null;
+	/// <summary>
+	/// 震央補助表現の目印に対応するコード。存在しない場合は null。
+	/// </summary>
+	public string? MarkCode => _markCode ??= (Node.TryFindStringNode("MarkCode"u8, out var n) ? n : null);
+
+	private string? _direction = null;
+	/// <summary>
+	/// 目印から見た震央の方向（16 方位）。存在しない場合は null。
+	/// </summary>
+	public string? Direction => _direction ??= (Node.TryFindStringNode("Direction"u8, out var n) ? n : null);
+
+	private int? _distance = null;
+	/// <summary>
+	/// 目印から震央までの距離。存在しない場合は null。
+	/// </summary>
+	public int? Distance => _distance ??= (Node.TryFindIntNode("Distance"u8, out var n) ? n : null);
+
+	/// <summary>
+	/// 距離の単位（km）。Distance が存在しない場合は null。
+	/// </summary>
+	public string? DistanceUnit => Node.TryFindChild("Distance"u8, out var n)
+		? (n.TryFindStringAttribute(Literals.AttrUnit(), out var unit) ? unit : throw new JmaXmlParseException("unit 属性が存在しません")) : null;
+
+	/// <summary>
+	/// 震央地名コードの種別。Code が存在しない場合は null。
+	/// </summary>
+	public string? CodeType => GetCodeType(Literals.Code());
+
+	/// <summary>
+	/// 短縮用震央地名コードの種別。存在しない場合は null。
+	/// </summary>
+	public string? ReduceCodeType => GetCodeType(Literals.ReduceCode());
+
+	/// <summary>
+	/// 詳細震央地名コードの種別。存在しない場合は null。
+	/// </summary>
+	public string? DetailedCodeType => GetCodeType(Literals.DetailedCode());
+
+	/// <summary>
+	/// 震央補助コードの種別。存在しない場合は null。
+	/// </summary>
+	public string? MarkCodeType => GetCodeType("MarkCode"u8);
+
+	private string? GetCodeType(ReadOnlySpan<byte> name)
+	{
+		if (!Node.TryFindChild(name, out var n))
+			return null;
+		return n.TryFindStringAttribute(Literals.AttrType(), out var value) ? value : throw new JmaXmlParseException("type 属性が存在しません");
+	}
+
 	private string? _source = null;
 	/// <summary>
 	/// 震源決定機関<br/>
 	/// 国外で発生した地震について、気象庁以外の機関で決定された震源要素を採用して情報発表した場合<br/>
 	/// 例: PTWC、WCATWC、USGS
+	/// <para>Area 内の Source を読む旧 API。仕様で定める配置の取得には Hypocenter.Source を使用する。</para>
 	/// </summary>
 	public string? Source => _source ??= (Node.TryFindStringNode(Literals.Source(), out var n) ? n : null);
 }

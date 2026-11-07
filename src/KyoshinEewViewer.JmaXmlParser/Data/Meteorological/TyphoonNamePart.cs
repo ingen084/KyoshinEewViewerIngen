@@ -1,3 +1,4 @@
+using System;
 using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Meteorological;
@@ -5,6 +6,12 @@ namespace KyoshinEewViewer.JmaXmlParser.Data.Meteorological;
 public struct TyphoonNamePart(XmlNode node)
 {
 	private XmlNode Node { get; set; } = node;
+
+	private DateTimeOffset? _time = null;
+	/// <summary>
+	/// 呼称の対象時刻。存在しない場合は null。
+	/// </summary>
+	public DateTimeOffset? Time => _time ??= (Node.TryFindDateTimeNode("Time"u8, out var n) ? n : null);
 
 	private string? _name = null;
 	/// <summary>

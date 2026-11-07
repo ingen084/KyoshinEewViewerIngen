@@ -7,9 +7,21 @@ public struct MeteorologicalBody(XmlNode node)
 {
 	private XmlNode Node { get; set; } = node;
 
+	/// <summary>
+	/// 種類ごとの一連の気象情報の全件。
+	/// </summary>
+	public IEnumerable<MeteorologicalInfoGroup> MeteorologicalInfoGroups
+		=> Node.Children.Where(c => c.Name == Literals.MeteorologicalInfos()).Select(c => new MeteorologicalInfoGroup(c));
+
+	/// <summary>
+	/// 気象情報についての注意事項。
+	/// </summary>
+	public IEnumerable<string> Notices
+		=> Node.Children.Where(c => c.Name == "Notice"u8).Select(c => c.InnerText.ToString());
+
 	private string? _type = null;
 	/// <summary>
-	/// 一連の気象情報の種類
+	/// 一連の気象情報の種類（先頭の MeteorologicalInfos 要素）。
 	/// </summary>
 	public string Type
 	{
@@ -25,7 +37,7 @@ public struct MeteorologicalBody(XmlNode node)
 	}
 
 	/// <summary>
-	/// 各気象情報の予報や観測事項
+	/// 各気象情報の予報や観測事項（先頭の MeteorologicalInfos 要素）。
 	/// </summary>
 	public IEnumerable<MeteorologicalInfo> MeteorologicalInfos
 	{

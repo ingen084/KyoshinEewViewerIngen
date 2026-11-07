@@ -9,9 +9,10 @@ public struct Coordinate(XmlNode node)
 	private string? _description = null;
 	/// <summary>
 	/// 文字列表現<br/>
-	/// 例: 北緯３９．０度 東経１４０．９度 深さ １０ｋｍ、震源要素不明
+	/// 例: 北緯３９．０度 東経１４０．９度 深さ １０ｋｍ、震源要素不明<br/>
+	/// 存在しない場合は null。
 	/// </summary>
-	public string Description => _description ??= (Node.TryFindStringAttribute(Literals.AttrDescription(), out var n) ? n : throw new JmaXmlParseException("description 属性が存在しません"));
+	public string? Description => _description ??= (Node.TryFindStringAttribute(Literals.AttrDescription(), out var n) ? n : null);
 
 	private string? _datum = null;
 	/// <summary>
@@ -25,6 +26,12 @@ public struct Coordinate(XmlNode node)
 	/// 世界測地系 の場合 震源位置（度分） が入る
 	/// </summary>
 	public string? Type => _type ??= (Node.TryFindStringAttribute(Literals.AttrType(), out var n) ? n : null);
+
+	private string? _condition = null;
+	/// <summary>
+	/// 位置の確度や状態（正確、ほぼ正確、不確実など）。存在しない場合は null。
+	/// </summary>
+	public string? Condition => _condition ??= (Node.TryFindStringAttribute(Literals.AttrCondition(), out var n) ? n : null);
 
 	private string? _value = null;
 	/// <summary>

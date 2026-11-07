@@ -23,11 +23,11 @@ public struct WarningAreaPart(XmlNode node)
 	/// 暴風域･強風域の風速
 	/// </summary>
 	public IEnumerable<PhysicalQuantity> WindSpeeds
-		=> Node.Children.Where(c => c.Name == Literals.JmaEbWindSpeed()).Select(c => new PhysicalQuantity(c));
+		=> Node.Children.Where(c => c.IsElementBasis("WindSpeed"u8)).Select(c => new PhysicalQuantity(c));
 
 	private TyphoonCircle? _circle = null;
 	/// <summary>
 	/// 暴風域･強風域の風域情報
 	/// </summary>
-	public TyphoonCircle Circle => _circle ??= (Node.TryFindChild(Literals.JmaEbCircle(), out var n) ? new(n) : throw new JmaXmlParseException("Circle ノードが存在しません"));
+	public TyphoonCircle Circle => _circle ??= (Node.TryFindElementBasis("Circle"u8, out var n) ? new(n) : throw new JmaXmlParseException("Circle ノードが存在しません"));
 }

@@ -9,6 +9,21 @@ public struct IntensityObservation(XmlNode node)
 	private XmlNode Node { get; set; } = node;
 
 	/// <summary>
+	/// 予測震度の範囲。存在しない場合は null。
+	/// </summary>
+	public IntensityRange? ForecastInt => Node.TryFindChild(Literals.ForecastInt(), out var n) ? new(n) : null;
+
+	/// <summary>
+	/// 予測長周期地震動階級の範囲。存在しない場合は null。
+	/// </summary>
+	public IntensityRange? ForecastLgInt => Node.TryFindChild(Literals.ForecastLgInt(), out var n) ? new(n) : null;
+
+	/// <summary>
+	/// 予測値の変化に関する付加要素。存在しない場合は null。
+	/// </summary>
+	public IntensityAppendix? Appendix => Node.TryFindChild(Literals.Appendix(), out var n) ? new(n) : null;
+
+	/// <summary>
 	/// コード体系の定義
 	/// </summary>
 	public IEnumerable<CodeDefineType> CodeDefineTypes
