@@ -48,11 +48,12 @@ public partial class KyoshinMonitorSeries : SeriesBase
 
 	private KyoshinMonitorReplaySettingPage ReplaySettingPage { get; }
 	private ExternalAppSettingPage ExternalAppSettingPage { get; }
+	private KyoshinMonitorEewSettingPage EewSettingPage { get; }
 	public override ISettingPage[] SettingPages => [
 		new BasicSettingPage<KyoshinMonitorPage>("\xf108", "強震モニタ", [
 			ReplaySettingPage,
 			new BasicSettingPage<KyoshinMonitorMapPage>(null, "地図アイコン", []),
-			new BasicSettingPage<KyoshinMonitorEewPage>(null, "緊急地震速報", []),
+			EewSettingPage,
 			ExternalAppSettingPage,
 			new BasicSettingPage<ObservationPointsDataPage>(null, "観測点データ", []),
 		]),
@@ -207,6 +208,7 @@ public partial class KyoshinMonitorSeries : SeriesBase
 		PointForecastController = new(AppLog.Create<Services.Eew.EewPointForecastController>(), config, eewController, timerService);
 		CurrentInformationHost = RealtimeInformationHost = new(AppLog.Create<RealtimeEarthquakeInformationHost>(), config, eewController, timerService, telegramProvideService, axis, observationPointsUpdateService);
 		ExternalAppSettingPage = new ExternalAppSettingPage(Config, RealtimeInformationHost.DmdataEewClientReceiver);
+		EewSettingPage = new KyoshinMonitorEewSettingPage(Config, eewController, timerService);
 		RegisterSystemWorkflows();
 		RealtimeInformationHost.KyoshinEventUpdated += e =>
 		{
@@ -335,7 +337,8 @@ public partial class KyoshinMonitorSeries : SeriesBase
 				WarningLevelReached = false,
 				IncreaseInIntensity = false,
 				DecreaseInIntensity = false,
-				Intensity = JmaIntensity.Unknown
+				Intensity = JmaIntensity.Unknown,
+				IncludeTraining = true,
 			},
 			Actions = new MultipleAction
 			{
@@ -378,7 +381,8 @@ public partial class KyoshinMonitorSeries : SeriesBase
 				WarningLevelReached = false,
 				IncreaseInIntensity = false,
 				DecreaseInIntensity = false,
-				Intensity = JmaIntensity.Unknown
+				Intensity = JmaIntensity.Unknown,
+				IncludeTraining = true,
 			},
 			Actions = new MultipleAction
 			{

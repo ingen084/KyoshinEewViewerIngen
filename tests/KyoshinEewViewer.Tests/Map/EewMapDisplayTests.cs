@@ -27,6 +27,16 @@ public class EewMapDisplayTests
 		Assert.StartsWith("#4(取消?) ", EewMapDisplay.BuildLabel(possiblyCancelled));
 	}
 
+	[Fact(DisplayName = "訓練のラベルには先頭に訓練と表示する")]
+	public void 訓練のラベルには先頭に訓練と表示する()
+	{
+		var training = CreateEew(serialNo: 2, place: "石川県能登地方", magnitude: 7.6f, intensity: JmaIntensity.Int7) with { IsTraining = true };
+		var cancelled = CreateEew(serialNo: 3, isCancelled: true, isTrueCancelled: true) with { IsTraining = true };
+
+		Assert.Equal("[訓練] #2 石川県能登地方 M7.6 最大震度7", EewMapDisplay.BuildLabel(training));
+		Assert.StartsWith("[訓練] #3(取消) ", EewMapDisplay.BuildLabel(cancelled));
+	}
+
 	[Fact(DisplayName = "未取得の震源要素を不明として表示する")]
 	public void 未取得の震源要素を不明として表示する()
 	{

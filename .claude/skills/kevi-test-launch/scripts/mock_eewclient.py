@@ -64,7 +64,7 @@ async def handler(ws):
     await asyncio.sleep(3)
 
     now = datetime.now(JST)
-    # 訓練データは KEVi 側で処理されない
+    # 訓練データは、KEVi 側で訓練を受信する設定 (Eew.DmdataEewClient.ReceiveTraining) の場合のみ処理される
     await ws.send(json.dumps({**eew(1, now, with_hypo=True, s_wave_ok=True), "eventId": "20260914012900", "isTest": True}, ensure_ascii=False))
     await asyncio.sleep(2)
     # 1報目: PLUM のみ、地点予測なし

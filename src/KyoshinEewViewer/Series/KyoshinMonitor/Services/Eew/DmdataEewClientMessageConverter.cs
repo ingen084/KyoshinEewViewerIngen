@@ -44,6 +44,7 @@ public static class DmdataEewClientMessageConverter
 		return new Models.Eew
 		{
 			Id = message.EventId,
+			IsTraining = message.IsTest,
 			Source = EewSource.DmdataEewClient,
 			DisplaySource = string.IsNullOrWhiteSpace(message.Author) ? DisplaySourceName : $"{DisplaySourceName}({message.Author})",
 			IsCancelled = message.IsCanceled,
@@ -113,7 +114,7 @@ public static class DmdataEewClientMessageConverter
 		var sWave = pointForecast.SWave;
 		return new EewPointForecast
 		{
-			EventId = message.EventId,
+			EventId = Models.Eew.GetKey(message.EventId, message.IsTest),
 			SourceKey = PointForecastSourceKey,
 			DisplaySource = intensity.Type == "plum" ? $"{DisplaySourceName} (PLUM)" : DisplaySourceName,
 			SerialNo = message.Serial,

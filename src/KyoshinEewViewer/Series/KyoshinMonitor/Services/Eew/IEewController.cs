@@ -17,9 +17,9 @@ public interface IEewController
 	/// <summary>
 	/// EEWをキャンセルする
 	/// </summary>
-	/// <param name="eventId">キャンセルされた EEW の ID / null または空の場合は強震モニタの過去のEEWをキャンセル扱いにする</param>
+	/// <param name="key">キャンセルされた EEW のキー (<see cref="Models.Eew.Key"/>) 訓練以外は地震IDと同じ / null または空の場合は強震モニタの過去のEEWをキャンセル扱いにする</param>
 	/// <param name="updatedTime">そのEEWを受信した時刻</param>
-	void Cancelled(string? eventId, DateTime updatedTime);
+	void Cancelled(string? key, DateTime updatedTime);
 
 	/// <summary>
 	/// 警報地域のみの更新を行う
@@ -29,5 +29,7 @@ public interface IEewController
 	/// <summary>
 	/// 警報電文をキャンセルする
 	/// </summary>
-	void WarningCancelled(string eventId, DateTime updatedTime);
+	/// <param name="key">キャンセルされた EEW のキー (<see cref="Models.Eew.Key"/>) 訓練以外は地震IDと同じ</param>
+	/// <param name="updatedTime">そのEEWを受信した時刻</param>
+	void WarningCancelled(string key, DateTime updatedTime);
 }

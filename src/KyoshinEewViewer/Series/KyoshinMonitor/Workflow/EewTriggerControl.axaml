@@ -53,5 +53,10 @@
             <CheckBox Content="予想最大震度低下" IsChecked="{Binding DecreaseInIntensity}"
                       ToolTip.Tip="予想震度が不明になった場合にもトリガーされます。&#xA;SNP連携時には利用非推奨となります。" />
         </WrapPanel>
+        <TextBlock Text="条件(訓練)" FontWeight="Bold" />
+        <TextBlock Text="EEW Client 連携や DM-D.S.S で訓練を受信する設定にしている場合に使用します。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+        <WrapPanel Margin="5,0">
+            <CheckBox Content="訓練も対象にする" IsChecked="{Binding IncludeTraining}" />
+        </WrapPanel>
     </StackPanel>
 </UserControl>

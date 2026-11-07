@@ -73,6 +73,9 @@ public class EewEvent(KyoshinMonitorSeries? series, EewEventType subType) : Work
 	[Description("リプレイ中に発生したイベントかどうか")]
 	public bool IsReplay { get; init; }
 
+	[Description("訓練かどうか (EEW Client で実行した訓練、DM-D.S.S の訓練電文)")]
+	public bool IsTraining { get; init; }
+
 	/// <summary>
 	/// このイベントを発火させた EewController
 	/// </summary>
@@ -103,6 +106,7 @@ public class EewEvent(KyoshinMonitorSeries? series, EewEventType subType) : Work
 			IsFinal = eew.IsFinal,
 			IsCancelled = eew.IsCancelled,
 			IsReplay = isReplay,
+			IsTraining = eew.IsTraining,
 		};
 }
 

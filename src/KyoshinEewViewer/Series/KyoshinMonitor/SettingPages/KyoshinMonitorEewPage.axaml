@@ -4,9 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:control="clr-namespace:KyoshinEewViewer.Controls;assembly=KyoshinEewViewer"
 			 xmlns:vm="using:KyoshinEewViewer.ViewModels"
+			 xmlns:local="using:KyoshinEewViewer.Series.KyoshinMonitor.SettingPages"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="1200"
-			 x:DataType="vm:SettingWindowViewModel" x:CompileBindings="True"
+			 x:DataType="local:KyoshinMonitorEewSettingPage" x:CompileBindings="True"
              x:Class="KyoshinEewViewer.Series.KyoshinMonitor.SettingPages.KyoshinMonitorEewPage">
     <UserControl.Styles>
         <Style Selector="Label">
@@ -49,6 +50,17 @@
                 <ui:FASettingsExpander.Footer>
                     <ToggleSwitch IsChecked="{Binding Config.Eew.EnableKyoshinMonitor}" OnContent="する" OffContent="しない" />
                 </ui:FASettingsExpander.Footer>
+            </ui:FASettingsExpander>
+
+            <TextBlock Text="訓練" FontWeight="Bold" Margin="10,20,10,5" />
+            <ui:FASettingsExpander Header="訓練の緊急地震速報を終了する" Description="表示中の訓練の緊急地震速報をすぐに終了します。" IsExpanded="True">
+                <ui:FASettingsExpander.IconSource>
+                    <ui:FAFontIconSource Glyph="&#xf04d;" FontFamily="{StaticResource IconFont}" />
+                </ui:FASettingsExpander.IconSource>
+                <ui:FASettingsExpander.Footer>
+                    <Button Content="終了する" Command="{Binding EndTraining}" IsEnabled="{Binding IsTrainingDisplayed}" />
+                </ui:FASettingsExpander.Footer>
+                <TextBlock Text="訓練は、外部アプリ連携の EEW Client と、DM-D.S.S の「訓練報(テスト等)の受信を行う」を有効にした場合に受信します。&#xA;訓練以外の緊急地震速報を受信すると訓練は自動で終了し、訓練以外の緊急地震速報の表示中は訓練を受信しても表示しません。" FontSize="12" Margin="5,-9,0,0" />
             </ui:FASettingsExpander>
 
             <TextBlock Text="表示設定" FontWeight="Bold" Margin="10,20,10,5" />

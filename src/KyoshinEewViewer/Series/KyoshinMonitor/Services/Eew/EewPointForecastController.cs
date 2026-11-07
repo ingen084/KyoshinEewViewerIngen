@@ -278,6 +278,8 @@ public class EewPointForecastController : IDisposable
 	/// <summary>
 	/// 指定した提供元の地点予測をすべて削除する
 	/// </summary>
+	/// <param name="eventId">EEW のキー (<see cref="Models.Eew.Key"/>)</param>
+	/// <param name="sourceKey">提供元の識別子</param>
 	public void RemoveSource(string eventId, string sourceKey)
 	{
 		var removed = false;
@@ -312,7 +314,7 @@ public class EewPointForecastController : IDisposable
 			// キャンセルされたEEWの地点予測は表示しない
 			if (eew.IsCancelled)
 				return eew;
-			forecasts = Cache.Where(p => p.Key.EventId == eew.Id).Select(p => p.Value).ToArray();
+			forecasts = Cache.Where(p => p.Key.EventId == eew.Key).Select(p => p.Value).ToArray();
 		}
 		if (forecasts.Length <= 0)
 			return eew;

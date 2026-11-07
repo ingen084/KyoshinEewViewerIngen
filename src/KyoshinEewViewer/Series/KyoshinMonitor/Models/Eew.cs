@@ -12,6 +12,23 @@ public record Eew
 	public required string Id { get; init; }
 
 	/// <summary>
+	/// 訓練か
+	/// </summary>
+	public bool IsTraining { get; init; }
+
+	/// <summary>
+	/// アプリ内で EEW を識別するキー
+	/// 訓練は実際の地震と同じ地震IDで届くため、実際の EEW と混ざらないよう区別する
+	/// </summary>
+	public string Key => GetKey(Id, IsTraining);
+
+	/// <summary>
+	/// 地震IDと訓練かどうかから <see cref="Key"/> を求める
+	/// </summary>
+	public static string GetKey(string id, bool isTraining)
+		=> isTraining ? "training-" + id : id;
+
+	/// <summary>
 	/// EEWの情報元
 	/// </summary>
 	public required EewSource Source { get; init; }

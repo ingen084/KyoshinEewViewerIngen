@@ -125,6 +125,10 @@ public partial class DmdataEewClientReceiver : ObservableObject, IDisposable
 
 	private void OnConfigChanged(object? sender, PropertyChangedEventArgs e)
 	{
+		// 訓練を受信するかは受信時に判定するため、接続し直さない
+		if (e.PropertyName == nameof(KyoshinEewViewerConfiguration.EewConfig.DmdataEewClientConfig.ReceiveTraining))
+			return;
+
 		lock (_lock)
 		{
 			if (!_isStarted || _isDisposed)
@@ -307,20 +311,23 @@ public partial class DmdataEewClientReceiver : ObservableObject, IDisposable
 	private void HandleEew(DmdataEewClientMessage message)
 	{
 		// EEW Client で利用者が実行した訓練のデータも配信される
-		if (message.IsTest)
+		if (message.IsTest && !Config.Eew.DmdataEewClient.ReceiveTraining)
 		{
-			Logger.LogInformation("EEW Clientから訓練データを受信したため処理しませんでした: {EventId} {SerialNo}報", message.EventId, message.Serial);
+			Logger.LogInformation("EEW Clientから訓練データを受信しましたが、訓練を受信しない設定のため処理しませんでした: {EventId} {SerialNo}報", message.EventId, message.Serial);
 			return;
 		}
 
 		var receiveTime = Timer.CurrentTime;
 		var eew = DmdataEewClientMessageConverter.ToEew(message, receiveTime);
-		Logger.LogInformation("EEW Clientから緊急地震速報を受信しました: {EventId} {SerialNo}報", eew.Id, eew.SerialNo);
+		if (eew.IsTraining)
+			Logger.LogInformation("EEW Clientから訓練の緊急地震速報を受信しました: {EventId} {SerialNo}報", eew.Id, eew.SerialNo);
+		else
+			Logger.LogInformation("EEW Clientから緊急地震速報を受信しました: {EventId} {SerialNo}報", eew.Id, eew.SerialNo);
 
 		// 取消報は Update では同一報番号として弾かれてしまうため、専用のキャンセル経路に流す
 		if (eew.IsTrueCancelled)
 		{
-			EewController.CancelledWithRelayProhibited(eew.Id, receiveTime);
+			EewController.CancelledWithRelayProhibited(eew.Key, receiveTime);
 			return;
 		}
 		EewController.Update(eew, receiveTime);
@@ -328,14 +335,14 @@ public partial class DmdataEewClientReceiver : ObservableObject, IDisposable
 		if (EewController.PointForecastController is not { } pointForecastController)
 			return;
 		// 精度が低いなどの理由で EEW 自体が取り込まれなかった場合は地点予測も取り込まない
-		if (!EewController.TryGetEew(eew.Id, out _))
+		if (!EewController.TryGetEew(eew.Key, out _))
 			return;
 
 		if (DmdataEewClientMessageConverter.ToPointForecast(message, receiveTime, _userPointLocation) is { } forecast)
 			pointForecastController.Update([forecast]);
 		else
 			// 予想が得られなくなったら、それ以前の予想を表示し続けない
-			pointForecastController.RemoveSource(eew.Id, DmdataEewClientMessageConverter.PointForecastSourceKey);
+			pointForecastController.RemoveSource(eew.Key, DmdataEewClientMessageConverter.PointForecastSourceKey);
 	}
 
 	private void SetServerStatus(string? status, CancellationToken token)

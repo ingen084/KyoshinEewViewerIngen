@@ -93,7 +93,7 @@
                     </DockPanel>
                 </ui:FASettingsExpander.Footer>
             </ui:FASettingsExpander>
-            <ui:FASettingsExpander Header="訓練報(テスト等)の受信を行う" Description="WebSocketに接続中の場合、反映には再接続が必要です。">
+            <ui:FASettingsExpander Header="訓練報(テスト等)の受信を行う" Description="緊急地震速報の訓練も受信します。WebSocketに接続中の場合、反映には再接続が必要です。">
                 <ui:FASettingsExpander.IconSource>
                     <ui:FAFontIconSource Glyph="&#xe4f3;" FontFamily="{StaticResource IconFont}" />
                 </ui:FASettingsExpander.IconSource>

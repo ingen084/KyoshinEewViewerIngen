@@ -58,8 +58,8 @@ public class DmdataEewClientReceiverTests
 	private static string PointForecast(string? k)
 		=> $$$""","pointForecast":{"sWave":{"status":"not-calculated","time":null},"intensity":{"type":"attenuation","k":{{{(k == null ? "null" : $"\"{k}\"")}}},"int":null}}""";
 
-	[Fact(DisplayName = "訓練データは EEW として処理せず、同じイベントの実際の EEW を更新・取消もしない")]
-	public void 訓練データはEEWとして処理しない()
+	[Fact(DisplayName = "訓練を受信しない設定では、訓練データを EEW として処理せず、同じイベントの実際の EEW を更新・取消もしない")]
+	public void 訓練を受信しない設定では訓練データをEEWとして処理しない()
 	{
 		using var fixture = CreateFixture();
 
@@ -79,6 +79,31 @@ public class DmdataEewClientReceiverTests
 		Assert.Equal(1, eew?.SerialNo);
 		Assert.Equal(JmaIntensity.Int3, eew?.MaxIntensity);
 		Assert.False(eew?.IsCancelled);
+	}
+
+	[Fact(DisplayName = "訓練を受信する設定では、訓練を同じ地震IDの実際の EEW と区別し、実際の EEW を受信すると訓練を終了して報数・地点予測・取消を引き継がない")]
+	public void 訓練を受信する設定では訓練を実際のEEWと区別する()
+	{
+		using var fixture = CreateFixture();
+		fixture.Config.Eew.DmdataEewClient.ReceiveTraining = true;
+
+		fixture.Receive(EewMessage(2, maxInt: "7", isTest: true, pointForecast: PointForecast("5.6")));
+		var training = Assert.Single(fixture.Updates.Last());
+		Assert.True(training.IsTraining);
+		Assert.Equal(EventId, training.Id);
+		Assert.Equal((2, JmaIntensity.Int7), (training.SerialNo, training.MaxIntensity));
+		Assert.Equal(5.6, Assert.Single(training.PointForecasts!).RealtimeIntensity);
+		Assert.False(fixture.Controller.TryGetEew(EventId, out _));
+
+		// 訓練より小さい報数でも実際の EEW として受信する
+		fixture.Receive(EewMessage(1, pointForecast: PointForecast("2.6")));
+		var real = Assert.Single(fixture.Updates.Last());
+		Assert.False(real.IsTraining);
+		Assert.Equal((1, JmaIntensity.Int3), (real.SerialNo, real.MaxIntensity));
+		Assert.Equal(2.6, Assert.Single(real.PointForecasts!).RealtimeIntensity);
+
+		fixture.Receive(EewMessage(3, isTest: true, isCanceled: true));
+		Assert.False(Assert.Single(fixture.Updates.Last()).IsCancelled);
 	}
 
 	[Fact(DisplayName = "同じ報数の再配信で予想震度と地点予測が更新され、予想が無くなると地点予測を残さない")]
@@ -128,7 +153,7 @@ public class DmdataEewClientReceiverTests
 		Assert.True(eew?.IsCancellationRelayProhibited);
 	}
 
-	[Fact(DisplayName = "接続状態は EEW Client の通知に追従し、設定の変更では前の状態を残さず接続し直し、再度の開始では接続を維持する")]
+	[Fact(DisplayName = "接続状態は EEW Client の通知に追従し、接続先の設定の変更では前の状態を残さず接続し直し、再度の開始と訓練の切り替えでは接続を維持する")]
 	public async Task 接続状態はEEWClientの通知と設定の変更に追従する()
 	{
 		using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
@@ -151,6 +176,12 @@ public class DmdataEewClientReceiverTests
 
 		await SendAsync(firstSocket, """{"type":"server-status","status":"open"}""", token);
 		await WaitUntilAsync(() => receiver.State == DmdataEewClientConnectionState.Receiving, "受信可能", token);
+
+		// 訓練を受信するかは受信時に判定するため、切り替えても同じ接続で受信を続ける
+		config.ReceiveTraining = true;
+		Assert.Equal(DmdataEewClientConnectionState.Receiving, receiver.State);
+		await SendAsync(firstSocket, EewMessage(1, isTest: true), token);
+		await WaitUntilAsync(() => fixture.Controller.TryGetEew(Eew.GetKey(EventId, true), out _), "訓練の受信", token);
 
 		// リアルタイムへ戻るたびに呼ばれても同じ接続で受信を続ける
 		receiver.Start();

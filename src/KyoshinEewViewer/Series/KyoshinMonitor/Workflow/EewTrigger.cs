@@ -75,9 +75,18 @@ public partial class EewTrigger : WorkflowTrigger
 	[ObservableProperty]
 	public partial bool UseAndCondition { get; set; } = true;
 
+	/// <summary>
+	/// 訓練でもトリガーするか
+	/// </summary>
+	[ObservableProperty]
+	public partial bool IncludeTraining { get; set; } = false;
+
 	public override bool CheckTrigger(WorkflowEvent content)
 	{
 		if (content is not EewEvent eewEvent)
+			return false;
+
+		if (eewEvent.IsTraining && !IncludeTraining)
 			return false;
 
 		// 震度条件のチェック

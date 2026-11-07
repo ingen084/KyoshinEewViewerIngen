@@ -444,6 +444,60 @@ public class EewControllerTests
 		Assert.Empty(updatedEews.Last());
 	}
 
+	[Fact(DisplayName = "訓練以外の EEW を受信すると、表示されない精度の低い EEW や警報電文でも訓練の EEW を終了する")]
+	public void 訓練以外のEEWを受信すると訓練のEEWを終了する()
+	{
+		var baseTime = new DateTime(2026, 11, 8, 12, 0, 0);
+		var lowAccuracy = CreateEew(baseTime) with
+		{
+			Hypocenter = EewMock.NORMAL.Hypocenter! with { Accuracy = new() { IsLocked = false, LocationAccuracy = 1, DepthAccuracy = 1, MagnitudeAccuracy = 0 } },
+		};
+		(string Name, Action<EewController> Receive)[] cases =
+		[
+			("予報", c => c.Update(CreateEew(baseTime), baseTime)),
+			("警報電文", c => c.UpdateWarning(CreateWarningEew(baseTime), baseTime)),
+			("精度が低く表示されない予報", c => c.Update(lowAccuracy, baseTime)),
+		];
+
+		foreach (var (name, receive) in cases)
+		{
+			var controller = CreateController();
+			var updatedEews = new List<Eew[]>();
+			controller.EewUpdated += (_, eews) => updatedEews.Add(eews);
+
+			controller.Update(CreateEew(baseTime) with { IsTraining = true }, baseTime);
+			controller.UpdateWarning(CreateWarningEew(baseTime) with { IsTraining = true }, baseTime);
+			Assert.True(Assert.Single(updatedEews.Last()).IsTraining, name);
+
+			receive(controller);
+			Assert.DoesNotContain(updatedEews.Last(), e => e.IsTraining);
+			Assert.False(controller.TryGetEew(Eew.GetKey("test-eew", true), out _), name);
+		}
+	}
+
+	[Fact(DisplayName = "訓練以外の EEW の表示中は訓練の EEW を受け付けず、表示中の訓練の EEW は即時終了できる")]
+	public void 訓練以外のEEWの表示中は訓練のEEWを受け付けない()
+	{
+		var controller = CreateController();
+		var updatedEews = new List<Eew[]>();
+		controller.EewUpdated += (_, eews) => updatedEews.Add(eews);
+		var baseTime = new DateTime(2026, 11, 8, 12, 0, 0);
+		var training = CreateEew(baseTime) with { Id = "training-eew", IsTraining = true };
+
+		Assert.False(controller.EndTraining(baseTime));
+		controller.Update(training, baseTime);
+		Assert.True(controller.EndTraining(baseTime.AddSeconds(1)));
+		Assert.Empty(updatedEews.Last());
+
+		controller.Update(CreateEew(baseTime.AddSeconds(2)), baseTime.AddSeconds(2));
+		var updateCount = updatedEews.Count;
+		controller.Update(training with { SerialNo = 2 }, baseTime.AddSeconds(3));
+		controller.UpdateWarning(CreateWarningEew(baseTime.AddSeconds(3)) with { Id = "training-eew", IsTraining = true }, baseTime.AddSeconds(3));
+		Assert.Equal(updateCount, updatedEews.Count);
+		Assert.False(controller.TryGetEew(training.Key, out _));
+		Assert.False(Assert.Single(updatedEews.Last()).IsTraining);
+	}
+
 	private static Eew CreateWarningEew(DateTime receiveTime)
 		=> CreateEew(receiveTime) with
 		{

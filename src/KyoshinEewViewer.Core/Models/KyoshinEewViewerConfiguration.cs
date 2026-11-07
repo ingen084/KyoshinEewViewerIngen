@@ -259,6 +259,12 @@ public partial class KyoshinEewViewerConfiguration : ObservableObject, IWindowPl
 			/// </summary>
 			[ObservableProperty]
 			public partial int Port { get; set; }
+
+			/// <summary>
+			/// EEW Client で実行した訓練の緊急地震速報を受信するか
+			/// </summary>
+			[ObservableProperty]
+			public partial bool ReceiveTraining { get; set; }
 		}
 	}
 

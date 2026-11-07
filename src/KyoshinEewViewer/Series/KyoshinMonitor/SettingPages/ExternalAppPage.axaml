@@ -76,6 +76,11 @@
                         <ToggleSwitch IsChecked="{Binding Config.Eew.PreferCalculatedIntensityForecast}" OnContent="する" OffContent="しない" />
                     </ui:FASettingsExpanderItem.Footer>
                 </ui:FASettingsExpanderItem>
+                <ui:FASettingsExpanderItem Content="訓練を受信する" Description="EEW Client で実行した訓練の緊急地震速報を、「訓練」と明示して表示・通知します。&#xa;作成したワークフローは、トリガーで「訓練も対象にする」を有効にした場合のみ動作します。" IsEnabled="{Binding Config.Eew.DmdataEewClient.Enable}">
+                    <ui:FASettingsExpanderItem.Footer>
+                        <ToggleSwitch IsChecked="{Binding Config.Eew.DmdataEewClient.ReceiveTraining}" OnContent="する" OffContent="しない" />
+                    </ui:FASettingsExpanderItem.Footer>
+                </ui:FASettingsExpanderItem>
             </ui:FASettingsExpander>
 
             <TextBlock Text="地点予測の表示方法は「緊急地震速報」の設定ページで変更できます。" FontSize="12" Margin="10,10,10,0" Foreground="{DynamicResource SubForegroundColor}" />

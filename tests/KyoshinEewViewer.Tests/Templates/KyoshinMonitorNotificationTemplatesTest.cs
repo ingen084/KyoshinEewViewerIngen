@@ -480,6 +480,41 @@ public class KyoshinMonitorNotificationTemplatesTest
 				},
 				TemplateType = "EewNotificationTitle"
 			},
+			new ()
+			{
+				TestName = "EewTitle_Training",
+				ExpectedResult = "[訓練] 緊急地震速報(01報)",
+				EventData = new EewEvent(null, EewEventType.New)
+				{
+					EewId = "20240101160608",
+					EewSource = "EEW Client(気象庁本庁)",
+					SerialNo = 1,
+					IsTrueCancelled = false,
+					Intensity = JmaIntensity.Int7,
+					IsFinal = false,
+					IsCancelled = false,
+					IsReplay = false,
+					IsTraining = true
+				},
+				TemplateType = "EewNotificationTitle"
+			},
+			new ()
+			{
+				TestName = "EewTitle_TrainingCancelled",
+				ExpectedResult = "[取消] [訓練] 緊急地震速報(02報)",
+				EventData = new EewEvent(null, EewEventType.Cancel)
+				{
+					EewId = "20240101160608",
+					EewSource = "EEW Client(気象庁本庁)",
+					SerialNo = 2,
+					IsTrueCancelled = true,
+					Intensity = JmaIntensity.Int7,
+					IsCancelled = true,
+					IsReplay = false,
+					IsTraining = true
+				},
+				TemplateType = "EewNotificationTitle"
+			},
 			// 揺れ検知タイトルテストケース
 			new ()
 			{
