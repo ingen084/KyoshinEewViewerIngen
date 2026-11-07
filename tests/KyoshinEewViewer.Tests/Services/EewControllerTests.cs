@@ -224,6 +224,56 @@ public class EewControllerTests
 		Assert.Equal(["警報電文地域"], actualWarningAreas.Names);
 	}
 
+	[Fact(DisplayName = "AXISの警報電文は報数が戻っても警報状態を反映し_以降の予報電文でも警報状態を維持する")]
+	public void Axisの警報電文は報数が戻っても警報状態を反映し_以降の予報電文でも警報状態を維持する()
+	{
+		var controller = CreateController();
+		var updatedEews = new List<Eew[]>();
+		controller.EewUpdated += (_, eews) => updatedEews.Add(eews);
+		var baseTime = new DateTime(2026, 11, 8, 1, 4, 44);
+
+		var forecast = CreateEew(baseTime) with
+		{
+			Id = "20261108010441",
+			Source = EewSource.Axis,
+			DisplaySource = "AXIS",
+			SerialNo = 5,
+			MaxIntensity = JmaIntensity.Int4,
+			IsWarning = false,
+		};
+		controller.Update(forecast, baseTime);
+
+		// AXIS の警報電文は予報電文とは別の報数体系で 1 から振り直される
+		var warning = forecast with
+		{
+			SerialNo = 1,
+			MaxIntensity = JmaIntensity.Int5Lower,
+			IsWarning = true,
+			ReceiveTime = baseTime.AddSeconds(1),
+		};
+		controller.Update(warning, baseTime.AddSeconds(1));
+
+		var actual = Assert.Single(updatedEews.Last());
+		Assert.Equal(5, actual.SerialNo);
+		Assert.True(actual.IsWarning);
+		Assert.Equal(JmaIntensity.Int5Lower, actual.MaxIntensity);
+
+		// 警報発表後に震度の低い予報電文を受信しても警報状態は維持される
+		var nextForecast = forecast with
+		{
+			SerialNo = 6,
+			MaxIntensity = JmaIntensity.Int4,
+			IsWarning = false,
+			ReceiveTime = baseTime.AddSeconds(2),
+		};
+		controller.Update(nextForecast, baseTime.AddSeconds(2));
+
+		actual = Assert.Single(updatedEews.Last());
+		Assert.Equal(6, actual.SerialNo);
+		Assert.True(actual.IsWarning);
+		Assert.Equal(JmaIntensity.Int4, actual.MaxIntensity);
+	}
+
 	[Fact(DisplayName = "EEWの期限切れ処理でも警報のみのEEWは通知に含まれる")]
 	public void EEWの期限切れ処理でも警報のみのEEWは通知に含まれる()
 	{

@@ -79,10 +79,10 @@ internal class AxisEewReceiver
 			.Where(f => IsValidIntensity(f.Intensity))
 			.ToArray();
 
-		// Text の文言だけでは警報状態が安定しないため、警報の発表基準である予想最大震度5弱以上でも警報とみなす
+		// レベル法の EEW では予想最大震度が5弱以上でも警報にならないことがあるため、
+		// 予想最大震度ではなく電文の種別と本文から警報状態を判定する
 		var isWarning = (message.Title?.Contains("警報", StringComparison.Ordinal) ?? false) ||
-						(message.Text?.Contains("強い揺れ", StringComparison.Ordinal) ?? false) ||
-						(IsValidIntensity(maxIntensity) && maxIntensity >= JmaIntensity.Int5Lower);
+						(message.Text?.Contains("強い揺れ", StringComparison.Ordinal) ?? false);
 
 		return new EewModel
 		{

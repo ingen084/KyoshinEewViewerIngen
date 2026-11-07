@@ -304,12 +304,22 @@ public class EewController : IEewController
 	/// <returns>更新した EEW 更新しなかった場合は null</returns>
 	private (EewUpdateReason, Models.Eew)? MixEew(Models.Eew current, Models.Eew received)
 	{
+		// AXIS は警報の解除を取消報でしか通知しないため、予報電文で警報状態を解除しない
+		var mergedReceived = MergeAxisWarningState(current, received);
+
 		// 新しいデータの場合は問答無用で更新
 		var isNewerSerial = received.SerialNo > current.SerialNo;
 		if (isNewerSerial)
-			return (EewUpdateReason.NewerSerial, MergeCancellation(current, received, received));
+			return (EewUpdateReason.NewerSerial, MergeCancellation(current, received, mergedReceived));
 		if (received.SerialNo < current.SerialNo)
+		{
+			// AXIS の警報電文の報数は予報電文とは別に 1 から振られるため、報数が戻っていても
+			// まだ警報状態が反映されていなければ警報電文の内容を取り込む
+			if (current.Source == EewSource.Axis && received.Source == EewSource.Axis &&
+				received.IsWarning && !current.IsWarning)
+				return (EewUpdateReason.MorePriority, MergeCancellation(current, received, mergedReceived with { SerialNo = current.SerialNo }));
 			return null;
+		}
 
 		return (current.Source, received.Source) switch
 		{
@@ -343,8 +353,12 @@ public class EewController : IEewController
 			(EewSource.SignalNowProfessional, EewSource.Dmdata) or (EewSource.Axis, EewSource.Dmdata)
 				=> (EewUpdateReason.MorePriority, MergeCancellation(current, received, received)),
 
+			// AXIS の警報電文は予報電文とは別の報数体系のため、同じ報数でも警報状態のみ反映する
+			(EewSource.Axis, EewSource.Axis) when received.IsWarning && !current.IsWarning
+				=> (EewUpdateReason.MorePriority, MergeCancellation(current, received, mergedReceived with { SerialNo = current.SerialNo })),
+
 			_ when ShouldClearCancel(current, received)
-				=> (EewUpdateReason.CancelCleared, MergeCancellation(current, received, received)),
+				=> (EewUpdateReason.CancelCleared, MergeCancellation(current, received, mergedReceived)),
 
 			// そのほかの場合は何もしない
 			_ => null,
@@ -354,6 +368,14 @@ public class EewController : IEewController
 	private static bool ShouldClearCancel(Models.Eew current, Models.Eew received)
 		=> current is { IsCancelled: true, IsTrueCancelled: false } &&
 		   received is { IsCancelled: false, IsTrueCancelled: false };
+
+	/// <summary>
+	/// AXIS は警報の解除を取消報でしか通知しないため、警報受信後の予報電文で警報状態を解除しない
+	/// </summary>
+	private static Models.Eew MergeAxisWarningState(Models.Eew current, Models.Eew received)
+		=> current is { Source: EewSource.Axis, IsWarning: true } && received.Source == EewSource.Axis
+			? received with { IsWarning = true }
+			: received;
 
 	private static Models.Eew MergeCancellation(Models.Eew current, Models.Eew received, Models.Eew merged)
 	{

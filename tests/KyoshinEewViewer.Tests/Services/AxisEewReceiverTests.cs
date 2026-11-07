@@ -138,15 +138,16 @@ public class AxisEewReceiverTests
 		}
 	}
 
-	[Theory(DisplayName = "AXISの警報状態をタイトル_本文_予想最大震度から判定する")]
+	[Theory(DisplayName = "AXISの警報状態をタイトル_本文から判定し_予想最大震度では判定しない")]
 	[InlineData("緊急地震速報（警報）", "", "4", true)]
 	[InlineData("緊急地震速報（予報）", "強い揺れに警戒してください", "4", true)]
-	[InlineData("緊急地震速報（予報）", "", "5-", true)]
-	[InlineData("緊急地震速報（予報）", "", "7", true)]
+	[InlineData("緊急地震速報（予報）", "", "5-", false)]
+	[InlineData("緊急地震速報（予報）", "", "5+", false)]
+	[InlineData("緊急地震速報（予報）", "", "7", false)]
 	[InlineData("緊急地震速報（予報）", "", "4", false)]
 	[InlineData("緊急地震速報（予報）", "", "不明", false)]
 	[InlineData("緊急地震速報（予報）", "", "-1", false)]
-	public void Axisの警報状態をタイトル_本文_予想最大震度から判定する(string title, string text, string intensity, bool expected)
+	public void Axisの警報状態をタイトル_本文から判定し_予想最大震度では判定しない(string title, string text, string intensity, bool expected)
 	{
 		var message = CreateMessage(title, intensity);
 		message.Text = text;
@@ -166,15 +167,22 @@ public class AxisEewReceiverTests
 			Forecast(611, "香川県西部", "-1", "-1"),
 			Forecast(612, "愛媛県東予", "異常", "異常"),
 			Forecast(613, "徳島県北部", "6-", "over"),
-			Forecast(614, "徳島県南部", "不明", "不明"));
+			Forecast(614, "徳島県南部", "不明", "不明"),
+			Forecast(615, "高知県東部", "5+", "5+"),
+			Forecast(616, "高知県西部", "5強", "5強"),
+			Forecast(617, "愛媛県中予", "5-", "5+"));
 
 		var (eew, _) = ReceiveEew(message);
 
 		Assert.NotNull(eew.IntensityForecastMap);
-		Assert.Equal(3, eew.IntensityForecastMap.Count);
+		Assert.Equal(6, eew.IntensityForecastMap.Count);
 		Assert.Equal(JmaIntensity.Int5Lower, eew.IntensityForecastMap[610]);
 		Assert.Equal(JmaIntensity.Int5Lower, eew.IntensityForecastMap[611]);
 		Assert.Equal(JmaIntensity.Int6Lower, eew.IntensityForecastMap[613]);
+		Assert.Equal(JmaIntensity.Int5Upper, eew.IntensityForecastMap[615]);
+		Assert.Equal(JmaIntensity.Int5Upper, eew.IntensityForecastMap[616]);
+		// From と To が異なる場合は上限を地域の震度として扱う
+		Assert.Equal(JmaIntensity.Int5Upper, eew.IntensityForecastMap[617]);
 	}
 
 	[Fact(DisplayName = "AXISの予想最大震度と同じ地域が以上の場合のみ最大震度を以上とする")]
