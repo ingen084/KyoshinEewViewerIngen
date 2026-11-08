@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 # スモークテスト: 実バイナリをテスト用プロファイルで起動し、
-# メインウィンドウ表示のセンチネルファイル、正常終了、起動時ワークフローのテンプレート出力を確認する。
+# メインウィンドウ表示のセンチネルファイル、正常終了、起動時ワークフローのテンプレート出力、インスタンス間通信を確認する。
 # 対象バイナリは -p:IntegrationTestBuild=true でビルドされている必要がある。
 param(
 	[Parameter(Mandatory = $true)][string]$AppExePath,
@@ -63,6 +63,12 @@ try {
 	}
 	if ($templateOutput -ne $expectedTemplateOutput) {
 		throw "テンプレート出力が一致しません (期待値: $expectedTemplateOutput, 実際: $templateOutput)"
+	}
+
+	# インスタンス間通信: アプリが自分自身の接続先へ問い合わせた結果
+	$ipcOutput = Find-AppLogText -ProfileDir $profileDir -Prefix 'IPC-CHECK|'
+	if ($ipcOutput -ne "pid=$($sentinel.Pid)") {
+		throw "インスタンス間通信の確認に失敗しました (期待値: pid=$($sentinel.Pid), 実際: $ipcOutput)"
 	}
 
 	Write-Host "スモークテスト成功: バージョン $($sentinel.Version)"

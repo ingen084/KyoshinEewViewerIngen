@@ -51,6 +51,10 @@ internal static class NativeMethods
 	[DllImport("kernel32.dll", CharSet = CharSet.Auto)]
 	public static extern uint WerRegisterAppLocalDump(string localAppDataRelativePath);
 
+	[DllImport("user32.dll")]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	public static extern bool AllowSetForegroundWindow(int dwProcessId);
+
 	/// <summary>
 	/// EnumDisplayDevices でデバイスパス (デバイスインターフェイス名) を取得する
 	/// </summary>

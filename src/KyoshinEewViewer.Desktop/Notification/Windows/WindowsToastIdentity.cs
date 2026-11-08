@@ -1,6 +1,7 @@
 #if WINDOWS
 using Avalonia.Platform;
 using KyoshinEewViewer.Core;
+using KyoshinEewViewer.Desktop.Services.InterProcess;
 using KyoshinEewViewer.Notification;
 using Microsoft.Win32;
 using System;
@@ -17,13 +18,11 @@ namespace KyoshinEewViewer.Desktop.Notification.Windows;
 /// Toast 通知をアプリ (AUMID) に紐付けるためのセットアップを行う。
 /// <para>
 /// 未パッケージ(ポータブル)アプリでは、AUMID に CustomActivator(COM) を登録しないと Windows がトーストを表示しない。
-/// かつてはこの登録を Microsoft.Toolkit.Uwp.Notifications の Compat が肩代わりしていたが、
-/// 依存(System.Drawing.Common)を排除するため WinRT を直接利用し、登録を自前で行う。
 /// </para>
 /// <para>
 /// ポータブル配布のため永続的なフットプリントを残さないよう、レジストリは <see cref="RegistryOptions.Volatile"/> で作成する。
 /// これによりログオフ/再起動でハイブがアンロードされると自動的に消えるため、アプリがクラッシュしても永続的なエントリは残らない。
-/// 正常終了時は <see cref="Unregister"/> で即時削除する。
+/// レジストリキーは動作中のすべてのインスタンスで共有し、最後に終了したインスタンスが <see cref="Unregister"/> で削除する。
 /// </para>
 /// </summary>
 internal static class WindowsToastIdentity
@@ -44,7 +43,7 @@ internal static class WindowsToastIdentity
 	private static uint _classObjectCookie;
 
 	/// <summary>
-	/// 結合テストビルド専用: レジストリのキーはユーザーごとに1つなので、テストの終了時に削除すると動作中の本番インスタンスの通知まで表示されなくなる
+	/// 結合テストビルド専用: レジストリのキーはユーザーごとに1つで、動作中の本番インスタンスと共有しているため、結合テストからは書き換えない
 	/// </summary>
 #if INTEGRATION_TEST
 	private static bool IsRegistrationSkipped => StartupOptions.Current?.IsIntegrationTestRun == true;
@@ -65,8 +64,10 @@ internal static class WindowsToastIdentity
 			// Compat の初期化より前にプロセス AUMID を設定する
 			SetCurrentProcessExplicitAppUserModelID(NotificationProvider.ApplicationId);
 
-			// 前回異常終了で消し損ねたエントリが残っている可能性があるため一度削除してから作り直す
-			DeleteRegistryEntries();
+			// 前回異常終了で消し損ねたエントリが残っている可能性があるため一度削除してから作り直す。
+			// 他のインスタンスが動いている間は、キーがない時間を作らないよう削除せずに上書きする
+			if (KyoshinEewViewerInstances.GetOtherProcessIds().Count == 0)
+				DeleteRegistryEntries();
 
 			var exePath = Process.GetCurrentProcess().MainModule?.FileName;
 			if (exePath is null)
@@ -93,7 +94,8 @@ internal static class WindowsToastIdentity
 				aumidKey.SetValue("CustomActivator", $"{{{ActivatorClsid}}}", RegistryValueKind.String);
 			}
 
-			// COM アクティベーターを常駐させる。クリック時は in-process で受け取り、新規プロセス起動を防ぐ
+			// COM アクティベーターを常駐させる。クリック時は in-process で受け取り、新規プロセス起動を防ぐ。
+			// 複数のインスタンスが登録している場合はどれか1つに渡されるので、NotificationActivation が送り元へ転送する
 			var hr = CoRegisterClassObject(ActivatorClsid, new NotificationActivatorClassFactory(),
 				ClsctxLocalServer, RegclsMultipleuse, out _classObjectCookie);
 			if (hr < 0)
@@ -106,7 +108,7 @@ internal static class WindowsToastIdentity
 	}
 
 	/// <summary>
-	/// 登録した COM アクティベーター / レジストリエントリを削除する (終了時に呼ぶ)。
+	/// 登録した COM アクティベーターを解除し、最後のインスタンスであればレジストリエントリを削除する
 	/// </summary>
 	public static void Unregister()
 	{
@@ -119,7 +121,8 @@ internal static class WindowsToastIdentity
 				CoRevokeClassObject(_classObjectCookie);
 				_classObjectCookie = 0;
 			}
-			DeleteRegistryEntries();
+			if (KyoshinEewViewerInstances.GetOtherProcessIds().Count == 0)
+				DeleteRegistryEntries();
 		}
 		catch (Exception ex)
 		{
@@ -141,9 +144,13 @@ internal static class WindowsToastIdentity
 			PlatformDirectories.EnsureDirectoryExists(dir);
 			var path = Path.Combine(dir, "notification-icon.png");
 
-			using (var asset = AssetLoader.Open(new Uri($"avares://KyoshinEewViewer.Desktop/Notification/Assets/{NotificationProvider.ApplicationId}.png")))
-			using (var file = File.Create(path))
-				asset.CopyTo(file);
+			using var asset = AssetLoader.Open(new Uri($"avares://KyoshinEewViewer.Desktop/Notification/Assets/{NotificationProvider.ApplicationId}.png"));
+			using var memory = new MemoryStream();
+			asset.CopyTo(memory);
+			var icon = memory.ToArray();
+			// 他のインスタンスの通知のために Windows が読んでいる途中で書き換えないよう、同じ内容なら書き込まない
+			if (!File.Exists(path) || !File.ReadAllBytes(path).AsSpan().SequenceEqual(icon))
+				File.WriteAllBytes(path, icon);
 			return path;
 		}
 		catch (Exception ex)
@@ -155,13 +162,17 @@ internal static class WindowsToastIdentity
 
 	/// <summary>
 	/// Toast のクリック活性化を受け取る COM コールバック。
-	/// 現状クリック時に固有の処理は行わないため空実装とする。
+	/// クリックされた通知を、その通知を出したインスタンスへ届ける。
 	/// </summary>
 	[ClassInterface(ClassInterfaceType.None)]
 	[ComVisible(true)]
 	private sealed class NotificationActivator : INotificationActivationCallback
 	{
-		public void Activate(string appUserModelId, string invokedArgs, NotificationUserInputData[] data, uint dataCount) { }
+		public void Activate(string appUserModelId, string invokedArgs, NotificationUserInputData[] data, uint dataCount)
+		{
+			AppLog.Default.LogInformation("通知がクリックされました: {Arguments}", invokedArgs);
+			NotificationActivation.Dispatch(invokedArgs);
+		}
 	}
 
 	/// <summary>

@@ -54,7 +54,7 @@ launcher はコマンドライン引数をKEVi本体に転送するため、laun
 - KEViは終了時にconfigを完全形で保存し直すため、実行ディレクトリの `config.json` は起動のたびに上書きされる（ただし指定した値は維持される）。テンプレート側は上書きされないので、恒久的に設定を変えたい場合はテンプレートを編集すること。
 - テンプレートのファイル名を `config.json` にしないこと（リポジトリの `.gitignore` が `config.json` をグローバルに無視するため追跡できない）。コピー時にリネームする現在の方式を守る。
 - `EnableKyoshinMonitor` はEEW用フラグで、強震モニタのリアルタイム取得停止には `SeriesEnable` の方を使うこと（混同しやすい）。
-- **本番インスタンスの通知に注意 (Windows)**: テスト起動した KEVi は、終了時に Toast 用のレジストリ登録を削除する。登録はユーザーごとに1つなので、同じマシンで動いている本番インスタンスの登録まで消える。テスト起動のあとは本番インスタンスの再起動が必要になる。`-p:IntegrationTestBuild=true` のビルドを `--ui-test` などで起動する結合テストでは発生しない。
+- **本番インスタンスと通知の登録を共有する (Windows)**: テスト起動した KEVi は、Toast 用のレジストリ登録とクリックの受け口を、同じマシンで動いている本番インスタンスと共有する。登録を削除するのは最後に終了したインスタンスだけで、クリックは通知を出したインスタンスへ転送される。ただし相手がインスタンス間通信 (`Services/InterProcess`) を持たない古いバージョンだと、その終了時に登録が消え、クリックも転送されない。`-p:IntegrationTestBuild=true` のビルドを `--ui-test` などで起動する結合テストでは登録しない。
 - **多重起動検知に注意**: 別のKEVi（`KyoshinEewViewer.exe` / `KyoshinEewViewer.Desktop.exe`）が既に稼働していると、Releaseビルドは `FocusExistingInstanceOnDuplicate` により既存インスタンスへIPC送信して**ダイアログもログも出さず静かに自動終了**する（Debugビルドではこの分岐は無効）。「起動したはずなのにプロセスがいない・ログが空」のときはまずこれを疑う。既存インスタンスを止めたくない場合は、exeを別名（例: `KEViSmokeTest.exe`）にコピーして起動すればプロセス名ベースの検知を回避できる。
 - Visual Studio から起動した KEVi が動いていると Desktop プロジェクトの `bin\Debug` がロックされ通常のビルドが失敗する。その場合は `dotnet build src\KyoshinEewViewer.Desktop\KyoshinEewViewer.Desktop.csproj -f net10.0-windows10.0.19041.0 -o tmp\smoke-build` のように別の出力先へビルドし、そこの exe を起動する (ユーザーのプロセスは止めない)。
 - 新しいシリーズだけを確認したい場合は、既存テンプレートを複製してそのシリーズだけ `SeriesEnable` をtrueにした派生テンプレートを `templates/` に作るとよい（`test-profile-eq.json` が前例）。

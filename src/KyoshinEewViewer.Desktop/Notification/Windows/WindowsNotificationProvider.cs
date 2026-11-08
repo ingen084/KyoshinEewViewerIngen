@@ -22,8 +22,10 @@ public class WindowsNotificationProvider : NotificationProvider
 			// 通知音はアプリ側 (PlaySoundAction 等) が担うため OS 側は無音にする
 			// 重要通知は画面に残り続けるよう Reminder シナリオにする
 			var scenario = request.Urgency == NotificationUrgency.Critical ? " scenario=\"reminder\"" : "";
+			// クリックを送り元のインスタンスへ届けるための引数
+			var launch = SecurityElement.Escape(NotificationActivation.CreateArguments());
 			var xmlText =
-				$"<toast{scenario}>" +
+				$"<toast launch=\"{launch}\"{scenario}>" +
 					"<visual><binding template=\"ToastGeneric\">" +
 						$"<text>{SecurityElement.Escape(request.Title)}</text>" +
 						$"<text>{SecurityElement.Escape(request.Message)}</text>" +

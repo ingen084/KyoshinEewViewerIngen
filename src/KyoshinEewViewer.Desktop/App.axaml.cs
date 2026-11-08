@@ -10,6 +10,7 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Desktop.Services;
+using KyoshinEewViewer.Desktop.Services.InterProcess;
 using KyoshinEewViewer.Desktop.Views;
 using KyoshinEewViewer.Notification;
 using KyoshinEewViewer.Series;
@@ -25,13 +26,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using static KyoshinEewViewer.Desktop.NativeMethods;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Desktop;
 
 public class App : Application
 {
 	private static Window? _mainWindow;
-	private IInterProcessCommunicationService? _ipcService;
+	private InterProcessMessenger? _messenger;
 
 	public static Window? MainWindow
 	{
@@ -140,9 +142,7 @@ public class App : Application
 						)
 						{
 							// 既存のウィンドウを最前面に表示
-							using var ipcService = InterProcessCommunicationServiceFactory.Create();
-
-							if (await ipcService.SendShowMainWindowMessageAsync())
+							if (await KyoshinEewViewerInstances.TryShowExistingMainWindowAsync(AppLog.Create<App>()))
 							{
 								await Dispatcher.UIThread.InvokeAsync(() =>
 								{
@@ -240,17 +240,7 @@ public class App : Application
 							splashWindow?.Close();
 							splashWindow = null;
 
-							// standaloneモードでない場合のみIPCサーバーを起動
-							if (StartupOptions.Current?.StandaloneSeriesName is null
-#if INTEGRATION_TEST
-								// 結合テスト時は既存インスタンスとのパイプ名衝突を避けるため起動しない
-								&& StartupOptions.Current?.IsIntegrationTestRun != true
-#endif
-							)
-							{
-								_ipcService = InterProcessCommunicationServiceFactory.Create();
-								_ipcService.StartServer();
-							}
+							var messenger = _messenger ??= KyoshinEewViewerInstances.StartMessenger();
 
 #if INTEGRATION_TEST
 							// スモークテストモード: メインウィンドウ表示を記録して自動終了する
@@ -259,6 +249,17 @@ public class App : Application
 								IntegrationTestSentinel.Write("main-window-opened");
 								_ = Task.Run(async () =>
 								{
+									// テストドライバがインスタンス間通信の動作をログで確認する
+									try
+									{
+										var info = await InterProcessMessenger.SendAsync(messenger.EndpointName, InterProcessMessages.GetInstanceInfo, InterProcessEmpty.Instance);
+										AppLog.Default.LogInformation("IPC-CHECK|pid={ProcessId}", info.ProcessId);
+									}
+									catch (InterProcessException ex)
+									{
+										AppLog.Default.LogWarning(ex, "IPC-CHECK|failed");
+									}
+
 									// テストドライバが起動時ワークフローの結果をログで確認するので、完了してから終了する
 									await Task.WhenAny(IntegrationTestSentinel.StartupWorkflowsCompleted.Task, Task.Delay(TimeSpan.FromSeconds(30)));
 									await Task.Delay(3000);
@@ -297,7 +298,7 @@ public class App : Application
 			{
 				StrongReferenceMessenger.Default.Send(new ApplicationClosing());
 				ConfigurationLoader.Save(config);
-				_ipcService?.Dispose();
+				_messenger?.Dispose();
 			};
 		}
 
