@@ -8,6 +8,12 @@ public struct MeteorologicalInfo(XmlNode node)
 {
 	private XmlNode Node { get; set; } = node;
 
+	/// <summary>
+	/// 地域ごとの気象情報。Kind と Area の対応を保持する。
+	/// </summary>
+	public IEnumerable<MeteorologicalItem> Items
+		=> Node.Children.Where(c => c.Name == Literals.Item()).Select(c => new MeteorologicalItem(c));
+
 	private string? _type = null;
 	/// <summary>
 	/// 気象情報の種別。存在しない場合は null。

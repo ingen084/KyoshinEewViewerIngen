@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Fixtures\*.xml" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures\**\*.xml;Fixtures\**\*.xml.gz" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

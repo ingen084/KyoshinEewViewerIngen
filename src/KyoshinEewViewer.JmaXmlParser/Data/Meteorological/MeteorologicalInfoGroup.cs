@@ -22,4 +22,10 @@ public struct MeteorologicalInfoGroup(XmlNode node)
 	/// </summary>
 	public IEnumerable<MeteorologicalInfo> MeteorologicalInfos
 		=> Node.Children.Where(c => c.Name == Literals.MeteorologicalInfo()).Select(c => new MeteorologicalInfo(c));
+
+	/// <summary>
+	/// 気象警報・注意報などの時系列情報。
+	/// </summary>
+	public IEnumerable<MeteorologicalTimeSeriesInfo> TimeSeriesInfos
+		=> Node.Children.Where(c => c.Name == "TimeSeriesInfo"u8).Select(c => new MeteorologicalTimeSeriesInfo(c));
 }

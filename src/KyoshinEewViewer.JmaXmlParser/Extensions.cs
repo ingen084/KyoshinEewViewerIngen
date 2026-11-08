@@ -1,10 +1,17 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser;
 
 internal static class Extensions
 {
+	public static IEnumerable<string> GetNotes(this XmlNode node, ReadOnlySpan<byte> containerName)
+		=> node.TryFindChild(containerName, out var container)
+			? container.Children.Where(c => c.Name == "Note"u8).Select(c => c.InnerText.ToString())
+			: Enumerable.Empty<string>();
+
 	public static bool IsElementBasis(this XmlNode node, ReadOnlySpan<byte> localName)
 		=> node.TryGetFullName(out var ns, out var name) &&
 			ns == "http://xml.kishou.go.jp/jmaxml1/elementBasis1/"u8 && name == localName;
