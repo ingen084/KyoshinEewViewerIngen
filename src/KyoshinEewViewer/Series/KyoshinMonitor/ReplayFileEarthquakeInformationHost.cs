@@ -326,7 +326,7 @@ public partial class ReplayFileEarthquakeInformationHost : EarthquakeInformation
 			if (report.Control.Title == "緊急地震速報（警報）")
 			{
 				var earthquake2 = report.EarthquakeBody.Earthquake ?? throw new Exception("Earthquake 要素が見つかりません");
-				var warningAreas2 = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code == "19")).ToArray();
+				var warningAreas2 = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code is "10" or "11" or "19")).ToArray();
 				EewController.UpdateWarning(new Models.Eew
 				{
 					Id = report.Head.EventId,

@@ -388,6 +388,68 @@ public class EewControllerTests
 		Assert.Same(jmaForecast, withJmaForecast.FillIntensityForecastMap);
 	}
 
+	[Fact(DisplayName = "予報電文に警報状態が含まれなくても警報電文の受信中は警報として扱い_警報の取消後は予報電文の状態に戻る")]
+	public void 警報電文の受信中は予報電文を警報として扱う()
+	{
+		var controller = CreateController();
+		var updatedEews = new List<Eew[]>();
+		controller.EewUpdated += (_, eews) => updatedEews.Add(eews);
+		var baseTime = new DateTime(2026, 11, 8, 1, 4, 49);
+		var forecast = CreateAxisForecastEew(baseTime) with { SerialNo = 5, MaxIntensity = JmaIntensity.Int4 };
+
+		controller.Update(forecast, baseTime);
+		Assert.False(Assert.Single(updatedEews.Last()).IsWarning);
+
+		// 警報電文の報数は予報電文とは別に 1 から振られる
+		controller.UpdateWarning(CreateAxisWarningEew(baseTime), baseTime);
+
+		var actual = Assert.Single(updatedEews.Last());
+		Assert.Equal("AXIS", actual.DisplaySource);
+		Assert.Equal(5, actual.SerialNo);
+		Assert.True(actual.IsWarning);
+		Assert.Equal([451, 443], actual.WarningAreas!.Codes);
+
+		controller.Update(forecast with { SerialNo = 6, MaxIntensity = JmaIntensity.Int5Lower }, baseTime.AddSeconds(1));
+
+		actual = Assert.Single(updatedEews.Last());
+		Assert.Equal(6, actual.SerialNo);
+		Assert.True(actual.IsWarning);
+		Assert.Equal(JmaIntensity.Int5Lower, actual.MaxIntensity);
+		// ワークフローなどへ渡す保持中の EEW も警報として扱う
+		Assert.True(controller.TryGetEew(forecast.Key, out var cached));
+		Assert.True(cached?.IsWarning);
+
+		controller.WarningCancelled(forecast.Key, baseTime.AddSeconds(2));
+		controller.Update(forecast with { SerialNo = 7 }, baseTime.AddSeconds(3));
+
+		Assert.False(Assert.Single(updatedEews.Last()).IsWarning);
+	}
+
+	[Fact(DisplayName = "警報電文が予報電文より先に届いても_後から受信した予報電文を警報として扱い警報音を重複して処理しない")]
+	public void 警報電文が予報電文より先に届いても後から受信した予報電文を警報として扱う()
+	{
+		var config = new KyoshinEewViewerConfiguration();
+		var soundPlayer = new SoundPlayerService(config, NullLogger<SoundPlayerService>.Instance);
+		var controller = CreateController(config, soundPlayer);
+		var updatedEews = new List<Eew[]>();
+		controller.EewUpdated += (_, eews) => updatedEews.Add(eews);
+		var baseTime = new DateTime(2026, 11, 8, 1, 4, 49);
+
+		controller.UpdateWarning(CreateAxisWarningEew(baseTime), baseTime);
+		Assert.Equal("AXIS 警報電文", Assert.Single(updatedEews.Last()).DisplaySource);
+
+		var soundConfigs = config.Sounds["Eew"];
+		Assert.True(soundConfigs.Remove("EewWarningAnnounced"));
+
+		controller.Update(CreateAxisForecastEew(baseTime.AddSeconds(1)) with { SerialNo = 6 }, baseTime.AddSeconds(1));
+
+		var actual = Assert.Single(updatedEews.Last());
+		Assert.Equal("AXIS", actual.DisplaySource);
+		Assert.True(actual.IsWarning);
+		Assert.Equal([451, 443], actual.WarningAreas!.Codes);
+		Assert.DoesNotContain("EewWarningAnnounced", soundConfigs);
+	}
+
 	[Fact(DisplayName = "EEWの期限切れ処理でも警報のみのEEWは通知に含まれる")]
 	public void EEWの期限切れ処理でも警報のみのEEWは通知に含まれる()
 	{
@@ -509,6 +571,32 @@ public class EewControllerTests
 				SerialNo = 1,
 				Codes = [200],
 				Names = ["警報電文地域"],
+				IsWarningTelegram = true,
+			},
+		};
+
+	private static Eew CreateAxisForecastEew(DateTime receiveTime)
+		=> CreateEew(receiveTime) with
+		{
+			Id = "20261108010441",
+			Source = EewSource.Axis,
+			DisplaySource = "AXIS",
+			IsWarning = false,
+		};
+
+	private static Eew CreateAxisWarningEew(DateTime receiveTime)
+		=> CreateAxisForecastEew(receiveTime) with
+		{
+			DisplaySource = "AXIS 警報電文",
+			SerialNo = 1,
+			MaxIntensity = JmaIntensity.Int5Lower,
+			IsWarning = true,
+			WarningAreas = new EewWarningAreas
+			{
+				DisplaySource = "AXIS 警報電文",
+				SerialNo = 1,
+				Codes = [451, 443],
+				Names = ["愛知県西部", "静岡県西部"],
 				IsWarningTelegram = true,
 			},
 		};

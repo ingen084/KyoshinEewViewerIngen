@@ -15,6 +15,8 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 /// </summary>
 internal class AxisEewReceiver
 {
+	private const string WarningTelegramDisplaySource = "AXIS 警報電文";
+
 	private ILogger Logger { get; }
 	private IEewController EewController { get; }
 
@@ -47,18 +49,30 @@ internal class AxisEewReceiver
 
 		var eventId = message.EventID;
 		var reportTime = ToJstDateTime(message.ReportDateTime);
+		// 警報電文は予報電文とは別に報数が振られるため、dmdata の警報電文と同じく警報として別に管理する
+		var isWarningTelegram = message.Title?.Contains("警報", StringComparison.Ordinal) ?? false;
 		if (flag.IsCancel)
 		{
+			if (isWarningTelegram)
+			{
+				Logger.LogInformation("AXIS からEEW警報の取消報を受信しました: {EventId}", eventId);
+				EewController.WarningCancelled(eventId, reportTime);
+				return;
+			}
 			Logger.LogInformation("AXIS からEEW取消報を受信しました: {EventId}", eventId);
 			EewController.Cancelled(eventId, reportTime);
 			return;
 		}
 
-		if (CreateEew(message, eventId, flag, reportTime) is { } eew)
+		if (CreateEew(message, eventId, flag, reportTime, isWarningTelegram) is not { } eew)
+			return;
+		if (isWarningTelegram)
+			EewController.UpdateWarning(eew, reportTime);
+		else
 			EewController.Update(eew, reportTime);
 	}
 
-	private EewModel? CreateEew(EewMessage message, string eventId, EewFlag flag, DateTime reportTime)
+	private EewModel? CreateEew(EewMessage message, string eventId, EewFlag flag, DateTime reportTime, bool isWarningTelegram)
 	{
 		if (message.Hypocenter is not { } hypocenter)
 		{
@@ -79,16 +93,15 @@ internal class AxisEewReceiver
 			.Where(f => IsValidIntensity(f.Intensity))
 			.ToArray();
 
-		// Text の文言だけでは警報状態が安定しないため、警報の発表基準である予想最大震度5弱以上でも警報とみなす
-		var isWarning = (message.Title?.Contains("警報", StringComparison.Ordinal) ?? false) ||
-						(message.Text?.Contains("強い揺れ", StringComparison.Ordinal) ?? false) ||
-						(IsValidIntensity(maxIntensity) && maxIntensity >= JmaIntensity.Int5Lower);
+		// レベル法の EEW では予想最大震度が5弱以上でも警報にならないことがあるため、
+		// 予想最大震度ではなく電文の種別と本文から警報状態を判定する
+		var isWarning = isWarningTelegram || (message.Text?.Contains("強い揺れ", StringComparison.Ordinal) ?? false);
 
 		return new EewModel
 		{
 			Id = eventId,
 			Source = EewSource.Axis,
-			DisplaySource = "AXIS",
+			DisplaySource = isWarningTelegram ? WarningTelegramDisplaySource : "AXIS",
 			ReceiveTime = reportTime,
 			SerialNo = message.Serial,
 			IsFinal = flag.IsFinal,
@@ -110,8 +123,24 @@ internal class AxisEewReceiver
 			IntensityForecastMap = forecasts.Length > 0
 				? forecasts.GroupBy(f => f.Code).ToDictionary(g => g.Key, g => g.Max(f => f.Intensity))
 				: null,
-			WarningAreas = null,
+			WarningAreas = isWarningTelegram ? CreateWarningAreas(message) : null,
 			IsWarning = isWarning,
+		};
+	}
+
+	/// <summary>
+	/// 警報電文の予想地域は気象庁の警報電文の警報対象地域をそのまま写したものなので、すべて警報地域として扱う
+	/// </summary>
+	private static EewWarningAreas CreateWarningAreas(EewMessage message)
+	{
+		var areas = (message.Forecast ?? []).DistinctBy(f => f.Code).ToArray();
+		return new EewWarningAreas
+		{
+			DisplaySource = WarningTelegramDisplaySource,
+			SerialNo = message.Serial,
+			Codes = areas.Select(a => a.Code).ToArray(),
+			Names = EewAreaGroups.Compressor.Compress(areas.Select(a => a.Name).OfType<string>().ToArray()),
+			IsWarningTelegram = true,
 		};
 	}
 

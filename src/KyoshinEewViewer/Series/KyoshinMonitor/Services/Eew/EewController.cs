@@ -120,6 +120,7 @@ public class EewController : IEewController
 		{
 			if (!AcceptWithTrainingPriority(eew, out var isTrainingEnded))
 				return;
+			eew = InheritWarningState(eew);
 
 			// 詳細を表示しない設定かつ1点での場合処理しない
 			if (!EewCache.ContainsKey(eew.Key) &&
@@ -145,7 +146,8 @@ public class EewController : IEewController
 						InvokeEewUpdated(updatedTime);
 					return;
 				}
-				eew = m.Item2;
+				// 既存の EEW の内容を元に統合した場合も警報電文の状態を反映する
+				eew = InheritWarningState(m.Item2);
 
 				if (eew.IsFinal)
 				{
@@ -388,6 +390,17 @@ public class EewController : IEewController
 	}
 
 	/// <summary>
+	/// 取り消されていない警報電文を受信している EEW は警報として扱う
+	/// 予報電文に警報状態が含まれない受信元があり、警報の解除は警報電文の取消でしか分からないため
+	/// ロックを取得した状態で呼び出すこと
+	/// </summary>
+	private Models.Eew InheritWarningState(Models.Eew eew)
+		=> eew is { IsWarning: false, IsCancelled: false } &&
+		   WarningEewCache.TryGetValue(eew.Key, out var warning) && !warning.IsCancelled
+			? eew with { IsWarning = true }
+			: eew;
+
+	/// <summary>
 	/// 音声ファイルのパスで訓練かどうかを区別するためのパラメータ値
 	/// </summary>
 	private static string ToTrainingSoundParameter(Models.Eew eew)
@@ -546,7 +559,8 @@ public class EewController : IEewController
 			// 警報情報が存在する場合はくっつける
 			if (!WarningEewCache.TryGetValue(e.Key, out var wEew) || wEew.WarningAreas?.IsWarningTelegram != true)
 				continue;
-			var mEew = e with { WarningAreas = wEew.WarningAreas };
+			// 予報より後に警報電文を受信した場合も、次の予報を待たずに警報として表示する
+			var mEew = InheritWarningState(e) with { WarningAreas = wEew.WarningAreas };
 			eews[eews.IndexOf(e)] = mEew;
 		}
 		foreach (var e in WarningEewCache.Values.ToArray())
