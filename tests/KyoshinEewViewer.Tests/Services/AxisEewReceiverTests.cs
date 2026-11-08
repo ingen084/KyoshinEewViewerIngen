@@ -76,18 +76,66 @@ public class AxisEewReceiverTests
 		Assert.Null(eew.WarningAreas);
 	}
 
-	[Fact(DisplayName = "AXISのキャンセル報は震源情報がなくてもキャンセルとして扱う")]
-	public void Axisのキャンセル報は震源情報がなくてもキャンセルとして扱う()
+	[Fact(DisplayName = "AXISのキャンセル報は震源情報がなくても予報電文と警報電文で振り分けて取り消す")]
+	public void Axisのキャンセル報は予報電文と警報電文で振り分けて取り消す()
 	{
-		var message = CreateMessage("緊急地震速報（警報）", "7");
-		message.Hypocenter = null!;
-		message.Flag!.IsCancel = true;
+		var eventId = "20261017083012";
+		var reportTime = new DateTime(2026, 10, 17, 8, 30, 20);
+		(string Title, Action<Mock<IEewController>> Verify)[] cases =
+		[
+			("緊急地震速報（予報）", c => c.Verify(x => x.Cancelled(eventId, reportTime), Times.Once)),
+			("緊急地震速報（警報）", c => c.Verify(x => x.WarningCancelled(eventId, reportTime), Times.Once)),
+		];
+
+		foreach (var (title, verify) in cases)
+		{
+			var message = CreateMessage(title, "7");
+			message.Hypocenter = null!;
+			message.Flag!.IsCancel = true;
+			var controller = new Mock<IEewController>();
+
+			CreateReceiver(controller).Receive(message);
+
+			verify(controller);
+			controller.VerifyNoOtherCalls();
+		}
+	}
+
+	[Fact(DisplayName = "AXISの警報電文は予想地域をすべて警報地域とし_警報電文としてEewControllerへ渡す")]
+	public void Axisの警報電文は予想地域をすべて警報地域とし_警報電文としてEewControllerへ渡す()
+	{
+		// 気象庁の警報電文の警報対象地域と同じ地域・予想震度が並ぶ
+		var message = CreateMessage("緊急地震速報（警報）", "5-",
+			Forecast(451, "愛知県西部", "5弱", "5弱"),
+			Forecast(443, "静岡県西部", "4", "4"),
+			Forecast(450, "愛知県東部", "4", "4"),
+			Forecast(442, "静岡県中部", "3", "4"),
+			Forecast(431, "岐阜県美濃東部", "3", "4"));
+		message.Serial = 1;
 		var controller = new Mock<IEewController>();
+		var received = new List<Eew>();
+		controller
+			.Setup(c => c.UpdateWarning(It.IsAny<Eew>(), It.IsAny<DateTime>()))
+			.Callback<Eew, DateTime>((eew, _) => received.Add(eew));
 
 		CreateReceiver(controller).Receive(message);
 
-		controller.Verify(c => c.Cancelled("20261017083012", new DateTime(2026, 10, 17, 8, 30, 20)), Times.Once);
+		controller.Verify(c => c.UpdateWarning(It.IsAny<Eew>(), new DateTime(2026, 10, 17, 8, 30, 20)), Times.Once);
 		controller.VerifyNoOtherCalls();
+		var eew = Assert.Single(received);
+		Assert.Equal(EewSource.Axis, eew.Source);
+		Assert.Equal("AXIS 警報電文", eew.DisplaySource);
+		Assert.Equal(1, eew.SerialNo);
+		Assert.True(eew.IsWarning);
+		Assert.Equal(JmaIntensity.Int5Lower, eew.MaxIntensity);
+
+		var warningAreas = eew.WarningAreas;
+		Assert.NotNull(warningAreas);
+		Assert.True(warningAreas.IsWarningTelegram);
+		Assert.Equal("AXIS 警報電文", warningAreas.DisplaySource);
+		Assert.Equal(1, warningAreas.SerialNo);
+		Assert.Equal([451, 443, 450, 442, 431], warningAreas.Codes);
+		Assert.Equal(["愛知県", "静岡県西部", "静岡県中部", "岐阜県美濃東部"], warningAreas.Names);
 	}
 
 	[Fact(DisplayName = "AXISの訓練報は取り込まない")]
@@ -138,18 +186,17 @@ public class AxisEewReceiverTests
 		}
 	}
 
-	[Theory(DisplayName = "AXISの警報状態をタイトル_本文から判定し_予想最大震度では判定しない")]
-	[InlineData("緊急地震速報（警報）", "", "4", true)]
-	[InlineData("緊急地震速報（予報）", "強い揺れに警戒してください", "4", true)]
-	[InlineData("緊急地震速報（予報）", "", "5-", false)]
-	[InlineData("緊急地震速報（予報）", "", "5+", false)]
-	[InlineData("緊急地震速報（予報）", "", "7", false)]
-	[InlineData("緊急地震速報（予報）", "", "4", false)]
-	[InlineData("緊急地震速報（予報）", "", "不明", false)]
-	[InlineData("緊急地震速報（予報）", "", "-1", false)]
-	public void Axisの警報状態をタイトル_本文から判定し_予想最大震度では判定しない(string title, string text, string intensity, bool expected)
+	[Theory(DisplayName = "AXISの予報電文の警報状態を本文から判定し_予想最大震度では判定しない")]
+	[InlineData("強い揺れに警戒してください", "4", true)]
+	[InlineData("", "5-", false)]
+	[InlineData("", "5+", false)]
+	[InlineData("", "7", false)]
+	[InlineData("", "4", false)]
+	[InlineData("", "不明", false)]
+	[InlineData("", "-1", false)]
+	public void Axisの予報電文の警報状態を本文から判定し_予想最大震度では判定しない(string text, string intensity, bool expected)
 	{
-		var message = CreateMessage(title, intensity);
+		var message = CreateMessage("緊急地震速報（予報）", intensity);
 		message.Text = text;
 
 		var (eew, _) = ReceiveEew(message);
@@ -160,7 +207,7 @@ public class AxisEewReceiverTests
 	[Fact(DisplayName = "AXISの予報地域は地域ごとの最大震度を採用し_異常値と不明を除外する")]
 	public void Axisの予報地域は地域ごとの最大震度を採用し_異常値と不明を除外する()
 	{
-		var message = CreateMessage("緊急地震速報（警報）", "6-",
+		var message = CreateMessage("緊急地震速報（予報）", "6-",
 			Forecast(610, "香川県東部", "4", "4"),
 			Forecast(610, "香川県東部", "5-", "5-"),
 			Forecast(611, "香川県西部", "5-", "5-"),
@@ -188,12 +235,12 @@ public class AxisEewReceiverTests
 	[Fact(DisplayName = "AXISの予想最大震度と同じ地域が以上の場合のみ最大震度を以上とする")]
 	public void Axisの予想最大震度と同じ地域が以上の場合のみ最大震度を以上とする()
 	{
-		var over = CreateMessage("緊急地震速報（警報）", "6-",
+		var over = CreateMessage("緊急地震速報（予報）", "6-",
 			Forecast(610, "香川県東部", "5-", "5-"),
 			Forecast(613, "徳島県北部", "6-", "over"));
 		Assert.True(ReceiveEew(over).Eew.IsIntensityOver);
 
-		var lowerAreaOver = CreateMessage("緊急地震速報（警報）", "5-",
+		var lowerAreaOver = CreateMessage("緊急地震速報（予報）", "5-",
 			Forecast(610, "香川県東部", "5-", "5-"),
 			Forecast(611, "香川県西部", "4", "over"));
 		Assert.False(ReceiveEew(lowerAreaOver).Eew.IsIntensityOver);

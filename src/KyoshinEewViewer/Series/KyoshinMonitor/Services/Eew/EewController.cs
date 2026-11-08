@@ -120,6 +120,7 @@ public class EewController : IEewController
 		{
 			if (!AcceptWithTrainingPriority(eew, out var isTrainingEnded))
 				return;
+			eew = InheritWarningState(eew);
 
 			// 詳細を表示しない設定かつ1点での場合処理しない
 			if (!EewCache.ContainsKey(eew.Key) &&
@@ -145,7 +146,8 @@ public class EewController : IEewController
 						InvokeEewUpdated(updatedTime);
 					return;
 				}
-				eew = m.Item2;
+				// 既存の EEW の内容を元に統合した場合も警報電文の状態を反映する
+				eew = InheritWarningState(m.Item2);
 
 				if (eew.IsFinal)
 				{
@@ -388,6 +390,17 @@ public class EewController : IEewController
 	}
 
 	/// <summary>
+	/// 取り消されていない警報電文を受信している EEW は警報として扱う
+	/// 予報電文に警報状態が含まれない受信元があり、警報の解除は警報電文の取消でしか分からないため
+	/// ロックを取得した状態で呼び出すこと
+	/// </summary>
+	private Models.Eew InheritWarningState(Models.Eew eew)
+		=> eew is { IsWarning: false, IsCancelled: false } &&
+		   WarningEewCache.TryGetValue(eew.Key, out var warning) && !warning.IsCancelled
+			? eew with { IsWarning = true }
+			: eew;
+
+	/// <summary>
 	/// 音声ファイルのパスで訓練かどうかを区別するためのパラメータ値
 	/// </summary>
 	private static string ToTrainingSoundParameter(Models.Eew eew)
@@ -411,22 +424,12 @@ public class EewController : IEewController
 	/// <returns>更新した EEW 更新しなかった場合は null</returns>
 	private (EewUpdateReason, Models.Eew)? MixEew(Models.Eew current, Models.Eew received)
 	{
-		// AXIS は警報の解除を取消報でしか通知しないため、予報電文で警報状態を解除しない
-		var mergedReceived = MergeAxisWarningState(current, received);
-
 		// 新しいデータの場合は問答無用で更新
 		var isNewerSerial = received.SerialNo > current.SerialNo;
 		if (isNewerSerial)
-			return (EewUpdateReason.NewerSerial, MergeCancellation(current, received, mergedReceived));
+			return (EewUpdateReason.NewerSerial, MergeCancellation(current, received, received));
 		if (received.SerialNo < current.SerialNo)
-		{
-			// AXIS の警報電文の報数は予報電文とは別に 1 から振られるため、報数が戻っていても
-			// まだ警報状態が反映されていなければ警報電文の内容を取り込む
-			if (current.Source == EewSource.Axis && received.Source == EewSource.Axis &&
-				received.IsWarning && !current.IsWarning)
-				return (EewUpdateReason.MorePriority, MergeCancellation(current, received, mergedReceived with { SerialNo = current.SerialNo }));
 			return null;
-		}
 
 		return (current.Source, received.Source) switch
 		{
@@ -459,10 +462,6 @@ public class EewController : IEewController
 			// SNP･AXIS より dmdata を優先させる
 			(EewSource.SignalNowProfessional, EewSource.Dmdata) or (EewSource.Axis, EewSource.Dmdata)
 				=> (EewUpdateReason.MorePriority, MergeCancellation(current, received, received)),
-
-			// AXIS の警報電文は予報電文とは別の報数体系のため、同じ報数でも警報状態のみ反映する
-			(EewSource.Axis, EewSource.Axis) when received.IsWarning && !current.IsWarning
-				=> (EewUpdateReason.MorePriority, MergeCancellation(current, received, mergedReceived with { SerialNo = current.SerialNo })),
 
 			// EEW Client は dmdata の情報を中継したものなので dmdata と同等に扱い、強震モニタ･SNP･AXIS より優先させる
 			// EEW Client には警報地域が含まれないため、SNP から受け取っていた分を引き継ぐ
@@ -504,7 +503,7 @@ public class EewController : IEewController
 					})),
 
 			_ when ShouldClearCancel(current, received)
-				=> (EewUpdateReason.CancelCleared, MergeCancellation(current, received, mergedReceived)),
+				=> (EewUpdateReason.CancelCleared, MergeCancellation(current, received, received)),
 
 			// そのほかの場合は何もしない
 			_ => null,
@@ -514,14 +513,6 @@ public class EewController : IEewController
 	private static bool ShouldClearCancel(Models.Eew current, Models.Eew received)
 		=> current is { IsCancelled: true, IsTrueCancelled: false } &&
 		   received is { IsCancelled: false, IsTrueCancelled: false };
-
-	/// <summary>
-	/// AXIS は警報の解除を取消報でしか通知しないため、警報受信後の予報電文で警報状態を解除しない
-	/// </summary>
-	private static Models.Eew MergeAxisWarningState(Models.Eew current, Models.Eew received)
-		=> current is { Source: EewSource.Axis, IsWarning: true } && received.Source == EewSource.Axis
-			? received with { IsWarning = true }
-			: received;
 
 	private static Models.Eew MergeCancellation(Models.Eew current, Models.Eew received, Models.Eew merged)
 	{
@@ -568,7 +559,8 @@ public class EewController : IEewController
 			// 警報情報が存在する場合はくっつける
 			if (!WarningEewCache.TryGetValue(e.Key, out var wEew) || wEew.WarningAreas?.IsWarningTelegram != true)
 				continue;
-			var mEew = e with { WarningAreas = wEew.WarningAreas };
+			// 予報より後に警報電文を受信した場合も、次の予報を待たずに警報として表示する
+			var mEew = InheritWarningState(e) with { WarningAreas = wEew.WarningAreas };
 			eews[eews.IndexOf(e)] = mEew;
 		}
 		foreach (var e in WarningEewCache.Values.ToArray())
