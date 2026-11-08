@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
@@ -15,7 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 
-public class SignalNowFileWatcher
+public partial class SignalNowFileWatcher : ObservableObject
 {
 	public bool CanReceive { get; private set; }
 
@@ -25,7 +26,11 @@ public class SignalNowFileWatcher
 	public static string LogPath => Path.Combine(SnpDirectory, LogName);
 	public static string SettingsPath => Path.Combine(SnpDirectory, SettingsName);
 
-	public Location? CurrentLocation { get; private set; }
+	/// <summary>
+	/// SignalNow Professional に設定された所在地
+	/// </summary>
+	[ObservableProperty]
+	public partial Location? CurrentLocation { get; private set; }
 
 	private ILogger Logger { get; }
 	private KyoshinEewViewerConfiguration Config { get; }

@@ -58,9 +58,10 @@ public partial class EewTelegramSubscriber : ObservableObject
 						return;
 					}
 
-					// 訓練･試験は今のところ非対応
-					if (report.Control.Status != "通常")
+					// 試験は扱わない
+					if (report.Control.Status is not ("通常" or "訓練"))
 						return;
+					var isTraining = report.Control.Status == "訓練";
 
 					// 今のところ予報電文のみ対応
 					if (report.Control.Title != "緊急地震速報（地震動予報）")
@@ -73,17 +74,18 @@ public partial class EewTelegramSubscriber : ObservableObject
 					// 取消報
 					if (report.Head.InfoType == "取消")
 					{
-						Logger.LogInformation("dmdataからEEW取消報を受信しました: {EventId}", report.Head.EventId);
-						EewController.Cancelled(report.Head.EventId, Timer.CurrentTime);
+						Logger.LogInformation("dmdataからEEW取消報を受信しました: {EventId} ({Status})", report.Head.EventId, report.Control.Status);
+						EewController.Cancelled(Models.Eew.GetKey(report.Head.EventId, isTraining), Timer.CurrentTime);
 						return;
 					}
-					Logger.LogInformation("dmdataからEEWを受信しました: {EventId}", report.Head.EventId);
+					Logger.LogInformation("dmdataからEEWを受信しました: {EventId} ({Status})", report.Head.EventId, report.Control.Status);
 
 					var earthquake = report.EarthquakeBody.Earthquake ?? throw new Exception("Earthquake 要素が見つかりません");
 					var warningAreas = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code is "10" or "11" or "19")).ToArray();
 					var eew = new Models.Eew
 					{
 						Id = report.Head.EventId,
+						IsTraining = isTraining,
 						Source = EewSource.Dmdata,
 						DisplaySource = $"DM-D.S.S({report.Control.EditorialOffice})",
 						ReceiveTime = Timer.CurrentTime,
@@ -158,9 +160,10 @@ public partial class EewTelegramSubscriber : ObservableObject
 					await using var stream = await t.GetBodyAsync();
 					using var report = new JmaXmlDocument(stream);
 
-					// 訓練･試験は今のところ非対応
-					if (report.Control.Status != "通常")
+					// 試験は扱わない
+					if (report.Control.Status is not ("通常" or "訓練"))
 						return;
+					var isTraining = report.Control.Status == "訓練";
 
 					// 今のところ予報電文のみ対応
 					if (report.Control.Title != "緊急地震速報（警報）")
@@ -172,17 +175,18 @@ public partial class EewTelegramSubscriber : ObservableObject
 					// 取消報
 					if (report.Head.InfoType == "取消")
 					{
-						Logger.LogInformation("dmdataからEEW警報の取消報を受信しました: {EventId}", report.Head.EventId);
-						EewController.WarningCancelled(report.Head.EventId, Timer.CurrentTime);
+						Logger.LogInformation("dmdataからEEW警報の取消報を受信しました: {EventId} ({Status})", report.Head.EventId, report.Control.Status);
+						EewController.WarningCancelled(Models.Eew.GetKey(report.Head.EventId, isTraining), Timer.CurrentTime);
 						return;
 					}
-					Logger.LogInformation("dmdataからEEW警報を受信しました: {EventId}", report.Head.EventId);
+					Logger.LogInformation("dmdataからEEW警報を受信しました: {EventId} ({Status})", report.Head.EventId, report.Control.Status);
 
 					var earthquake = report.EarthquakeBody.Earthquake ?? throw new Exception("Earthquake 要素が見つかりません");
 					var warningAreas = report.EarthquakeBody.Intensity?.Forecast?.Prefs.SelectMany(p => p.Areas.Where(a => a.Category?.Kind.Code is "10" or "11" or "19")).ToArray();
 					EewController.UpdateWarning(new Models.Eew
 					{
 						Id = report.Head.EventId,
+						IsTraining = isTraining,
 						Source = EewSource.Dmdata,
 						DisplaySource = $"DM-D.S.S({report.Control.EditorialOffice}) 警報電文",
 						ReceiveTime = Timer.CurrentTime,

@@ -47,11 +47,14 @@ public partial class KyoshinMonitorSeries : SeriesBase
 	public override Control DisplayControl => _control ?? throw new InvalidOperationException("初期化前にコントロールが呼ばれています");
 
 	private KyoshinMonitorReplaySettingPage ReplaySettingPage { get; }
+	private ExternalAppSettingPage ExternalAppSettingPage { get; }
+	private KyoshinMonitorEewSettingPage EewSettingPage { get; }
 	public override ISettingPage[] SettingPages => [
 		new BasicSettingPage<KyoshinMonitorPage>("\xf108", "強震モニタ", [
 			ReplaySettingPage,
 			new BasicSettingPage<KyoshinMonitorMapPage>(null, "地図アイコン", []),
-			new BasicSettingPage<KyoshinMonitorEewPage>(null, "緊急地震速報", []),
+			EewSettingPage,
+			ExternalAppSettingPage,
 			new BasicSettingPage<ObservationPointsDataPage>(null, "観測点データ", []),
 		]),
 	];
@@ -204,6 +207,8 @@ public partial class KyoshinMonitorSeries : SeriesBase
 		var eewController = new Services.Eew.EewController(AppLog.Create<Services.Eew.EewController>(), this, config, soundPlayer, workflowService);
 		PointForecastController = new(AppLog.Create<Services.Eew.EewPointForecastController>(), config, eewController, timerService);
 		CurrentInformationHost = RealtimeInformationHost = new(AppLog.Create<RealtimeEarthquakeInformationHost>(), config, eewController, timerService, telegramProvideService, axis, observationPointsUpdateService);
+		ExternalAppSettingPage = new ExternalAppSettingPage(Config, RealtimeInformationHost.DmdataEewClientReceiver);
+		EewSettingPage = new KyoshinMonitorEewSettingPage(Config, eewController, timerService);
 		RegisterSystemWorkflows();
 		RealtimeInformationHost.KyoshinEventUpdated += e =>
 		{
@@ -225,6 +230,20 @@ public partial class KyoshinMonitorSeries : SeriesBase
 		TimeshiftInformationHost.PointForecastController.DisplayValuesUpdated += () => KyoshinMonitorLayer.RefreshPointForecast();
 		ReplayFileInformationHost.PointForecastController.DisplayValuesUpdated += () => KyoshinMonitorLayer.RefreshPointForecast();
 		MapDisplayParameter = new() { OverlayLayers = [ShakeDetectionAreaLayer, KyoshinMonitorLayer] };
+
+		// 外部アプリに設定された地点は、緊急地震速報を受信していないときも地図上に表示する
+		Observable.CombineLatest(
+				RealtimeInformationHost.SignalNowEewReceiver.ObservePropertyChanged(x => x.CurrentLocation),
+				config.Eew.ObservePropertyChanged(x => x.EnableSignalNowProfessionalLocation),
+				RealtimeInformationHost.DmdataEewClientReceiver.ObservePropertyChanged(x => x.UserPointLocation),
+				config.Eew.ObservePropertyChanged(x => x.DmdataEewClient, x => x.Enable),
+				config.Eew.ObservePropertyChanged(x => x.DmdataEewClient, x => x.ShowPointOnMap),
+				(snpLocation, showSnpLocation, eewClientLocation, eewClientEnabled, showEewClientLocation) => new[]
+				{
+					showSnpLocation ? snpLocation : null,
+					eewClientEnabled && showEewClientLocation ? eewClientLocation : null,
+				}.OfType<KyoshinMonitorLib.Location>().ToArray())
+			.Subscribe(locations => KyoshinMonitorLayer.UserLocations = locations);
 
 		config.Eew.ObservePropertyChanged(x => x.ShowDetails).Subscribe(x => ShowEewAccuracy = x);
 		config.KyoshinMonitor.ObservePropertyChanged(x => x.ShowColorSample).Subscribe(x => ShowColorSample = x);
@@ -332,7 +351,8 @@ public partial class KyoshinMonitorSeries : SeriesBase
 				WarningLevelReached = false,
 				IncreaseInIntensity = false,
 				DecreaseInIntensity = false,
-				Intensity = JmaIntensity.Unknown
+				Intensity = JmaIntensity.Unknown,
+				IncludeTraining = true,
 			},
 			Actions = new MultipleAction
 			{
@@ -375,7 +395,8 @@ public partial class KyoshinMonitorSeries : SeriesBase
 				WarningLevelReached = false,
 				IncreaseInIntensity = false,
 				DecreaseInIntensity = false,
-				Intensity = JmaIntensity.Unknown
+				Intensity = JmaIntensity.Unknown,
+				IncludeTraining = true,
 			},
 			Actions = new MultipleAction
 			{

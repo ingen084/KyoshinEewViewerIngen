@@ -42,7 +42,11 @@ public sealed class EewPanelUiTests
 	[
 		new("予報", Forecast,
 			["緊急地震速報(03報)", "17日 08:30:12", "千葉県北西部", "60", "5.4", "受信元: 強震モニタ"],
-			["緊急地震速報(03報/最終)", "以上", "規模未受信", "不明", "警報地域", "キャンセルされました", "キャンセルまたは受信範囲外"],
+			["緊急地震速報(03報/最終)", "以上", "規模未受信", "不明", "警報地域", "キャンセルされました", "キャンセルまたは受信範囲外", "訓練"],
+			false),
+		new("訓練", Forecast with { IsTraining = true, DisplaySource = "EEW Client(気象庁本庁)" },
+			["訓練", "緊急地震速報(03報)", "千葉県北西部", "受信元: EEW Client(気象庁本庁)"],
+			[],
 			false),
 		new("警報の最終報", Forecast with
 		{
@@ -78,6 +82,24 @@ public sealed class EewPanelUiTests
 		new("マグニチュード不明", Forecast with { Hypocenter = Forecast.Hypocenter! with { Magnitude = null } },
 			["不明"],
 			["規模未受信"],
+			false),
+		new("EEW Client の計算値で塗りつぶし", Forecast with
+		{
+			DisplaySource = "EEW Client(気象庁本庁)",
+			CalculatedIntensityForecastMap = new() { [390] = JmaIntensity.Int5Lower },
+			CalculatedIntensityForecastSource = "EEW Client",
+		},
+			["受信元: EEW Client(気象庁本庁)", "地域の予想震度: EEW Client 計算値"],
+			[],
+			false),
+		new("気象庁の予想震度で塗りつぶし", Forecast with
+		{
+			IntensityForecastMap = new() { [390] = JmaIntensity.Int4 },
+			CalculatedIntensityForecastMap = new() { [390] = JmaIntensity.Int5Lower },
+			CalculatedIntensityForecastSource = "EEW Client",
+		},
+			["受信元: 強震モニタ"],
+			["地域の予想震度: EEW Client 計算値"],
 			false),
 		new("取消報", Forecast with { IsCancelled = true, IsTrueCancelled = true },
 			["キャンセルされました"],

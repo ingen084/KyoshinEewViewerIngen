@@ -12,6 +12,23 @@ public record Eew
 	public required string Id { get; init; }
 
 	/// <summary>
+	/// 訓練か
+	/// </summary>
+	public bool IsTraining { get; init; }
+
+	/// <summary>
+	/// アプリ内で EEW を識別するキー
+	/// 訓練は実際の地震と同じ地震IDで届くため、実際の EEW と混ざらないよう区別する
+	/// </summary>
+	public string Key => GetKey(Id, IsTraining);
+
+	/// <summary>
+	/// 地震IDと訓練かどうかから <see cref="Key"/> を求める
+	/// </summary>
+	public static string GetKey(string id, bool isTraining)
+		=> isTraining ? "training-" + id : id;
+
+	/// <summary>
 	/// EEWの情報元
 	/// </summary>
 	public required EewSource Source { get; init; }
@@ -30,6 +47,11 @@ public record Eew
 	/// 確実にキャンセル報であることがわかっているか
 	/// </summary>
 	public bool IsTrueCancelled { get; init; }
+
+	/// <summary>
+	/// キャンセルの情報元が外部への送信を禁止しているか
+	/// </summary>
+	public bool IsCancellationRelayProhibited { get; init; }
 
 	/// <summary>
 	/// 受信時刻
@@ -67,9 +89,37 @@ public record Eew
 	public required EewHypocenter? Hypocenter { get; init; }
 
 	/// <summary>
-	/// 予想震度一覧
+	/// 予想震度一覧 (気象庁の発表による)
 	/// </summary>
 	public Dictionary<int, JmaIntensity>? IntensityForecastMap { get; init; }
+
+	/// <summary>
+	/// 外部アプリが独自に計算した細分区域ごとの予想震度 (気象庁の発表ではない)
+	/// </summary>
+	public Dictionary<int, JmaIntensity>? CalculatedIntensityForecastMap { get; init; }
+
+	/// <summary>
+	/// 予想震度を計算した提供元名
+	/// </summary>
+	public string? CalculatedIntensityForecastSource { get; init; }
+
+	/// <summary>
+	/// 地図の塗りつぶしで計算値を気象庁の予想震度より優先するか
+	/// 設定に応じて表示直前に設定される
+	/// </summary>
+	public bool PreferCalculatedIntensityForecast { get; init; }
+
+	/// <summary>
+	/// 地図の塗りつぶしに計算値を使用するか
+	/// </summary>
+	public bool IsFillIntensityForecastCalculated
+		=> CalculatedIntensityForecastMap is { Count: > 0 } && (PreferCalculatedIntensityForecast || IntensityForecastMap == null);
+
+	/// <summary>
+	/// 地図の塗りつぶしに使用する予想震度
+	/// </summary>
+	public Dictionary<int, JmaIntensity>? FillIntensityForecastMap
+		=> IsFillIntensityForecastCalculated ? CalculatedIntensityForecastMap : IntensityForecastMap;
 
 	/// <summary>
 	/// 警報地域の一覧
@@ -94,6 +144,7 @@ public enum EewSource
 	SignalNowProfessional,
 	Dmdata,
 	Axis,
+	DmdataEewClient,
 }
 
 public record EewWarningAreas
