@@ -147,4 +147,5 @@ dotnet test tests/KyoshinEewViewer.DCReportParser.Tests/
 - **公式リポジトリ**: https://github.com/ingen084/KyoshinEewViewerIngen
 - **リリース版ダウンロード**: https://github.com/ingen084/KyoshinEewViewerIngen/releases
 - **イシュー報告**: https://github.com/ingen084/KyoshinEewViewerIngen/issues
+- **開発の支援 (pixivFANBOX)**: https://ingen084.fanbox.cc
 - **開発ドキュメント**: [CLAUDE.md](CLAUDE.md)

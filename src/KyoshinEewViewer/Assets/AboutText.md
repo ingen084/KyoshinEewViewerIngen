@@ -6,6 +6,10 @@
 [GitHub](https://github.com/ingen084/KyoshinEewViewerIngen)  
 [問い合わせ･サポート Discordサーバー](https://discord.gg/9FjmNWq)
 
+## 開発の支援
+
+[pixivFANBOX](https://ingen084.fanbox.cc) で開発を支援していただけます。
+
 ## 揺れの到達予想円について
 
 JMA2001走時表を線形補間で表示しています。  
