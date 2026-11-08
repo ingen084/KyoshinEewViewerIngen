@@ -44,6 +44,7 @@ public class NotificationService
 			TrayIcon.Show([
 				new TrayMenuItem("メインウィンドウを開く", () => StrongReferenceMessenger.Default.Send(new ShowMainWindowRequested())),
 				new TrayMenuItem("設定", () => StrongReferenceMessenger.Default.Send(new ShowSettingWindowRequested())),
+				new TrayMenuItem("ウィンドウ位置をリセット", () => StrongReferenceMessenger.Default.Send(new ResetWindowPlacementRequested())),
 				new TrayMenuItem("終了", () => (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown()),
 			]);
 	}

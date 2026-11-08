@@ -29,13 +29,23 @@ public sealed class WindowPlacementTracker : IDisposable
 	private IWindowPlacementConfig Config { get; }
 	private IDisposable EventSubscription { get; }
 	private DispatcherTimer RestoreTimer { get; }
-	private WindowPlacementState State { get; } = new();
+	private WindowPlacementState State { get; }
+	/// <summary>
+	/// 最小化で起動してから、まだ最小化を解除していないかどうか
+	/// </summary>
+	private bool IsMinimizedSinceOpened { get; set; }
+
+	/// <summary>
+	/// 最小化を解除したときに戻す状態
+	/// </summary>
+	public WindowState RestoreState => State.IntendedState;
 
 	public WindowPlacementTracker(Window window, IWindowPlacementConfig config)
 	{
 		Window = window;
 		Screens = window.Screens;
 		Config = config;
+		State = new(config.WindowState == WindowState.Minimized ? config.RestoreWindowState : config.WindowState);
 
 		RestoreTimer = new DispatcherTimer { Interval = RestoreDelay };
 		RestoreTimer.Tick += (s, e) =>
@@ -57,6 +67,7 @@ public sealed class WindowPlacementTracker : IDisposable
 			.Subscribe(OnPlacementChanged);
 
 		Window.Opened += OnOpened;
+		Window.PropertyChanged += OnWindowPropertyChanged;
 		Screens.Changed += OnScreensChanged;
 	}
 
@@ -82,14 +93,55 @@ public sealed class WindowPlacementTracker : IDisposable
 		if (State.CanRecord(DateTime.UtcNow))
 			State.Record(GetCurrentPlacement());
 		Config.WindowState = State.GetSavedState(Window.WindowState);
+		Config.RestoreWindowState = State.IntendedState;
 		if (State.GetSavedPosition(CaptureScreens()) is { } position)
 			Config.WindowLocation = new(position.X, position.Y);
 		if (State.IntendedClientSize is { } size)
 			Config.WindowSize = new(size.Width, size.Height);
 	}
 
+	/// <summary>
+	/// 既定のサイズでプライマリモニタの作業領域の中央に通常状態で配置し、その配置を保存する対象にする
+	/// </summary>
+	/// <param name="clientSize">クライアント領域の論理サイズ。作業領域に収まらない場合は縮める</param>
+	public void ResetPlacement(Size clientSize)
+	{
+		if ((Screens.Primary ?? Screens.All.FirstOrDefault()) is not { } screen)
+			return;
+		RestoreTimer.Stop();
+		IsMinimizedSinceOpened = false;
+		Window.WindowState = WindowState.Normal;
+
+		var frame = Window.FrameSize is { } frameSize ? frameSize - Window.ClientSize : default;
+		var workingArea = screen.WorkingArea;
+		var size = new Size(
+			Math.Max(0, Math.Min(clientSize.Width, workingArea.Width / screen.Scaling - frame.Width)),
+			Math.Max(0, Math.Min(clientSize.Height, workingArea.Height / screen.Scaling - frame.Height)));
+		var position = workingArea.CenterRect(new PixelRect(PixelSize.FromSize(size + frame, screen.Scaling))).Position;
+
+		AppLog.Default.LogInformation("ウィンドウの配置をリセットします: {Position} {Size}", position, size);
+		State.Reset(new(WindowState.Normal, position, size, CaptureScreen(screen)), DateTime.UtcNow);
+		Window.Position = position;
+		Window.Width = size.Width;
+		Window.Height = size.Height;
+	}
+
 	private void OnOpened(object? sender, EventArgs e)
-		=> State.Record(GetCurrentPlacement());
+	{
+		IsMinimizedSinceOpened = Window.WindowState == WindowState.Minimized;
+		State.Record(GetCurrentPlacement());
+	}
+
+	private void OnWindowPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+	{
+		if (e.Property != Window.WindowStateProperty || !IsMinimizedSinceOpened || e.NewValue is not WindowState state || state == WindowState.Minimized)
+			return;
+		IsMinimizedSinceOpened = false;
+		// 最小化で起動したウィンドウは、OS の操作で最小化を解除すると通常状態に戻るため、意図した状態にし直す
+		var intended = State.IntendedState;
+		if (state == WindowState.Normal && intended != WindowState.Normal)
+			Dispatcher.UIThread.Post(() => Window.WindowState = intended);
+	}
 
 	private void OnPlacementChanged(DateTime changedAt)
 	{
@@ -179,6 +231,7 @@ public sealed class WindowPlacementTracker : IDisposable
 		EventSubscription.Dispose();
 		RestoreTimer.Stop();
 		Window.Opened -= OnOpened;
+		Window.PropertyChanged -= OnWindowPropertyChanged;
 		Screens.Changed -= OnScreensChanged;
 	}
 }

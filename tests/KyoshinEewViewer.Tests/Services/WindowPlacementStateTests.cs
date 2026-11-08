@@ -95,49 +95,56 @@ public class WindowPlacementStateTests
 		Assert.Equal(new PixelPoint(2200, 120), state.Reconcile(Placement(WindowState.Normal, 280, 120, first), [first, second], T0.AddSeconds(32)));
 	}
 
-	[Fact(DisplayName = "最大化していたウィンドウは元のモニタで最大化し直し、保存する状態も最大化のままにする")]
+	[Fact(DisplayName = "最大化していたウィンドウは元のモニタの通常時の位置へ戻してから最大化し直し、保存する状態も最大化のままにする")]
 	public void MaximizedWindowIsRestoredOnTheOriginalMonitor()
 	{
 		var first = Screen("monitor-1", 0);
 		var second = Screen("monitor-2", 1920);
 		var state = new WindowPlacementState();
-		state.Record(Placement(WindowState.Maximized, 1912, -8, second));
+		state.Record(Placement(WindowState.Normal, 2200, 120, second));
+		state.Record(Placement(WindowState.Maximized, 1912, -8, second, 1920, 1009));
 
 		// OS が通常状態に戻して別のモニタへ移動させても、保存するのは意図した状態
 		state.OnScreensChanged(T0);
 		Assert.Equal(WindowState.Maximized, state.GetSavedState(WindowState.Normal));
 		Assert.Equal(WindowState.Minimized, state.GetSavedState(WindowState.Minimized));
-		Assert.Equal(new PixelPoint(1912, -8), state.Reconcile(Placement(WindowState.Normal, 100, 100, first), [first, second], T0.AddSeconds(2)));
+		Assert.Equal(new PixelPoint(2200, 120), state.Reconcile(Placement(WindowState.Normal, 100, 100, first), [first, second], T0.AddSeconds(2)));
 		Assert.Equal(WindowState.Maximized, state.IntendedState);
+		Assert.Equal(new Size(800, 600), state.IntendedClientSize);
 
 		// 元のモニタで最大化されたままなら何もしない
 		state.OnScreensChanged(T0.AddSeconds(30));
-		Assert.Null(state.Reconcile(Placement(WindowState.Maximized, 1912, -8, second), [first, second], T0.AddSeconds(32)));
+		Assert.Null(state.Reconcile(Placement(WindowState.Maximized, 1912, -8, second, 1920, 1009), [first, second], T0.AddSeconds(32)));
 	}
 
-	[Fact(DisplayName = "全画面にしても同じモニタ上の通常時の位置を保存し、別のモニタで全画面にした場合はその位置を保存する")]
-	public void FullScreenKeepsTheNormalPositionOnTheSameMonitor()
+	[Theory(DisplayName = "最大化・全画面にしても同じモニタ上の通常時の位置とサイズを保存し、別のモニタで最大化・全画面にした場合はその位置を保存する")]
+	[InlineData(WindowState.Maximized)]
+	[InlineData(WindowState.FullScreen)]
+	public void MaximizedOrFullScreenKeepsTheNormalPlacementOnTheSameMonitor(WindowState windowState)
 	{
 		var first = Screen("monitor-1", 0);
 		var second = Screen("monitor-2", 1920);
 		var state = new WindowPlacementState();
 		state.Record(Placement(WindowState.Normal, 500, 300, first));
 
-		state.Record(Placement(WindowState.FullScreen, 0, 0, first));
-		Assert.Equal(WindowState.FullScreen, state.GetSavedState(WindowState.FullScreen));
+		state.Record(Placement(windowState, 0, 0, first, 1920, 1040));
+		Assert.Equal(windowState, state.GetSavedState(windowState));
 		Assert.Equal(new PixelPoint(500, 300), state.GetSavedPosition([first, second]));
+		Assert.Equal(new Size(800, 600), state.IntendedClientSize);
 
-		state.Record(Placement(WindowState.FullScreen, 1920, 0, second));
+		state.Record(Placement(windowState, 1920, 0, second, 1920, 1040));
 		Assert.Equal(new PixelPoint(1920, 0), state.GetSavedPosition([first, second]));
 	}
 
-	[Fact(DisplayName = "全画面で起動した直後は位置を保存せず、モニタ構成の変更後は元のモニタで全画面に戻す")]
-	public void FullScreenAtStartupKeepsTheSavedPosition()
+	[Theory(DisplayName = "最大化・全画面で起動した直後は位置を保存せず、モニタ構成の変更後は元のモニタで最大化・全画面に戻す")]
+	[InlineData(WindowState.Maximized)]
+	[InlineData(WindowState.FullScreen)]
+	public void MaximizedOrFullScreenAtStartupKeepsTheSavedPosition(WindowState windowState)
 	{
 		var first = Screen("monitor-1", 0);
 		var second = Screen("monitor-2", 1920);
 		var state = new WindowPlacementState();
-		state.Record(Placement(WindowState.FullScreen, 1920, 0, second));
+		state.Record(Placement(windowState, 1920, 0, second));
 		Assert.Null(state.GetSavedPosition([first, second]));
 
 		state.OnScreensChanged(T0);
@@ -171,5 +178,54 @@ public class WindowPlacementStateTests
 		Assert.Equal(new PixelPoint(-100, 1030), state.GetSavedPosition([monitor]));
 		Assert.Null(state.Reconcile(Placement(WindowState.Normal, -100, 1030, monitor), [monitor], T0.AddSeconds(2)));
 		Assert.Equal(new PixelPoint(-100, 1030), state.GetSavedPosition([monitor]));
+	}
+
+	[Fact(DisplayName = "最小化を解除したときに戻す状態は、最小化中も最小化で起動した場合も最小化する前の状態を保つ")]
+	public void RestoreStateIsKeptWhileMinimized()
+	{
+		var monitor = Screen("monitor-1", 0);
+
+		var state = new WindowPlacementState();
+		state.Record(Placement(WindowState.Normal, 100, 100, monitor));
+		state.Record(Placement(WindowState.Maximized, -8, -8, monitor, 1920, 1009));
+		state.Record(Placement(WindowState.Minimized, -32000, -32000, monitor, 0, 0));
+		Assert.Equal(WindowState.Minimized, state.GetSavedState(WindowState.Minimized));
+		Assert.Equal(WindowState.Maximized, state.IntendedState);
+		Assert.Equal(new PixelPoint(100, 100), state.GetSavedPosition([monitor]));
+		Assert.Equal(new Size(800, 600), state.IntendedClientSize);
+
+		// 最小化で起動した場合は、設定に保存されていた状態を引き継ぎ、位置とサイズは設定の値を残す
+		var startup = new WindowPlacementState(WindowState.FullScreen);
+		startup.Record(Placement(WindowState.Minimized, -32000, -32000, monitor, 0, 0));
+		Assert.Equal(WindowState.FullScreen, startup.IntendedState);
+		Assert.Null(startup.GetSavedPosition([monitor]));
+		Assert.Null(startup.IntendedClientSize);
+
+		Assert.Equal(WindowState.Normal, new WindowPlacementState(WindowState.Minimized).IntendedState);
+	}
+
+	[Fact(DisplayName = "配置をリセットすると、モニタ構成の変更で記録を止めていても新しい配置を保存し、リセット前の位置へは戻さない")]
+	public void ResetReplacesTheIntendedPlacement()
+	{
+		var first = Screen("monitor-1", 0);
+		var second = Screen("monitor-2", 1920);
+		var state = new WindowPlacementState();
+		state.Record(Placement(WindowState.Normal, 2200, 120, second));
+		state.Record(Placement(WindowState.Maximized, 1912, -8, second, 1920, 1009));
+
+		// 2 の切断で OS が移動させた直後にリセットした
+		state.OnScreensChanged(T0);
+		Assert.False(state.OnPlacementChanged(T0.AddSeconds(0.1)));
+		state.Reset(Placement(WindowState.Normal, 320, 180, first, 1280, 720), T0.AddSeconds(1));
+		Assert.False(state.HasOsMovedWindow);
+		Assert.Equal(WindowState.Normal, state.GetSavedState(WindowState.Normal));
+		Assert.Equal(new PixelPoint(320, 180), state.GetSavedPosition([first]));
+		Assert.Equal(new Size(1280, 720), state.IntendedClientSize);
+		// リセットしたことによる変化は記録しない
+		Assert.False(state.OnPlacementChanged(T0.AddSeconds(1.1)));
+		Assert.Equal(new PixelPoint(320, 180), state.GetSavedPosition([first]));
+
+		state.OnScreensChanged(T0.AddSeconds(60));
+		Assert.Null(state.Reconcile(Placement(WindowState.Normal, 320, 180, first, 1280, 720), [first, second], T0.AddSeconds(62)));
 	}
 }

@@ -14,6 +14,10 @@ namespace KyoshinEewViewer.Core.Models;
 public interface IWindowPlacementConfig
 {
 	WindowState WindowState { get; set; }
+	/// <summary>
+	/// 最小化を解除したときに戻すウィンドウの状態
+	/// </summary>
+	WindowState RestoreWindowState { get; set; }
 	KyoshinEewViewerConfiguration.Point2D? WindowSize { get; set; }
 	KyoshinEewViewerConfiguration.Point2D? WindowLocation { get; set; }
 }
@@ -28,6 +32,9 @@ public partial class KyoshinEewViewerConfiguration : ObservableObject, IWindowPl
 
 	[ObservableProperty]
 	public partial WindowState WindowState { get; set; } = WindowState.Normal;
+
+	[ObservableProperty]
+	public partial WindowState RestoreWindowState { get; set; } = WindowState.Normal;
 
 	[ObservableProperty]
 	public partial Point2D? WindowSize { get; set; }
@@ -94,6 +101,9 @@ public partial class KyoshinEewViewerConfiguration : ObservableObject, IWindowPl
 
 		[ObservableProperty]
 		public partial WindowState WindowState { get; set; } = WindowState.Normal;
+
+		[ObservableProperty]
+		public partial WindowState RestoreWindowState { get; set; } = WindowState.Normal;
 
 		[ObservableProperty]
 		public partial Point2D? WindowSize { get; set; }

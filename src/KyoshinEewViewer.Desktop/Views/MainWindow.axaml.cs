@@ -19,7 +19,10 @@ namespace KyoshinEewViewer.Desktop.Views;
 
 public partial class MainWindow : Window
 {
-	private WindowState LastWindowState { get; set; }
+	/// <summary>
+	/// ウィンドウ位置をリセットしたときのクライアント領域の論理サイズ
+	/// </summary>
+	private static readonly Size DefaultClientSize = new(1280, 720);
 
 	/// <summary>
 	/// クラッシュしたときにウィンドウ位置を記録しておくようのタイマー
@@ -92,9 +95,7 @@ public partial class MainWindow : Window
 					notificationService?.Notify("タスクトレイに格納しました", "アプリケーションは実行中です");
 					IsHideAnnounced = true;
 				}
-				return;
 			}
-			LastWindowState = s;
 		}));
 
 		StrongReferenceMessenger.Default.Register<Core.Models.Events.ShowSettingWindowRequested>(this, (_, x) => Dispatcher.UIThread.Post(() => ServiceLocator.Current.GetService<ISubWindowsService>()?.ShowSettingWindow()));
@@ -105,8 +106,20 @@ public partial class MainWindow : Window
 			{
 				Topmost = true;
 				Show();
-				WindowState = LastWindowState;
+				if (WindowState == WindowState.Minimized)
+					WindowState = PlacementTracker.RestoreState;
 				Topmost = false;
+			});
+		});
+		StrongReferenceMessenger.Default.Register<Core.Models.Events.ResetWindowPlacementRequested>(this, (_, x) =>
+		{
+			Dispatcher.UIThread.Post(() =>
+			{
+				Topmost = true;
+				Show();
+				PlacementTracker.ResetPlacement(DefaultClientSize);
+				Topmost = false;
+				SaveConfig();
 			});
 		});
 

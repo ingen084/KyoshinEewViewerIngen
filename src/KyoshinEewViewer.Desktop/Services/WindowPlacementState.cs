@@ -39,10 +39,19 @@ internal sealed class WindowPlacementState
 	/// </summary>
 	public bool HasOsMovedWindow { get; private set; }
 
-	public WindowState IntendedState { get; private set; } = WindowState.Normal;
+	/// <summary>
+	/// 意図したウィンドウの状態。最小化を解除したときに戻す状態でもあるため、最小化にはならない
+	/// </summary>
+	public WindowState IntendedState { get; private set; }
 	public Size? IntendedClientSize { get; private set; }
 	private PixelPoint? IntendedPosition { get; set; }
 	private WindowPlacementScreen? IntendedScreen { get; set; }
+
+	/// <param name="savedState">設定に保存されていた、最小化を解除したときに戻す状態</param>
+	public WindowPlacementState(WindowState savedState = WindowState.Normal)
+	{
+		IntendedState = savedState == WindowState.Minimized ? WindowState.Normal : savedState;
+	}
 
 	/// <summary>
 	/// 現在の配置を意図した配置として記録してよいかどうか
@@ -58,16 +67,16 @@ internal sealed class WindowPlacementState
 		if (current.State == WindowState.Minimized)
 			return;
 		IntendedState = current.State;
-		if (current.State == WindowState.FullScreen)
+		if (current.State != WindowState.Normal)
 		{
-			// 全画面を抜けたときに戻れるよう、同じモニタ上の通常時の位置を残す
-			if (IntendedPosition is { } position && IntendedScreen is { } screen && current.Screen is { } fullScreen && screen.IsSameScreen(fullScreen))
+			// 最大化・全画面を抜けたときに戻れるよう、同じモニタ上の通常時の位置を残す
+			if (IntendedPosition is { } position && IntendedScreen is { } screen && current.Screen is { } currentScreen && screen.IsSameScreen(currentScreen))
 			{
-				IntendedPosition = screen.TranslatePosition(position, fullScreen);
-				IntendedScreen = fullScreen;
+				IntendedPosition = screen.TranslatePosition(position, currentScreen);
+				IntendedScreen = currentScreen;
 				return;
 			}
-			// 全画面で起動した直後は、設定に保存済みの位置をそのまま残す
+			// 最大化・全画面で起動した直後は、設定に保存済みの位置をそのまま残す
 			if (IntendedPosition == null)
 			{
 				IntendedScreen = current.Screen;
@@ -78,6 +87,20 @@ internal sealed class WindowPlacementState
 		IntendedScreen = current.Screen;
 		if (current.State == WindowState.Normal)
 			IntendedClientSize = current.ClientSize;
+	}
+
+	/// <summary>
+	/// 指定した配置を意図した配置として記録し直す。OS 起因の移動として扱っていた状態も解除する
+	/// </summary>
+	public void Reset(WindowPlacement placement, DateTime now)
+	{
+		IntendedState = placement.State;
+		IntendedPosition = placement.Position;
+		IntendedClientSize = placement.ClientSize;
+		IntendedScreen = placement.Screen;
+		HasOsMovedWindow = false;
+		// 配置し直したことによる変化を記録しない
+		SuppressUntil = now + RestoreSettleDuration;
 	}
 
 	/// <summary>
