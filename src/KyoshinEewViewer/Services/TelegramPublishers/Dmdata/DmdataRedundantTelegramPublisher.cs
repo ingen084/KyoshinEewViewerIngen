@@ -551,6 +551,9 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 
 		Logger.LogInformation("WebSocketに接続します");
 		CurrentState = ConnectionState.Connecting;
+		// 切断中の電文はこの接続処理で取得し直す
+		// 切断の記録が残っていると、接続できたことの通知を自動再接続と取り違えて二重に取得する
+		WebSocketLostAt = null;
 
 		try
 		{
@@ -574,7 +577,6 @@ public class DmdataRedundantTelegramPublisher : TelegramPublisher, IDisposable
 			// DmdataSharp は接続に失敗しても例外を投げないため、接続できたかを確認する
 			if (!ConnectionManager.IsWebSocketConnected)
 				throw ConnectionManager.LastConnectionError ?? new DmdataException("WebSocketに接続できませんでした");
-			WebSocketLostAt = null;
 		}
 		catch (Exception ex)
 		{

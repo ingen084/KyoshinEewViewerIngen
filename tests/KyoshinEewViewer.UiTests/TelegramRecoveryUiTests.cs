@@ -17,6 +17,8 @@ public sealed class TelegramRecoveryUiTests
 	private static readonly TimeSpan RecoveryLimit = TimeSpan.FromSeconds(60);
 	// 防災情報XMLのフィードの取得。受信元を決めるときの確認 (HEAD) は含めない
 	private const string JmaFeedFetch = "GET " + SimulatedTelegramNetwork.JmaFeedBaseUrl;
+	// dmdata の地震情報の過去の電文の取得 (定期取得は種類を指定しない)
+	private const string EarthquakeHistoryFetch = "type=VXSE51";
 
 	[AvaloniaFact]
 	public async Task 起動時から回線が切れていると障害を表示し_回線の復旧後に再試行で緊急地震速報を含めて受信できる()
@@ -307,11 +309,15 @@ public sealed class TelegramRecoveryUiTests
 			() => Ui.VisibleTexts(settings).Contains("接続状態: 未接続") && reconnect.IsEffectivelyVisible,
 			() => $"切断中は再接続ボタンを表示する\n{string.Join(", ", Ui.VisibleTexts(settings))}");
 
+		var historyRequests = app.Network.RequestCount(EarthquakeHistoryFetch);
 		Ui.Click(settings, reconnect);
 		await app.WaitEewReceivingAsync();
 		await Ui.WaitUntilAsync(
 			() => Ui.VisibleTexts(settings).Contains("接続状態: 完全接続") && !reconnect.IsEffectivelyVisible,
 			() => $"再接続後は再接続ボタンを表示しない\n{string.Join(", ", Ui.VisibleTexts(settings))}");
+		// 切断中の電文は、再接続の処理で1回だけ取得し直す
+		await app.SettleAsync();
+		Assert.Equal(historyRequests + 1, app.Network.RequestCount(EarthquakeHistoryFetch));
 		await app.AssertEewDeliveredAsync("20261018102500");
 	}
 }

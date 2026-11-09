@@ -1,4 +1,5 @@
 using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Series.Earthquake.Models;
 using KyoshinEewViewer.Series.Earthquake.Services;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers;
@@ -6,6 +7,8 @@ using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinEewViewer.Tests.Services.Mocks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using System.ComponentModel;
+using System.Reactive.Concurrency;
 using System.Text;
 
 namespace KyoshinEewViewer.Tests.Services;
@@ -21,6 +24,10 @@ public sealed class EarthquakeWatchServiceTests : IDisposable
 	{
 		SupportedCategories = [InformationCategory.Earthquake, InformationCategory.Tsunami],
 	};
+	/// <summary>
+	/// UI スレッドの代わりに一覧を変更する専用のスレッド
+	/// </summary>
+	private readonly EventLoopScheduler _uiScheduler = new();
 	private readonly TelegramProvideService _provider;
 	private readonly DmdataRedundantTelegramPublisher _dmdata;
 	private readonly EarthquakeWatchService _service;
@@ -36,7 +43,7 @@ public sealed class EarthquakeWatchServiceTests : IDisposable
 			NullLogger<DmdataRedundantTelegramPublisher>.Instance,
 			config,
 			new InformationCacheService(NullLogger<InformationCacheService>.Instance));
-		_service = new EarthquakeWatchService(NullLogger<EarthquakeWatchService>.Instance, config, _provider, _dmdata);
+		_service = new EarthquakeWatchService(NullLogger<EarthquakeWatchService>.Instance, config, _provider, _dmdata, _uiScheduler);
 	}
 
 	[Fact(DisplayName = "並行して届いた電文で一覧に null が混入せず、すべてのイベントが登録される")]
@@ -112,13 +119,99 @@ public sealed class EarthquakeWatchServiceTests : IDisposable
 		bodyGate.SetResult();
 	}
 
+	[Fact(DisplayName = "地震情報の一覧と各イベントの変更は UI スレッドで行われる")]
+	public async Task EarthquakeList_IsUpdatedOnUiThread()
+	{
+		await _provider.StartAsync([typeof(MockTelegramPublisher)]);
+		var uiThreadId = await RunOnUiThreadAsync(() => Environment.CurrentManagedThreadId);
+
+		var changedThreadIds = new List<int>();
+		void Record() { lock (changedThreadIds) changedThreadIds.Add(Environment.CurrentManagedThreadId); }
+		void OnEventChanged(object? sender, PropertyChangedEventArgs e) => Record();
+		_service.Earthquakes.CollectionChanged += (_, e) =>
+		{
+			Record();
+			foreach (var eq in e.NewItems?.OfType<EarthquakeEvent>() ?? [])
+			{
+				eq.PropertyChanged += OnEventChanged;
+				eq.Fragments.CollectionChanged += (_, _) => Record();
+			}
+		};
+
+		var switched = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		using var switchedSubscription = _service.SourceSwitched.Subscribe(_ => switched.TrySetResult());
+		_publisher.SimulateHistoryTelegramArrival("テスト", InformationCategory.Earthquake, [new TestTelegram("history", "history")]);
+		await switched.Task.WaitAsync(Timeout);
+
+		// 既存のイベントの更新と、新しいイベントの追加
+		var arrived = 0;
+		var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+		using var updatedSubscription = _service.EarthquakeUpdated.Subscribe(u =>
+		{
+			if (!u.IsBulkInserting && Interlocked.Increment(ref arrived) == 2)
+				completed.TrySetResult();
+		});
+		_publisher.SimulateTelegramArrival(InformationCategory.Earthquake, new TestTelegram("update", "history"));
+		_publisher.SimulateTelegramArrival(InformationCategory.Earthquake, new TestTelegram("new", "new"));
+		await completed.Task.WaitAsync(Timeout);
+
+		Assert.Equal(["new", "history"], _service.Earthquakes.Select(e => e.EventId));
+		lock (changedThreadIds)
+		{
+			Assert.NotEmpty(changedThreadIds);
+			Assert.All(changedThreadIds, id => Assert.Equal(uiThreadId, id));
+		}
+	}
+
+	[Fact(DisplayName = "過去の電文に処理できないものがあっても新しい電文は読み込み、失敗が続く場合は残りを打ち切る")]
+	public async Task HistoryWithFailedTelegrams_SkipsFailuresUntilLimit()
+	{
+		await _provider.StartAsync([typeof(MockTelegramPublisher)]);
+		var switched = 0;
+		using var switchedSubscription = _service.SourceSwitched.Subscribe(_ => Interlocked.Increment(ref switched));
+
+		// 1件だけ処理できない場合は、その電文だけを飛ばす
+		_publisher.SimulateHistoryTelegramArrival("テスト", InformationCategory.Earthquake, [
+			new TestTelegram("a", "a"),
+			new TestTelegram("broken", "broken", fail: true),
+			new TestTelegram("b", "b"),
+		]);
+		await WaitUntilAsync(() => Volatile.Read(ref switched) == 1);
+		Assert.Equal(["b", "a"], _service.Earthquakes.Select(e => e.EventId));
+
+		// 続けて処理できない場合は、回線の問題などとみなして残りを読み込まない
+		_publisher.SimulateHistoryTelegramArrival("テスト", InformationCategory.Earthquake, [
+			new TestTelegram("c", "c"),
+			new TestTelegram("broken1", "broken1", fail: true),
+			new TestTelegram("broken2", "broken2", fail: true),
+			new TestTelegram("d", "d"),
+		]);
+		await WaitUntilAsync(() => Volatile.Read(ref switched) == 2);
+		Assert.Equal(["c"], _service.Earthquakes.Select(e => e.EventId));
+	}
+
+	private Task<T> RunOnUiThreadAsync<T>(Func<T> func)
+	{
+		var completion = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
+		_uiScheduler.Schedule(() => completion.SetResult(func()));
+		return completion.Task;
+	}
+
+	private static async Task WaitUntilAsync(Func<bool> condition)
+	{
+		using var cts = new CancellationTokenSource(Timeout);
+		while (!condition())
+			await Task.Delay(10, cts.Token);
+	}
+
 	public void Dispose()
 	{
 		_dmdata.Dispose();
 		_provider.Dispose();
+		_uiScheduler.Dispose();
 	}
 
-	private sealed class TestTelegram(string key, string eventId, string title = "震度速報", Task? bodyGate = null)
+	private sealed class TestTelegram(string key, string eventId, string title = "震度速報", Task? bodyGate = null, bool fail = false)
 		: Telegram(key, title, "TEST", DateTime.UnixEpoch)
 	{
 		private readonly byte[] _body = Encoding.UTF8.GetBytes($"""
@@ -149,6 +242,8 @@ public sealed class EarthquakeWatchServiceTests : IDisposable
 		{
 			if (bodyGate != null)
 				await bodyGate;
+			if (fail)
+				throw new HttpRequestException("電文を取得できません");
 			return new MemoryStream(_body);
 		}
 

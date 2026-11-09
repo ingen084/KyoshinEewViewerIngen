@@ -117,31 +117,39 @@ public partial class EarthquakeSeries : SeriesBase
 				Service.SourceSwitched.Select(s => (State: SourceState.Switched, Source: (string?)s)),
 				Service.Failed.Select(_ => (State: SourceState.Failed, Source: (string?)null)))
 			.ObserveOn(UiScheduler.Instance)
+			// 例外で購読が終わると以後の表示が更新されなくなるため、1件ごとに例外を捕捉する
 			.Select(e => Observable.FromAsync(async () =>
 			{
-				switch (e.State)
+				try
 				{
-					case SourceState.Switching:
-						IsFault = false;
-						IsLoading = true;
-						return;
-					case SourceState.Failed:
-						IsFault = true;
-						IsLoading = false;
-						return;
-				}
+					switch (e.State)
+					{
+						case SourceState.Switching:
+							IsFault = false;
+							IsLoading = true;
+							return;
+						case SourceState.Failed:
+							IsFault = true;
+							IsLoading = false;
+							return;
+					}
 
-				var s = e.Source!;
-				SourceString = s;
-				if (Config.Notification.SwitchEqSource)
-					NotificationService?.Notify("地震情報", s + "で地震情報を受信しています。", Notification.NotificationUrgency.Low);
-				IsLoading = false;
-				if (Service.Earthquakes.Count <= 0)
-				{
-					CurrentEvent = null;
-					return;
+					var s = e.Source!;
+					SourceString = s;
+					if (Config.Notification.SwitchEqSource)
+						NotificationService?.Notify("地震情報", s + "で地震情報を受信しています。", Notification.NotificationUrgency.Low);
+					IsLoading = false;
+					if (Service.Earthquakes.Count <= 0)
+					{
+						CurrentEvent = null;
+						return;
+					}
+					await ProcessEarthquakeEvent(Service.Earthquakes[0]);
 				}
-				await ProcessEarthquakeEvent(Service.Earthquakes[0]);
+				catch (Exception ex)
+				{
+					Logger.LogError(ex, "受信元切替後の処理中に例外が発生しました");
+				}
 			}))
 			.Concat()
 			.Subscribe(_ => { }, ex => Logger.LogError(ex, "受信元切替後の処理中に例外が発生しました"));
@@ -151,55 +159,62 @@ public partial class EarthquakeSeries : SeriesBase
 			.ObserveOn(UiScheduler.Instance)
 			.Select(u => Observable.FromAsync(async () =>
 			{
-				var eq = u.Earthquake;
-				var fragment = u.Fragment;
-				var prevInt = u.PreviousMaxIntensity;
-
-				await ProcessEarthquakeEvent(eq);
-				StrongReferenceMessenger.Default.Send(new EarthquakeInformationUpdated(eq));
-
-				if (fragment == null)
-					return;
-				workflowService.PublishEvent(new EarthquakeInformationEvent(this)
+				try
 				{
-					UpdatedAt = eq.UpdatedTime,
-					LatestInformationName = fragment.Title,
+					var eq = u.Earthquake;
+					var fragment = u.Fragment;
+					var prevInt = u.PreviousMaxIntensity;
 
-					EarthquakeId = eq.EventId,
-					IsTrainingOrTest = eq.IsTraining || eq.IsTest,
-					IsVolcano = eq.IsVolcano,
-					VolcanoName = eq.VolcanoName,
-					DetectedAt = eq.IsDetectionTime ? eq.Time : null,
+					await ProcessEarthquakeEvent(eq);
+					StrongReferenceMessenger.Default.Send(new EarthquakeInformationUpdated(eq));
 
-					MaxIntensity = eq.Intensity,
-					PreviousMaxIntensity = prevInt,
-					MaxLpgmIntensity = eq.LpgmIntensity,
-					Hypocenter = eq.IsHypocenterAvailable ? new(
-						eq.Time,
-						eq.Place,
-						eq.Location,
-						eq.Magnitude,
-						eq.MagnitudeAlternativeText,
-						eq.Depth,
-						eq.IsNoDepthData,
-						eq.IsVeryShallow,
-						eq.IsForeign
-					) : null,
+					if (fragment == null)
+						return;
+					workflowService.PublishEvent(new EarthquakeInformationEvent(this)
+					{
+						UpdatedAt = eq.UpdatedTime,
+						LatestInformationName = fragment.Title,
 
-					Comment = eq.Comment,
-					FreeFormComment = eq.FreeFormComment,
+						EarthquakeId = eq.EventId,
+						IsTrainingOrTest = eq.IsTraining || eq.IsTest,
+						IsVolcano = eq.IsVolcano,
+						VolcanoName = eq.VolcanoName,
+						DetectedAt = eq.IsDetectionTime ? eq.Time : null,
 
-					IsCancelled = eq.IsCancelled,
-					IsHypocenterOnly = eq.IsHypocenterOnly,
-					IsDetailIntensityApplied = eq.IsDetailIntensityApplied,
-				});
+						MaxIntensity = eq.Intensity,
+						PreviousMaxIntensity = prevInt,
+						MaxLpgmIntensity = eq.LpgmIntensity,
+						Hypocenter = eq.IsHypocenterAvailable ? new(
+							eq.Time,
+							eq.Place,
+							eq.Location,
+							eq.Magnitude,
+							eq.MagnitudeAlternativeText,
+							eq.Depth,
+							eq.IsNoDepthData,
+							eq.IsVeryShallow,
+							eq.IsForeign
+						) : null,
 
-				var intStr = eq.Intensity.ToShortString().Replace('*', '-');
-				if (
-					(!eq.IsTraining || !UpdatedTrainingSound.Play(new() { { "int", intStr } })) &&
-					(eq.Intensity == prevInt || !IntensityUpdatedSound.Play(new() { { "int", intStr } }))
-				)
-					UpdatedSound.Play(new() { { "int", intStr } });
+						Comment = eq.Comment,
+						FreeFormComment = eq.FreeFormComment,
+
+						IsCancelled = eq.IsCancelled,
+						IsHypocenterOnly = eq.IsHypocenterOnly,
+						IsDetailIntensityApplied = eq.IsDetailIntensityApplied,
+					});
+
+					var intStr = eq.Intensity.ToShortString().Replace('*', '-');
+					if (
+						(!eq.IsTraining || !UpdatedTrainingSound.Play(new() { { "int", intStr } })) &&
+						(eq.Intensity == prevInt || !IntensityUpdatedSound.Play(new() { { "int", intStr } }))
+					)
+						UpdatedSound.Play(new() { { "int", intStr } });
+				}
+				catch (Exception ex)
+				{
+					Logger.LogError(ex, "地震情報更新処理中に例外が発生しました");
+				}
 			}))
 			.Concat()
 			.Subscribe(_ => { }, ex => Logger.LogError(ex, "地震情報更新処理中に例外が発生しました"));
