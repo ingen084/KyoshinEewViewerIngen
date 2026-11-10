@@ -21,9 +21,14 @@ public class ShakeDetectionAreaLayer(KyoshinEewViewerConfiguration config, Kyosh
 	private KyoshinMonitorSeries HostSeries { get; } = hostSeries;
 
 	/// <summary>
-	/// オフセット距離（km）
+	/// 最も内側（最上位レベル）の範囲の、観測点からの距離（km）
 	/// </summary>
-	public double OffsetDistanceKm { get; set; } = 20.0;
+	private const double InnermostOffsetKm = 20.0;
+
+	/// <summary>
+	/// 1つ外側のレベルの範囲へ移るごとに広げる距離（km）
+	/// </summary>
+	private const double OffsetStepKm = 5.0;
 
 	/// <summary>
 	/// グリッドセルのサイズ（ピクセル）
@@ -72,8 +77,9 @@ public class ShakeDetectionAreaLayer(KyoshinEewViewerConfiguration config, Kyosh
 	// レベル別の枠線の太さ（凸包用）
 	private static readonly float[] LevelStrokeWidths = [1f, 1f, 1.5f, 2f, 2f];
 
-	private record CachedPath(Guid EventId, int PointCount, SKPath Path);
-	private Dictionary<Guid, CachedPath> PathCache { get; } = [];
+	private record LevelPath(KyoshinEventLevel Level, SKPath Path);
+	private record CachedPaths(int PointCount, LevelPath[] Paths);
+	private Dictionary<Guid, CachedPaths> PathCache { get; } = [];
 
 	/// <summary>
 	/// グリッドの原点座標（地理座標）
@@ -241,28 +247,32 @@ public class ShakeDetectionAreaLayer(KyoshinEewViewerConfiguration config, Kyosh
 			if (!evt.IsConfirmed || evt.PointCount == 0)
 				continue;
 
-			try
-			{
-				// Pointsのスナップショットを取得してからイテレーション
-				var points = evt.Points.ToArray();
-				foreach (var point in points)
-				{
-					if (point != null)
-						result.Add(point);
-				}
-			}
-			catch (InvalidOperationException)
-			{
-				// コレクションが変更された場合はこのイベントをスキップ
-			}
+			result.AddRange(SnapshotPoints(evt));
 		}
 
 		return result;
 	}
 
+	/// <summary>
+	/// 揺れ検知の処理と並行して変更されうる観測点リストのスナップショットを取得する
+	/// </summary>
+	private static RealtimeObservationPoint[] SnapshotPoints(KyoshinEvent evt)
+	{
+		try
+		{
+			return evt.Points.Where(p => p != null).ToArray();
+		}
+		catch (InvalidOperationException)
+		{
+			// コレクションが変更された場合はこのイベントをスキップ
+			return [];
+		}
+	}
+
 	private void RenderConvexHull(SKCanvas canvas, LayerRenderParameter param, ShakeDetectionAnimationMode animationMode)
 	{
-		if (KyoshinEvents == null)
+		var events = KyoshinEvents;
+		if (events == null)
 			return;
 
 		// アニメーション係数を計算
@@ -277,19 +287,19 @@ public class ShakeDetectionAreaLayer(KyoshinEewViewerConfiguration config, Kyosh
 			canvas.Translate((float)-param.LeftTopPixel.X, (float)-param.LeftTopPixel.Y);
 			canvas.Scale(scale);
 
-			foreach (var evt in KyoshinEvents)
+			var levelPaths = new List<LevelPath>();
+			foreach (var evt in events)
 			{
-				if (!evt.IsConfirmed)
+				if (!evt.IsConfirmed || evt.PointCount == 0)
 					continue;
 
-				if (evt.PointCount == 0)
-					continue;
+				levelPaths.AddRange(GetOrCreateLevelPaths(evt));
+			}
 
-				var path = GetOrCreatePath(evt);
-				if (path == null)
-					continue;
-
-				var levelIndex = (int)evt.Level;
+			// 上位レベルの線が上に重なるよう、レベルの低い順に描画する
+			foreach (var (level, path) in levelPaths.OrderBy(p => p.Level))
+			{
+				var levelIndex = (int)level;
 				if (levelIndex < 0 || levelIndex >= LevelBaseColors.Length)
 					continue;
 
@@ -418,138 +428,83 @@ public class ShakeDetectionAreaLayer(KyoshinEewViewerConfiguration config, Kyosh
 		};
 	}
 
-	private SKPath? GetOrCreatePath(KyoshinEvent evt)
+	private LevelPath[] GetOrCreateLevelPaths(KyoshinEvent evt)
 	{
-		// キャッシュチェック
-		if (PathCache.TryGetValue(evt.Id, out var cached) && cached.PointCount == evt.PointCount)
-			return cached.Path;
-
-		// 古いキャッシュを破棄
-		if (PathCache.TryGetValue(evt.Id, out var oldCache))
+		if (PathCache.TryGetValue(evt.Id, out var cached))
 		{
-			oldCache.Path.Dispose();
+			if (cached.PointCount == evt.PointCount)
+				return cached.Paths;
+
+			DisposePaths(cached);
 			PathCache.Remove(evt.Id);
 		}
 
-		var locations = evt.Points.Select(p => p.Location).ToList();
-		SKPath? path = null;
+		var pointCount = evt.PointCount;
+		var points = SnapshotPoints(evt);
+		if (points.Length == 0)
+			return [];
 
-		switch (locations.Count)
-		{
-			case 0:
-				return null;
-
-			case 1:
-				// 1点の場合は円を描画
-				path = PathGenerator.MakeCirclePath(locations[0], OffsetDistanceKm * 1000, BaseZoom);
-				break;
-
-			case 2:
-				// 2点の場合はカプセル形状
-				path = CreateCapsulePath(locations[0], locations[1], OffsetDistanceKm);
-				break;
-
-			default:
-				// 3点以上の場合はオフセット付き凸包
-				path = CreateConvexHullPath(locations, OffsetDistanceKm);
-				break;
-		}
-
-		if (path != null)
-			PathCache[evt.Id] = new CachedPath(evt.Id, evt.PointCount, path);
-
-		return path;
+		var paths = CreateLevelPaths(evt.Level, points);
+		PathCache[evt.Id] = new CachedPaths(pointCount, paths);
+		return paths;
 	}
 
-	private static SKPath CreateCapsulePath(Location p1, Location p2, double offsetKm)
+	/// <summary>
+	/// 観測点のレベルごとに、そのレベル以上の観測点を囲む範囲のパスを生成する。
+	/// 下位レベルの範囲ほど観測点から離して囲み、上位レベルの範囲を内側に含める
+	/// </summary>
+	private static LevelPath[] CreateLevelPaths(KyoshinEventLevel eventLevel, RealtimeObservationPoint[] points)
 	{
-		var vertices = ConvexHullCalculator.CreateCapsuleVertices(p1, p2, offsetKm);
-		return CreatePathFromVertices(vertices);
+		// 単独の観測点のノイズを範囲として出さないよう、KyoshinEvent.AddPoint の規則で上がったイベントのレベルで頭打ちにする
+		var leveledPoints = points
+			.Select(p =>
+			{
+				var level = KyoshinEvent.GetLevel(p.LatestIntensity);
+				return (p.Location, Level: level < eventLevel ? level : eventLevel);
+			})
+			.ToArray();
+		var levels = leveledPoints
+			.Select(p => p.Level)
+			.Distinct()
+			.OrderByDescending(l => l)
+			.ToArray();
+
+		var result = new LevelPath[levels.Length];
+		for (var i = 0; i < levels.Length; i++)
+		{
+			var level = levels[i];
+			var locations = leveledPoints.Where(p => p.Level >= level).Select(p => p.Location);
+			result[i] = new LevelPath(level, CreateRoundedHullPath(locations, InnermostOffsetKm + OffsetStepKm * i));
+		}
+		return result;
 	}
 
-	private static SKPath CreateConvexHullPath(List<Location> locations, double offsetKm)
+	private static SKPath CreateRoundedHullPath(IEnumerable<Location> locations, double offsetKm)
 	{
 		var hull = ConvexHullCalculator.ComputeConvexHull(locations);
-		if (hull.Count < 3)
-		{
-			// 凸包が作れない場合は最初の点を中心とした円を描画
-			return PathGenerator.MakeCirclePath(locations[0], offsetKm * 1000, BaseZoom);
-		}
+		var vertices = ConvexHullCalculator.CreateRoundedOffsetPolygon(hull, offsetKm);
 
-		var offsetHull = ConvexHullCalculator.ApplyOffset(hull, offsetKm);
-		return CreateRoundedPathFromVertices(offsetHull);
-	}
-
-	private static SKPath CreatePathFromVertices(List<Location> vertices)
-	{
 		var path = new SKPath();
 		if (vertices.Count == 0)
 			return path;
 
-		var first = vertices[0].ToPixel(BaseZoom).AsSkPoint();
-		path.MoveTo(first);
-
+		path.MoveTo(vertices[0].ToPixel(BaseZoom).AsSkPoint());
 		for (var i = 1; i < vertices.Count; i++)
-		{
-			var point = vertices[i].ToPixel(BaseZoom).AsSkPoint();
-			path.LineTo(point);
-		}
-
+			path.LineTo(vertices[i].ToPixel(BaseZoom).AsSkPoint());
 		path.Close();
 		return path;
 	}
 
-	/// <summary>
-	/// 角を丸めたパスを生成（凸包用）
-	/// </summary>
-	private static SKPath CreateRoundedPathFromVertices(List<Location> vertices)
+	private static void DisposePaths(CachedPaths cached)
 	{
-		var path = new SKPath();
-		if (vertices.Count < 3)
-			return CreatePathFromVertices(vertices);
-
-		// ピクセル座標に変換（基準ズームで）
-		var points = vertices.Select(v => v.ToPixel(BaseZoom).AsSkPoint()).ToList();
-		var count = points.Count;
-
-		// 角丸の割合（0.0〜0.5、大きいほど丸くなる）
-		const float roundRatio = 0.5f;
-
-		// 最初の辺の中点から開始
-		var startMid = Lerp(points[0], points[1], roundRatio);
-		path.MoveTo(startMid);
-
-		for (var i = 0; i < count; i++)
-		{
-			var curr = points[i];
-			var next = points[(i + 1) % count];
-			var nextNext = points[(i + 2) % count];
-
-			// 辺の中点（丸めの開始点と終了点）
-			var midCurrNext = Lerp(curr, next, 1 - roundRatio);
-			var midNextNextNext = Lerp(next, nextNext, roundRatio);
-
-			// 辺を直線で描画
-			path.LineTo(midCurrNext);
-
-			// 角を三次ベジェ曲線で丸める（より滑らかに）
-			// 制御点を頂点に近い位置に2つ配置
-			var ctrl1 = Lerp(midCurrNext, next, 0.5f);
-			var ctrl2 = Lerp(next, midNextNextNext, 0.5f);
-			path.CubicTo(ctrl1, ctrl2, midNextNextNext);
-		}
-
-		path.Close();
-		return path;
+		foreach (var levelPath in cached.Paths)
+			levelPath.Path.Dispose();
 	}
-
-	private static SKPoint Lerp(SKPoint a, SKPoint b, float t)
-		=> new(a.X + (b.X - a.X) * t, a.Y + (b.Y - a.Y) * t);
 
 	private void InvalidateCache()
 	{
 		foreach (var cached in PathCache.Values)
-			cached.Path.Dispose();
+			DisposePaths(cached);
 		PathCache.Clear();
 	}
 }

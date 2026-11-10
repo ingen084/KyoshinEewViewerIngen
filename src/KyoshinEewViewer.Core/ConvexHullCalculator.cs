@@ -10,7 +10,12 @@ namespace KyoshinEewViewer.Core;
 /// </summary>
 public static class ConvexHullCalculator
 {
-	private const double EarthRadius = 6371.0; // km
+	private const double KmPerDegree = 111.0;
+
+	/// <summary>
+	/// 円弧を折れ線で近似するときの1区間の角度（ラジアン）
+	/// </summary>
+	private const double ArcStepRadians = 2 * Math.PI / 64;
 
 	/// <summary>
 	/// Monotone Chain アルゴリズムで凸包を計算
@@ -53,114 +58,42 @@ public static class ConvexHullCalculator
 	}
 
 	/// <summary>
-	/// 凸包にオフセットを適用
+	/// 凸包から一定距離の範囲を囲む図形の頂点リストを生成する。
+	/// 各辺を外側へ平行移動し、頂点のまわりを円弧でつなぐため、
+	/// 図形は凸包のどの点からも <paramref name="offsetKm"/> 以上離れる
 	/// </summary>
-	/// <param name="hull">凸包の頂点（反時計回り）</param>
-	/// <param name="offsetKm">オフセット距離（km）</param>
-	/// <returns>オフセット適用後の頂点リスト</returns>
-	public static List<Location> ApplyOffset(List<Location> hull, double offsetKm)
+	/// <param name="hull">凸包の頂点（反時計回り）。1点なら円、2点ならカプセル形状になる</param>
+	/// <param name="offsetKm">凸包からの距離（km）</param>
+	/// <returns>図形の頂点リスト（反時計回り）</returns>
+	public static List<Location> CreateRoundedOffsetPolygon(IReadOnlyList<Location> hull, double offsetKm)
 	{
-		if (hull.Count < 3)
-			return hull;
-
-		var result = new List<Location>(hull.Count);
-
-		for (var i = 0; i < hull.Count; i++)
-		{
-			var prev = hull[(i - 1 + hull.Count) % hull.Count];
-			var curr = hull[i];
-			var next = hull[(i + 1) % hull.Count];
-
-			var offsetPoint = GetOffsetVertex(prev, curr, next, offsetKm);
-			result.Add(offsetPoint);
-		}
-
-		return result;
-	}
-
-	/// <summary>
-	/// カプセル形状の頂点リストを生成（2点用）
-	/// </summary>
-	/// <param name="p1">点1</param>
-	/// <param name="p2">点2</param>
-	/// <param name="offsetKm">オフセット距離（km）</param>
-	/// <param name="arcDivisions">円弧の分割数</param>
-	/// <returns>カプセル形状の頂点リスト</returns>
-	public static List<Location> CreateCapsuleVertices(Location p1, Location p2, double offsetKm, int arcDivisions = 16)
-	{
+		var vertices = RemoveDuplicateVertices(hull);
 		var result = new List<Location>();
+		if (vertices.Count == 0)
+			return result;
 
-		// 2点間の方向ベクトル（度単位）
-		var dx = p2.Longitude - p1.Longitude;
-		var dy = p2.Latitude - p1.Latitude;
-
-		// p1の緯度での経度補正
-		var avgLat = (p1.Latitude + p2.Latitude) / 2.0;
-		var lonScale = Math.Cos(avgLat * Math.PI / 180.0);
-
-		// 正規化された方向ベクトル（緯度経度空間で）
-		var length = Math.Sqrt(dx * dx * lonScale * lonScale + dy * dy);
-		if (length < 1e-10)
+		if (vertices.Count == 1)
 		{
-			// 2点が同一の場合は円として扱う
-			return CreateCircleVertices(p1, offsetKm);
+			AddArc(result, vertices[0], 0, 2 * Math.PI, offsetKm);
+			return result;
 		}
 
-		var ndx = dx / length * lonScale;
-		var ndy = dy / length;
-
-		// 垂直方向（右手系で90度回転）
-		var perpX = -ndy / lonScale;
-		var perpY = ndx;
-
-		// オフセット距離を緯度経度に変換
-		var latOffset = offsetKm / 111.0;
-		var lonOffset = offsetKm / (111.0 * lonScale);
-
-		// p1側の半円（p2からp1方向に向かって左側から開始）
-		var startAngle1 = Math.Atan2(-ndy, -ndx * lonScale);
-		for (var i = 0; i <= arcDivisions / 2; i++)
+		for (var i = 0; i < vertices.Count; i++)
 		{
-			var angle = startAngle1 - Math.PI / 2 + Math.PI * i / (arcDivisions / 2);
-			var lat = p1.Latitude + latOffset * Math.Sin(angle);
-			var lon = p1.Longitude + lonOffset * Math.Cos(angle);
-			result.Add(new Location((float)lat, (float)lon));
-		}
+			var prev = vertices[(i - 1 + vertices.Count) % vertices.Count];
+			var curr = vertices[i];
+			var next = vertices[(i + 1) % vertices.Count];
 
-		// p2側の半円
-		var startAngle2 = Math.Atan2(ndy, ndx * lonScale);
-		for (var i = 0; i <= arcDivisions / 2; i++)
-		{
-			var angle = startAngle2 - Math.PI / 2 + Math.PI * i / (arcDivisions / 2);
-			var lat = p2.Latitude + latOffset * Math.Sin(angle);
-			var lon = p2.Longitude + lonOffset * Math.Cos(angle);
-			result.Add(new Location((float)lat, (float)lon));
-		}
+			var lonScale = Math.Cos(curr.Latitude * Math.PI / 180.0);
+			var startAngle = GetOutwardNormalAngle(prev, curr, lonScale);
+			var sweep = GetOutwardNormalAngle(curr, next, lonScale) - startAngle;
+			if (sweep < 0)
+				sweep += 2 * Math.PI;
+			// 凸包の外角は π 以下なので、2π 近くになるのは誤差でわずかに負になった 0
+			if (sweep > Math.PI * 1.5)
+				sweep = 0;
 
-		return result;
-	}
-
-	/// <summary>
-	/// 円形状の頂点リストを生成（1点用）
-	/// </summary>
-	/// <param name="center">中心点</param>
-	/// <param name="radiusKm">半径（km）</param>
-	/// <param name="divisions">分割数</param>
-	/// <returns>円形状の頂点リスト</returns>
-	public static List<Location> CreateCircleVertices(Location center, double radiusKm, int divisions = 32)
-	{
-		var result = new List<Location>(divisions);
-
-		var latOffset = radiusKm / 111.0;
-		var lonScale = Math.Cos(center.Latitude * Math.PI / 180.0);
-		var lonOffset = radiusKm / (111.0 * lonScale);
-
-		for (var i = 0; i < divisions; i++)
-		{
-			var angle = 2 * Math.PI * i / divisions;
-			var lat = center.Latitude + latOffset * Math.Sin(angle);
-			var lon = center.Longitude + lonOffset * Math.Cos(angle);
-			result.Add(new Location((float)lat, (float)lon));
+			AddArc(result, curr, startAngle, sweep, offsetKm);
 		}
 
 		return result;
@@ -175,46 +108,45 @@ public static class ConvexHullCalculator
 			 - (a.Latitude - o.Latitude) * (b.Longitude - o.Longitude);
 	}
 
-	/// <summary>
-	/// 頂点のオフセット位置を計算
-	/// </summary>
-	private static Location GetOffsetVertex(Location prev, Location curr, Location next, double offsetKm)
+	private static List<Location> RemoveDuplicateVertices(IReadOnlyList<Location> vertices)
 	{
-		// 緯度による経度補正
-		var lonScale = Math.Cos(curr.Latitude * Math.PI / 180.0);
+		var result = new List<Location>(vertices.Count);
+		foreach (var v in vertices)
+		{
+			if (result.Count == 0 || !IsSameLocation(result[^1], v))
+				result.Add(v);
+		}
+		while (result.Count > 1 && IsSameLocation(result[0], result[^1]))
+			result.RemoveAt(result.Count - 1);
+		return result;
+	}
 
-		// 辺1: prev -> curr の方向ベクトル
-		double e1x = (curr.Longitude - prev.Longitude) * lonScale;
-		double e1y = curr.Latitude - prev.Latitude;
-		var len1 = Math.Sqrt(e1x * e1x + e1y * e1y);
-		if (len1 > 0) { e1x /= len1; e1y /= len1; }
+	private static bool IsSameLocation(Location a, Location b)
+		=> a.Latitude == b.Latitude && a.Longitude == b.Longitude;
 
-		// 辺2: curr -> next の方向ベクトル
-		double e2x = (next.Longitude - curr.Longitude) * lonScale;
-		double e2y = next.Latitude - curr.Latitude;
-		var len2 = Math.Sqrt(e2x * e2x + e2y * e2y);
-		if (len2 > 0) { e2x /= len2; e2y /= len2; }
+	/// <summary>
+	/// 辺の外向き法線の向き（東を 0 とする反時計回りのラジアン）を求める。
+	/// 反時計回りの凸包では辺の進行方向に対して右手側が外側
+	/// </summary>
+	private static double GetOutwardNormalAngle(Location from, Location to, double lonScale)
+	{
+		var dx = (to.Longitude - from.Longitude) * lonScale;
+		var dy = to.Latitude - from.Latitude;
+		return Math.Atan2(-dx, dy);
+	}
 
-		// 各辺の外向き法線（反時計回りの凸包では右手側が外）
-		// 辺の方向ベクトル(x,y)に対して、外向き法線は(y,-x)
-		double n1x = e1y;
-		double n1y = -e1x;
-		double n2x = e2y;
-		double n2y = -e2x;
+	private static void AddArc(List<Location> result, Location center, double startAngle, double sweep, double radiusKm)
+	{
+		var latOffset = radiusKm / KmPerDegree;
+		var lonOffset = radiusKm / (KmPerDegree * Math.Cos(center.Latitude * Math.PI / 180.0));
+		var divisions = Math.Max(1, (int)Math.Ceiling(sweep / ArcStepRadians));
 
-		// 2つの法線の平均（角の二等分線方向）
-		double nx = n1x + n2x;
-		double ny = n1y + n2y;
-		var nLen = Math.Sqrt(nx * nx + ny * ny);
-		if (nLen > 0) { nx /= nLen; ny /= nLen; }
-
-		// オフセット距離を緯度経度に変換（鋭角補正なし、角丸で対応）
-		var latOffset = offsetKm / 111.0;
-		var lonOffset = offsetKm / (111.0 * lonScale);
-
-		return new Location(
-			(float)(curr.Latitude + ny * latOffset),
-			(float)(curr.Longitude + nx * lonOffset / lonScale)
-		);
+		for (var i = 0; i <= divisions; i++)
+		{
+			var angle = startAngle + sweep * i / divisions;
+			result.Add(new Location(
+				(float)(center.Latitude + latOffset * Math.Sin(angle)),
+				(float)(center.Longitude + lonOffset * Math.Cos(angle))));
+		}
 	}
 }
