@@ -21,6 +21,9 @@ if [[ "${1:-}" == --inside ]]; then
   export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1 DOTNET_GENERATE_ASPNET_CERTIFICATE=false
   export KEVI_UI_TEST_PARENT_NETNS="$parent_netns" KEVI_UI_TEST_AUDIT_DIR="$case_dir/audit"
   export KEVI_UI_TEST_NETWORK_PROBE="$probe"
+  # 名前空間内には VSTest がセッションファイルの既定の置き場所とする /run/user/<uid> がない。
+  # WSL から Windows のドライブ上の結果ディレクトリを使うと権限を 0700 にできないため /tmp を使う。
+  export VSTEST_ARTIFACTS_BASE_DIRECTORY=/tmp
   exec "$dotnet_exe" test "$project" -c Release --no-build --no-restore --artifacts-path "$build_dir" \
     --filter "$filter" --logger 'trx;LogFileName=tests.trx' --results-directory "$case_dir/results"
 fi
@@ -40,8 +43,8 @@ dotnet_exe="$(readlink -f -- "$(command -v -- "$dotnet_cmd")")"
 export DOTNET_ROOT="$(dirname -- "$dotnet_exe")"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE=true DOTNET_NOLOGO=1
 export TESTINGPLATFORM_TELEMETRY_OPTOUT=1
-if [[ "$($dotnet_exe --version)" != 10.* ]]; then
-  printf '.NET 10 SDKが必要です。--dotnet で実行ファイルを指定できます。\n' >&2
+if [[ "$($dotnet_exe --version)" != 11.* ]]; then
+  printf '.NET 11 SDKが必要です。--dotnet で実行ファイルを指定できます。\n' >&2
   exit 2
 fi
 command -v ip >/dev/null

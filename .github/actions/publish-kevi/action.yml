@@ -50,9 +50,9 @@ runs:
         BUILD_NUMBER: ${{ inputs.build-number }}
       run: |
         case "${{ inputs.os }}" in
-          windows) TFM=net10.0-windows10.0.19041.0; RID=win-${{ inputs.arch }} ;;
-          ubuntu)  TFM=net10.0; RID=linux-${{ inputs.arch }} ;;
-          macos)   TFM=net10.0; RID=osx-${{ inputs.arch }} ;;
+          windows) TFM=net11.0-windows10.0.19041.0; RID=win-${{ inputs.arch }} ;;
+          ubuntu)  TFM=net11.0; RID=linux-${{ inputs.arch }} ;;
+          macos)   TFM=net11.0; RID=osx-${{ inputs.arch }} ;;
           *) echo "不明なOS指定です: ${{ inputs.os }}"; exit 1 ;;
         esac
         EXTRA=""
