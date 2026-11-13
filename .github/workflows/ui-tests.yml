@@ -27,7 +27,7 @@ jobs:
           submodules: recursive
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 11.0.x
       - name: UIテストと通信禁止基盤の検査
         run: bash tests/UiTests/run.sh
       - name: テスト結果と通信監査の保存

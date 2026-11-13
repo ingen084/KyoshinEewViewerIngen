@@ -21,8 +21,16 @@ if [[ "${1:-}" == --inside ]]; then
   export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1 DOTNET_GENERATE_ASPNET_CERTIFICATE=false
   export KEVI_UI_TEST_PARENT_NETNS="$parent_netns" KEVI_UI_TEST_AUDIT_DIR="$case_dir/audit"
   export KEVI_UI_TEST_NETWORK_PROBE="$probe"
-  exec "$dotnet_exe" test "$project" -c Release --no-build --no-restore --artifacts-path "$build_dir" \
-    --filter "$filter" --logger 'trx;LogFileName=tests.trx' --results-directory "$case_dir/results"
+  # 名前付きミューテックスを置く XDG_RUNTIME_DIR と VSTest のセッションファイルの置き場所には、実行ユーザーが所有する
+  # 権限 0700 のディレクトリが要る。sudo で隔離すると呼び出し元の XDG_RUNTIME_DIR を引き継ぎ、WSL から Windows の
+  # ドライブ上に作ると 0700 にできないため、/tmp に作る。
+  runtime_dir="$(mktemp -d)"
+  export XDG_RUNTIME_DIR="$runtime_dir" VSTEST_ARTIFACTS_BASE_DIRECTORY="$runtime_dir"
+  status=0
+  "$dotnet_exe" test "$project" -c Release --no-build --no-restore --artifacts-path "$build_dir" \
+    --filter "$filter" --logger 'trx;LogFileName=tests.trx' --results-directory "$case_dir/results" || status=$?
+  rm -rf -- "$runtime_dir"
+  exit "$status"
 fi
 
 dotnet_cmd="${KEVI_UI_TEST_DOTNET:-dotnet}"
@@ -40,8 +48,8 @@ dotnet_exe="$(readlink -f -- "$(command -v -- "$dotnet_cmd")")"
 export DOTNET_ROOT="$(dirname -- "$dotnet_exe")"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE=true DOTNET_NOLOGO=1
 export TESTINGPLATFORM_TELEMETRY_OPTOUT=1
-if [[ "$($dotnet_exe --version)" != 10.* ]]; then
-  printf '.NET 10 SDKが必要です。--dotnet で実行ファイルを指定できます。\n' >&2
+if [[ "$($dotnet_exe --version)" != 11.* ]]; then
+  printf '.NET 11 SDKが必要です。--dotnet で実行ファイルを指定できます。\n' >&2
   exit 2
 fi
 command -v ip >/dev/null

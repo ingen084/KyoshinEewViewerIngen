@@ -4,7 +4,7 @@
 
 **KyoshinEewViewer for ingen** — 日本の防災情報アプリケーション。
 
-- C# .NET 10.0 + Avalonia UI によるクロスプラットフォーム対応
+- C# .NET 11.0 + Avalonia UI によるクロスプラットフォーム対応
 - 強震モニタ・気象庁(JMA)の地震情報を監視し、緊急地震速報や地震情報をリアルタイム表示する
 
 ## 言語ポリシー
@@ -61,7 +61,7 @@ dotnet build KyoshinEewViewer.sln -t:Rebuild
 - `KyoshinEewViewer.JmaXmlParser`: JMA XML パーサー
 - `KyoshinEewViewer.DCReportParser`: QZSS 災危通報パーサー
 - `KyoshinEewViewer.CsvSourceGenerator`: CSV辞書のコード生成
-- `common.props`: 共有 MSBuild プロパティ (.NET 10.0、Nullable など)
+- `common.props`: 共有 MSBuild プロパティ (.NET 11.0、Nullable など)
 
 ### 技術スタック
 

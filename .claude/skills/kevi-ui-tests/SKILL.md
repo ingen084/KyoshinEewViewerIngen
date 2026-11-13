@@ -16,14 +16,14 @@ description: KyoshinEewViewer(KEVi)のUIテスト (tests/KyoshinEewViewer.UiTest
 ### 実行
 
 ```bash
-bash tests/UiTests/run.sh                 # Linux (.NET 10 SDK・Python 3・iproute2・util-linux が必要)
+bash tests/UiTests/run.sh                 # Linux (.NET 11 SDK・Python 3・iproute2・util-linux が必要)
 pwsh tests/UiTests/run.ps1                # Windows (WSL の Ubuntu-22.04 で run.sh を動かす)
 pwsh tests/UiTests/run.ps1 -Filter 'FullyQualifiedName~TelegramRecovery'   # 一部だけ
 ```
 
 - `--filter` / `-Filter` は dotnet test のフィルタ。指定した場合は通信禁止の失敗検査を省くので、仕上げには全体を実行する
 - `--skip-build` / `-SkipBuild` はビルド済みの同じソースを再検査するときだけ使う
-- WSL 側の `dotnet` が .NET 10 でない場合は `--dotnet` / `-DotnetPath` で実行ファイルを指定する
+- WSL 側の `dotnet` が .NET 11 でない場合は `--dotnet` / `-DotnetPath` で実行ファイルを指定する
 - 結果は `tmp/ui-tests/<日時>-<PID>/` の TRX と `audit/network-audit.json`
 - 通常の `dotnet test` で直接実行すると隔離の確認で失敗する。条件を満たさないときに黙ってスキップはしない
 - CI は `.github/workflows/ui-tests.yml` (pull_request で Linux の1ジョブ)。macOS のジョブは追加しない
