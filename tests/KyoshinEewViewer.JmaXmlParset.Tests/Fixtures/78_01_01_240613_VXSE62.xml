@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Report xmlns="http://xml.kishou.go.jp/jmaxml1/" xmlns:jmx="http://xml.kishou.go.jp/jmaxml1/">
+  <Control>
+    <Title>長周期地震動に関する観測情報</Title>
+    <DateTime>2020-11-20T17:33:30Z</DateTime>
+    <Status>通常</Status>
+    <EditorialOffice>気象庁本庁</EditorialOffice>
+    <PublishingOffice>気象庁</PublishingOffice>
+  </Control>
+  <Head xmlns="http://xml.kishou.go.jp/jmaxml1/informationBasis1/">
+    <Title>長周期地震動に関する観測情報</Title>
+    <ReportDateTime>2020-11-21T02:33:10+09:00</ReportDateTime>
+    <TargetDateTime>2020-11-21T02:33:10+09:00</TargetDateTime>
+    <EventID>20201121023300</EventID>
+    <InfoType>発表</InfoType>
+    <Serial>1</Serial>
+    <InfoKind>長周期地震動に関する観測情報</InfoKind>
+    <InfoKindVersion>1.3_0</InfoKindVersion>
+    <Headline>
+      <Text>２１日０２時２３分ころの地震により、長周期地震動階級３を観測した地域があります。以下の地域では、最大震度は４以下でしたが、大きな長周期地震動階級（階級３以上）を観測しています。高層ビル高層階では非常に大きな揺れとなっていた可能性があります。宮城県北部</Text>
+      <Information type="長周期地震動に関する観測情報（細分区域）">
+        <Item>
+          <Kind><Name>長周期地震動階級３</Name></Kind>
+          <Areas codeType="地震情報／細分区域">
+            <Area><Name>宮城県北部</Name><Code>220</Code></Area>
+          </Areas>
+        </Item>
+        <Item>
+          <Kind><Name>長周期地震動階級１</Name></Kind>
+          <Areas codeType="地震情報／細分区域">
+            <Area><Name>青森県津軽北部</Name><Code>200</Code></Area>
+            <Area><Name>青森県三八上北</Name><Code>202</Code></Area>
+            <Area><Name>岩手県内陸北部</Name><Code>212</Code></Area>
+            <Area><Name>岩手県内陸南部</Name><Code>213</Code></Area>
+          </Areas>
+        </Item>
+      </Information>
+    </Headline>
+  </Head>
+  <Body xmlns="http://xml.kishou.go.jp/jmaxml1/body/seismology1/" xmlns:jmx_eb="http://xml.kishou.go.jp/jmaxml1/elementBasis1/">
+    <Earthquake>
+      <OriginTime>2020-11-21T02:23:00+09:00</OriginTime>
+      <ArrivalTime>2020-11-21T02:23:10+09:00</ArrivalTime>
+      <Hypocenter>
+        <Area>
+          <Name>岩手県沖</Name>
+          <Code type="震央地名">286</Code>
+          <jmx_eb:Coordinate description="北緯３９．６度　東経１４２．７度　深さ　３０ｋｍ">+39.6+142.7-30000/</jmx_eb:Coordinate>
+        </Area>
+      </Hypocenter>
+      <jmx_eb:Magnitude type="Mj" description="Ｍ６．３">6.3</jmx_eb:Magnitude>
+    </Earthquake>
+    <Intensity>
+      <Observation>
+        <CodeDefine>
+          <Type xpath="Pref/Code">地震情報／都道府県等</Type>
+          <Type xpath="Pref/Area/Code">地震情報／細分区域</Type>
+          <Type xpath="Pref/Area/IntensityStation/Code">長周期地震動観測点</Type>
+        </CodeDefine>
+        <MaxInt>5-</MaxInt>
+        <MaxLgInt>3</MaxLgInt>
+        <LgCategory>4</LgCategory>
+        <Pref><Name>宮城県</Name><Code>04</Code><MaxInt>4</MaxInt><MaxLgInt>3</MaxLgInt>
+          <Area><Name>宮城県北部</Name><Code>220</Code><MaxInt>4</MaxInt><MaxLgInt>3</MaxLgInt>
+            <IntensityStation><Name>登米市中田町</Name><Code>0421200</Code>
+              <Int>4</Int>
+              <LgInt>3</LgInt>
+              <LgIntPerPeriod PeriodicBand="1" PeriodUnit="秒台">2</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="2" PeriodUnit="秒台">3</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="3" PeriodUnit="秒台">2</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="4" PeriodUnit="秒台">1</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="5" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="6" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="7" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <Sva unit="cm/s">20.5</Sva>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="1" PeriodUnit="秒台">20.5</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="2" PeriodUnit="秒台">50.3</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="3" PeriodUnit="秒台">21.7</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="4" PeriodUnit="秒台">6.9</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="5" PeriodUnit="秒台">0.5</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="6" PeriodUnit="秒台">0.3</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="7" PeriodUnit="秒台">0.2</SvaPerPeriod>
+            </IntensityStation>
+            <IntensityStation><Name>大崎市古川大崎</Name><Code>0421501</Code>
+              <Int>2</Int>
+              <LgInt>1</LgInt>
+              <LgIntPerPeriod PeriodicBand="1" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="2" PeriodUnit="秒台">1</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="3" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="4" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="5" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="6" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="7" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <Sva unit="cm/s">5.4</Sva>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="1" PeriodUnit="秒台">4.2</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="2" PeriodUnit="秒台">5.4</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="3" PeriodUnit="秒台">2.8</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="4" PeriodUnit="秒台">2.3</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="5" PeriodUnit="秒台">1.0</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="6" PeriodUnit="秒台">0.5</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="7" PeriodUnit="秒台">0.3</SvaPerPeriod>
+            </IntensityStation>
+            <IntensityStation><Name>涌谷町新町裏</Name><Code>0450100</Code>
+              <Int>3</Int>
+              <LgInt>1</LgInt>
+              <LgIntPerPeriod PeriodicBand="1" PeriodUnit="秒台">1</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="2" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="3" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="4" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="5" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="6" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="7" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <Sva unit="cm/s">10.1</Sva>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="1" PeriodUnit="秒台">10.1</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="2" PeriodUnit="秒台">4.9</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="3" PeriodUnit="秒台">1.8</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="4" PeriodUnit="秒台">0.7</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="5" PeriodUnit="秒台">0.4</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="6" PeriodUnit="秒台">0.2</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="7" PeriodUnit="秒台">0.2</SvaPerPeriod>
+            </IntensityStation>
+          </Area>
+        </Pref>
+        <Pref><Name>青森県</Name><Code>02</Code><MaxInt>4</MaxInt><MaxLgInt>1</MaxLgInt>
+          <Area><Name>青森県津軽北部</Name><Code>200</Code><MaxInt>3</MaxInt><MaxLgInt>1</MaxLgInt>
+            <IntensityStation><Name>青森市花園</Name><Code>0220100</Code>
+              <Int>3</Int>
+              <LgInt>1</LgInt>
+              <LgIntPerPeriod PeriodicBand="1" PeriodUnit="秒台">1</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="2" PeriodUnit="秒台">1</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="3" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="4" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="5" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="6" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="7" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <Sva unit="cm/s">8.9</Sva>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="1" PeriodUnit="秒台">8.9</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="2" PeriodUnit="秒台">5.4</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="3" PeriodUnit="秒台">4.1</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="4" PeriodUnit="秒台">1.1</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="5" PeriodUnit="秒台">0.7</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="6" PeriodUnit="秒台">0.5</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="7" PeriodUnit="秒台">0.3</SvaPerPeriod>
+            </IntensityStation>
+            <IntensityStation><Name>五所川原市栄町</Name><Code>0220500</Code>
+              <Int>3</Int>
+              <LgInt>1</LgInt>
+              <LgIntPerPeriod PeriodicBand="1" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="2" PeriodUnit="秒台">1</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="3" PeriodUnit="秒台">1</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="4" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="5" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="6" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="7" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <Sva unit="cm/s">5.4</Sva>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="1" PeriodUnit="秒台">4.5</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="2" PeriodUnit="秒台">5.3</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="3" PeriodUnit="秒台">6.0</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="4" PeriodUnit="秒台">3.4</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="5" PeriodUnit="秒台">1.3</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="6" PeriodUnit="秒台">0.7</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="7" PeriodUnit="秒台">0.5</SvaPerPeriod>
+            </IntensityStation>
+          </Area>
+          <Area><Name>青森県三八上北</Name><Code>202</Code><MaxInt>4</MaxInt><MaxLgInt>1</MaxLgInt>
+            <IntensityStation><Name>五戸町古舘</Name><Code>0244200</Code>
+              <Int>4</Int>
+              <LgInt>1</LgInt>
+              <LgIntPerPeriod PeriodicBand="1" PeriodUnit="秒台">1</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="2" PeriodUnit="秒台">1</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="3" PeriodUnit="秒台">1</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="4" PeriodUnit="秒台">1</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="5" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="6" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="7" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <Sva unit="cm/s">7.9</Sva>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="1" PeriodUnit="秒台">5.5</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="2" PeriodUnit="秒台">6.5</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="3" PeriodUnit="秒台">7.9</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="4" PeriodUnit="秒台">5.0</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="5" PeriodUnit="秒台">3.3</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="6" PeriodUnit="秒台">0.5</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="7" PeriodUnit="秒台">0.3</SvaPerPeriod>
+            </IntensityStation>
+          </Area>
+        </Pref>
+        <Pref><Name>岩手県</Name><Code>03</Code><MaxInt>5-</MaxInt><MaxLgInt>1</MaxLgInt>
+          <Area><Name>岩手県内陸北部</Name><Code>212</Code><MaxInt>5-</MaxInt><MaxLgInt>1</MaxLgInt>
+            <IntensityStation><Name>雫石町西根上駒木野</Name><Code>0330102</Code>
+              <Int>3</Int>
+              <LgInt>1</LgInt>
+              <LgIntPerPeriod PeriodicBand="1" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="2" PeriodUnit="秒台">1</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="3" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="4" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="5" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="6" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="7" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <Sva unit="cm/s">5.0</Sva>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="1" PeriodUnit="秒台">4.4</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="2" PeriodUnit="秒台">5.0</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="3" PeriodUnit="秒台">2.5</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="4" PeriodUnit="秒台">2.2</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="5" PeriodUnit="秒台">1.1</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="6" PeriodUnit="秒台">0.6</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="7" PeriodUnit="秒台">0.3</SvaPerPeriod>
+            </IntensityStation>
+          </Area>
+          <Area><Name>岩手県内陸南部</Name><Code>213</Code><MaxInt>3</MaxInt><MaxLgInt>1</MaxLgInt>
+            <IntensityStation><Name>奥州市水沢大鐘町</Name><Code>0321500</Code>
+              <Int>3</Int>
+              <LgInt>1</LgInt>
+              <LgIntPerPeriod PeriodicBand="1" PeriodUnit="秒台">1</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="2" PeriodUnit="秒台">1</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="3" PeriodUnit="秒台">1</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="4" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="5" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="6" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <LgIntPerPeriod PeriodicBand="7" PeriodUnit="秒台">0</LgIntPerPeriod>
+              <Sva unit="cm/s">7.9</Sva>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="1" PeriodUnit="秒台">6.8</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="2" PeriodUnit="秒台">7.8</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="3" PeriodUnit="秒台">5.8</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="4" PeriodUnit="秒台">3.1</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="5" PeriodUnit="秒台">1.4</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="6" PeriodUnit="秒台">0.7</SvaPerPeriod>
+              <SvaPerPeriod unit="cm/s" PeriodicBand="7" PeriodUnit="秒台">0.4</SvaPerPeriod>
+            </IntensityStation>
+          </Area>
+        </Pref>
+      </Observation>
+    </Intensity>
+  <Comments>
+    <FreeFormComment>
+各長周期地震動階級に対する簡易な現象表現
+ 階級１やや大きな揺れ
+ 階級２大きな揺れ
+ 階級３非常に大きな揺れ
+ 階級４極めて大きな揺れ
+波形、スペクトル等、本地震の長周期地震動に関する詳細な情報は気象庁の長周期地震動に関する観測情報のウェブサイト　(　https://www.data.jma.go.jp/eew/data/ltpgm/20201121100000/index.html　) もあわせてご活用ください。
+    </FreeFormComment>
+    <URI>https://www.data.jma.go.jp/eew/data/ltpgm/202011211100000/index.html</URI>
+  </Comments>
+  </Body>
+</Report>

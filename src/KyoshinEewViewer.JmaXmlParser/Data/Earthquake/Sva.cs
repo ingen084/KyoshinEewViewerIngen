@@ -14,7 +14,7 @@ public struct Sva(XmlNode node)
 
 	private float? _value = null;
 	/// <summary>
-	/// 加速度
+	/// 絶対速度応答スペクトルの最大値。
 	/// </summary>
 	public float Value => _value ??= Node.InnerText.TryToFloat32(out var v) ? v : throw new JmaXmlParseException("値がfloatとしてパースできません");
 }

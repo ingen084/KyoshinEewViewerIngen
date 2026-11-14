@@ -13,13 +13,31 @@ public struct MaxHeight(XmlNode node)
 	/// </summary>
 	public DateTimeOffset? DateTime => _dateTime ??= (Node.TryFindDateTimeNode(Literals.DateTime(), out var n) ? n : null);
 
+	private PhysicalQuantity? _tsunamiHeightFrom = null;
+	/// <summary>
+	/// 津波の高さの範囲の下限。存在しない場合は null。
+	/// </summary>
+	public PhysicalQuantity? TsunamiHeightFrom => _tsunamiHeightFrom ??= (Node.TryFindChild("TsunamiHeightFrom"u8, out var n) ? new(n) : null);
+
+	private PhysicalQuantity? _tsunamiHeightTo = null;
+	/// <summary>
+	/// 津波の高さの範囲の上限。存在しない場合は null。
+	/// </summary>
+	public PhysicalQuantity? TsunamiHeightTo => _tsunamiHeightTo ??= (Node.TryFindChild("TsunamiHeightTo"u8, out var n) ? new(n) : null);
+
+	private float? _period = null;
+	/// <summary>
+	/// 最大波の周期。存在しない場合は null。
+	/// </summary>
+	public float? Period => _period ??= (Node.TryFindFloatNode("Period"u8, out var n) ? n : null);
+
 	private PhysicalQuantity? _tsunamiHeight = null;
 	/// <summary>
 	/// 予想される津波の高さ<br/>
 	/// マグニチュードが 8 を超える巨大地震と推定されるなど、地震規模推定の不確定性が大きい場合は condition=不明 高さは NaN になる
 	/// また、 description に定性的表現(巨大/高い) 津波予報･注意報の場合は空
 	/// </summary>
-	public PhysicalQuantity? TsunamiHeight => _tsunamiHeight ??= (Node.TryFindChild("jmx_eb:TsunamiHeight"u8, out var c) ? new(c) : null);
+	public PhysicalQuantity? TsunamiHeight => _tsunamiHeight ??= (Node.TryFindElementBasis("TsunamiHeight"u8, out var c) ? new(c) : null);
 	
 	private string? _condition = null;
 	/// <summary>

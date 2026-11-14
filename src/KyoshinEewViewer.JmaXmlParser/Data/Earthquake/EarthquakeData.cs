@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
@@ -37,6 +39,7 @@ public struct EarthquakeData(XmlNode node)
 	private Hypocenter? _hypocenter = null;
 	/// <summary>
 	/// 地震の位置に関する要素（震央地名、震源要素等）
+	/// <para>省略されている場合は例外。省略を許容する取得には TryGetHypocenter を使用する。</para>
 	/// <para>留意事項
 	/// <list type="bullet">
 	///		<item>「緊急地震速報（地震動予報）」及び「緊急地震速報（予報）」において、非常に強い揺れを検知・最大予測震度のみの場合、非常に強い揺れを検知した観測点の座標になる<br/>
@@ -48,6 +51,18 @@ public struct EarthquakeData(XmlNode node)
 	/// </summary>
 	public Hypocenter Hypocenter => _hypocenter ??= (Node.TryFindChild(Literals.Hypocenter(), out var n) ? new(n) : throw new JmaXmlParseException("Hypocenter ノードが存在しません"));
 
+	/// <summary>
+	/// 省略可能な震源情報を取得する。存在しない場合は false。
+	/// </summary>
+	public bool TryGetHypocenter(out Hypocenter hypocenter)
+	{
+		hypocenter = default;
+		if (!Node.TryFindChild(Literals.Hypocenter(), out var n))
+			return false;
+		hypocenter = new(n);
+		return true;
+	}
+
 	private PhysicalQuantity? _magnitude = null;
 	/// <summary>
 	/// 地震のマグニチュードの値
@@ -56,5 +71,11 @@ public struct EarthquakeData(XmlNode node)
 	/// <para>マグニチュードが不明の場合、 <seealso cref="PhysicalQuantity.Condition"/> が "不明" となり値は "NaN" になる</para>
 	/// <para>「仮定震源要素」の場合、値は "1.0" 固定</para>
 	/// </summary>
-	public PhysicalQuantity Magnitude => _magnitude ??= (Node.TryFindChild(Literals.JmxEbMagnitude(), out var n) ? new(n) : throw new JmaXmlParseException("Magnitude ノードが存在しません"));
+	public PhysicalQuantity Magnitude => _magnitude ??= (Node.TryFindElementBasis("Magnitude"u8, out var n) ? new(n) : throw new JmaXmlParseException("Magnitude ノードが存在しません"));
+
+	/// <summary>
+	/// マグニチュードの全件。種類が複数ある場合も記載順に取得する。
+	/// </summary>
+	public IEnumerable<PhysicalQuantity> Magnitudes
+		=> Node.Children.Where(c => c.IsElementBasis("Magnitude"u8)).Select(c => new PhysicalQuantity(c));
 }

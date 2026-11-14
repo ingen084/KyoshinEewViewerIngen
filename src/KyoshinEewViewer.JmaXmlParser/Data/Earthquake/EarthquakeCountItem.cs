@@ -12,7 +12,7 @@ public struct EarthquakeCountItem(XmlNode node)
 	/// 期間幅の種類<br/>
 	/// "１時間地震回数"（1 時間単位）、"累積地震回数"（全期間の合計）、"地震回数"（その他の場合）
 	/// </summary>
-	public string Type => _type ??= (Node.TryFindStringAttribute(Literals.AttrType(), out var n) ? n : throw new JmaXmlParseException("Type 属性が存在しません"));
+	public string Type => _type ??= (Node.TryFindStringAttribute(Literals.AttrType(), out var n) ? n : throw new JmaXmlParseException("type 属性が存在しません"));
 
 	private DateTimeOffset? _startTime = null;
 	/// <summary>
@@ -31,7 +31,7 @@ public struct EarthquakeCountItem(XmlNode node)
 	/// 無感地震を含む全ての地震回数<br/>
 	/// 発表しない場合は -1
 	/// </summary>
-	public string Number => _number ??= (Node.TryFindStringNode(Literals.Number(), out var n) ? n : throw new JmaXmlParseException("Int ノードが存在しません"));
+	public string Number => _number ??= (Node.TryFindStringNode(Literals.Number(), out var n) ? n : throw new JmaXmlParseException("Number ノードが存在しません"));
 
 	private string? _feltNumber = null;
 	/// <summary>
@@ -39,4 +39,10 @@ public struct EarthquakeCountItem(XmlNode node)
 	/// 発表しない場合は -1
 	/// </summary>
 	public string FeltNumber => _feltNumber ??= (Node.TryFindStringNode(Literals.FeltNumber(), out var n) ? n : throw new JmaXmlParseException("FeltNumber ノードが存在しません"));
+
+	private string? _condition = null;
+	/// <summary>
+	/// 地震回数の補足情報。存在しない場合は null。
+	/// </summary>
+	public string? Condition => _condition ??= (Node.TryFindStringNode(Literals.Condition(), out var n) ? n : null);
 }

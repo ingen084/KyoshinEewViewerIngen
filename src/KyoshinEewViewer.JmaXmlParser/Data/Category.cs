@@ -13,7 +13,7 @@ public struct Category(XmlNode node)
 
 	private Kind? _lastKind = null;
 	/// <summary>
-	/// 事項種別
+	/// 変化前の事項種別。存在しない場合は null。
 	/// </summary>
-	public Kind LastKind => _lastKind ??= (Node.TryFindChild(Literals.LastKind(), out var c) ? new(c) : throw new JmaXmlParseException("LastKind ノードが存在しません"));
+	public Kind? LastKind => _lastKind ??= (Node.TryFindChild(Literals.LastKind(), out var c) ? new(c) : null);
 }

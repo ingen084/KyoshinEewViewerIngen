@@ -17,6 +17,11 @@ public struct PhysicalQuantity(XmlNode node)
 	/// </summary>
 	public string Name => _name ??= Node.Name.ToString();
 
+	/// <summary>
+	/// 名前空間の接頭辞を除いた要素名（Precipitation、WindSpeed など）。
+	/// </summary>
+	public string LocalName => Node.TryGetFullName(out _, out var name) ? name.ToString() : Name;
+
 	private string? _type = null;
 	/// <summary>
 	/// 基本要素の種別<br/>

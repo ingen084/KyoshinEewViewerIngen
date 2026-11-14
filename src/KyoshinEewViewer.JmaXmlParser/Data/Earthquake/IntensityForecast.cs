@@ -9,6 +9,26 @@ public struct IntensityForecast(XmlNode node)
 	private XmlNode Node { get; set; } = node;
 
 	/// <summary>
+	/// 最大震度。存在しない場合は null。
+	/// </summary>
+	public string? MaxInt => Node.TryFindStringNode(Literals.MaxInt(), out var n) ? n : null;
+
+	/// <summary>
+	/// 最大長周期地震動階級。存在しない場合は null。
+	/// </summary>
+	public string? MaxLgInt => Node.TryFindStringNode(Literals.MaxLgInt(), out var n) ? n : null;
+
+	/// <summary>
+	/// 長周期地震動に関する観測情報の種類。存在しない場合は null。
+	/// </summary>
+	public string? LgCategory => Node.TryFindStringNode(Literals.LgCategory(), out var n) ? n : null;
+
+	/// <summary>
+	/// 予測値の変化に関する付加要素。存在しない場合は null。
+	/// </summary>
+	public IntensityAppendix? Appendix => Node.TryFindChild(Literals.Appendix(), out var n) ? new(n) : null;
+
+	/// <summary>
 	/// コード体系の定義
 	/// <para>「緊急地震速報（地震動予報）」及び「緊急地震速報（予報）」のとき、<br/>
 	/// 震度予測を行う府県予報区（Pref）、細分区域（Area）が１つも無い場合は空になる</para>
@@ -21,6 +41,24 @@ public struct IntensityForecast(XmlNode node)
 			return n.Children.Where(c => c.Name == Literals.Type()).Select(c => new CodeDefineType(c));
 		}
 	}
+
+	private IntensityRange? _forecastInt = null;
+	/// <summary>
+	/// 最大予測震度の範囲。存在しない場合は null。
+	/// </summary>
+	public IntensityRange? ForecastInt => _forecastInt ??= (Node.TryFindChild(Literals.ForecastInt(), out var n) ? new(n) : null);
+
+	private IntensityRange? _forecastLgInt = null;
+	/// <summary>
+	/// 最大予測長周期地震動階級の範囲。存在しない場合は null。
+	/// </summary>
+	public IntensityRange? ForecastLgInt => _forecastLgInt ??= (Node.TryFindChild(Literals.ForecastLgInt(), out var n) ? new(n) : null);
+
+	/// <summary>
+	/// 最大予測長周期地震動階級変化の理由。存在しない場合は null。
+	/// </summary>
+	public int? MaxLgIntChangeReason => Node.TryFindChild(Literals.Appendix(), out var n) &&
+		n.TryFindIntNode("MaxLgIntChangeReason"u8, out var reason) ? reason : null;
 
 	private string? _forecastIntFrom = null;
 	/// <summary>

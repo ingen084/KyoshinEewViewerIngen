@@ -12,5 +12,11 @@ public struct EarthquakeCount(XmlNode node)
 	/// 地震回数（期間別）
 	/// </summary>
 	public IEnumerable<EarthquakeCountItem> Cities
+		=> Items;
+
+	/// <summary>
+	/// 期間別の地震回数。
+	/// </summary>
+	public IEnumerable<EarthquakeCountItem> Items
 		=> Node.Children.Where(c => c.Name == Literals.Item()).Select(c => new EarthquakeCountItem(c));
 }

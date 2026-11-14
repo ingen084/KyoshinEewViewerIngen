@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using U8Xml;
@@ -19,6 +20,30 @@ public struct City(XmlNode node)
 	/// 市町村コード
 	/// </summary>
 	public int Code => _code ??= (Node.TryFindIntNode(Literals.Code(), out var n) ? n : throw new JmaXmlParseException("Code ノードが存在しません"));
+
+	private Category? _category = null;
+	/// <summary>
+	/// 警報等の種類。存在しない場合は null。
+	/// </summary>
+	public Category? Category => _category ??= (Node.TryFindChild(Literals.Category(), out var n) ? new(n) : null);
+
+	private IntensityRange? _forecastInt = null;
+	/// <summary>
+	/// 予測震度の範囲。存在しない場合は null。
+	/// </summary>
+	public IntensityRange? ForecastInt => _forecastInt ??= (Node.TryFindChild(Literals.ForecastInt(), out var n) ? new(n) : null);
+
+	private IntensityRange? _forecastLgInt = null;
+	/// <summary>
+	/// 予測長周期地震動階級の範囲。存在しない場合は null。
+	/// </summary>
+	public IntensityRange? ForecastLgInt => _forecastLgInt ??= (Node.TryFindChild(Literals.ForecastLgInt(), out var n) ? new(n) : null);
+
+	private DateTimeOffset? _arrivalTime = null;
+	/// <summary>
+	/// 主要動の到達予測時刻。存在しない場合は null。
+	/// </summary>
+	public DateTimeOffset? ArrivalTime => _arrivalTime ??= (Node.TryFindDateTimeNode(Literals.ArrivalTime(), out var n) ? n : null);
 
 	private string? _condition = null;
 	/// <summary>

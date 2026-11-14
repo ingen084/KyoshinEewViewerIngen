@@ -1,9 +1,22 @@
+using System;
 using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Meteorological;
 public struct ClassPart(XmlNode node)
 {
 	private XmlNode Node { get; set; } = node;
+
+	private DateTimeOffset? _time = null;
+	/// <summary>
+	/// 階級の対象時刻。存在しない場合は null。
+	/// </summary>
+	public DateTimeOffset? Time => _time ??= (Node.TryFindDateTimeNode("Time"u8, out var n) ? n : null);
+
+	private string? _remark = null;
+	/// <summary>
+	/// 階級についての補足情報。存在しない場合は null。
+	/// </summary>
+	public string? Remark => _remark ??= (Node.TryFindStringNode(Literals.Remark(), out var n) ? n : null);
 
 	private string? _typhoonClass = null;
 	/// <summary>
@@ -19,7 +32,7 @@ public struct ClassPart(XmlNode node)
 	/// </list>
 	/// 「延長予報 X 時間後」では記述なし
 	/// </summary>
-	public string? TyphoonClass => _typhoonClass ??= (Node.TryFindStringNode(Literals.JmaEbTyphoonClass(), out var n) ? n : null);
+	public string? TyphoonClass => _typhoonClass ??= (Node.TryFindStringElementBasis("TyphoonClass"u8, out var n) ? n : null);
 
 	private string? _areaClass = null;
 	/// <summary>
@@ -30,7 +43,7 @@ public struct ClassPart(XmlNode node)
 	/// </list>
 	/// 「予報 X 時間後」及び「延長予報 X 時間後」では省略する
 	/// </summary>
-	public string? AreaClass => _areaClass ??= (Node.TryFindStringNode(Literals.JmaEbAreaClass(), out var n) ? n : null);
+	public string? AreaClass => _areaClass ??= (Node.TryFindStringElementBasis("AreaClass"u8, out var n) ? n : null);
 
 	private string? _intensityClass = null;
 	/// <summary>
@@ -42,5 +55,5 @@ public struct ClassPart(XmlNode node)
 	/// </list>
 	/// 「延長予報 X 時間後」では省略
 	/// </summary>
-	public string? IntensityClass => _intensityClass ??= (Node.TryFindStringNode(Literals.JmaEbIntensityClass(), out var n) ? n : null);
+	public string? IntensityClass => _intensityClass ??= (Node.TryFindStringElementBasis("IntensityClass"u8, out var n) ? n : null);
 }
