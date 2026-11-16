@@ -21,12 +21,12 @@ public static class Extensions
 	public static AppBuilder UseKeviFonts(this AppBuilder builder)
 		=> builder.With(new FontManagerOptions
 		{
-			DefaultFamilyName = "avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP/#Noto Sans JP",
+			DefaultFamilyName = "resm:KyoshinEewViewer.Core.Assets.Fonts.NotoSansJP?assembly=KyoshinEewViewer.Core#Noto Sans JP",
 			FontFallbacks = new[]
 			{
 				new FontFallback
 				{
-					FontFamily = new FontFamily("avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP/#Noto Sans JP"),
+					FontFamily = new FontFamily("resm:KyoshinEewViewer.Core.Assets.Fonts.NotoSansJP?assembly=KyoshinEewViewer.Core#Noto Sans JP"),
 				},
 				new FontFallback
 				{
