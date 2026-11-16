@@ -5,7 +5,6 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Series;
-using R3;
 using System.Reactive.Linq;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -28,12 +27,12 @@ namespace KyoshinEewViewer.Benchmark
 				KyoshinEewViewerApp.TopLevelControl = desktop.MainWindow = new MainWindow();
 				KyoshinEewViewerApp.Selector.ApplyTheme(config.Theme.WindowThemeName, config.Theme.IntensityThemeName);
 				KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedIntensityTheme).Where(x => x != null)
-					.Subscribe(x =>
+					.SubscribeLoggingErrors(x =>
 					{
 						config.Theme.IntensityThemeName = x?.Name ?? "Standard";
 						FixedObjectRenderer.UpdateIntensityPaintCache(this);
 					});
-				KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
+				KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).SubscribeLoggingErrors(x =>
 				{
 					config.Theme.WindowThemeName = x?.Name ?? "Light";
 					FixedObjectRenderer.UpdateIntensityPaintCache(this);

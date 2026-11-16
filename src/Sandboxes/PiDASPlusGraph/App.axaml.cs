@@ -5,7 +5,6 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.CustomControl;
-using R3;
 using System;
 using System.IO;
 using System.Linq;
@@ -43,7 +42,7 @@ public class App : Application
 			desktop.MainWindow = new MainWindow();
 			desktop.MainWindow.Opened += (_, _) => ApplyDwmAttributes(desktop.MainWindow);
 
-			Selector.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
+			Selector.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).SubscribeLoggingErrors(x =>
 			{
 				Config.WindowTheme = x!.Meta;
 				Dispatcher.UIThread.Post(() => FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow!));
@@ -54,7 +53,7 @@ public class App : Application
 				foreach (var window in desktop.Windows)
 					ApplyDwmAttributes(window);
 			});
-			Selector.ObservePropertyChanged(x => x.SelectedIntensityTheme).Where(x => x != null).Subscribe(x =>
+			Selector.ObservePropertyChanged(x => x.SelectedIntensityTheme).Where(x => x != null).SubscribeLoggingErrors(x =>
 			{
 				Config.IntensityTheme = x!.Meta;
 				Dispatcher.UIThread.Post(() => FixedObjectRenderer.UpdateIntensityPaintCache(desktop.MainWindow!));

@@ -10,11 +10,11 @@ using KyoshinEewViewer.Series.ObservationPointEditor.Models;
 using KyoshinEewViewer.Series.ObservationPointEditor.Services;
 using KyoshinEewViewer.Series.ObservationPointEditor.View;
 using KyoshinEewViewer.Series.ObservationPointEditor.ViewModels;
-using R3;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Text;
@@ -70,14 +70,14 @@ public class ObservationPointEditorSeries : SeriesBase
 		};
 
 		// モデルのフィルター変更監視を設定
-		Model.ObservePropertyChanged(x => x.SearchText).Subscribe(_ => Model.ApplyFilter());
-		Model.ObservePropertyChanged(x => x.ShowKiKNet).Subscribe(_ => Model.ApplyFilter());
-		Model.ObservePropertyChanged(x => x.ShowKNet).Subscribe(_ => Model.ApplyFilter());
-		Model.ObservePropertyChanged(x => x.ShowSuspended).Subscribe(_ => Model.ApplyFilter());
+		Model.ObservePropertyChanged(x => x.SearchText).SubscribeLoggingErrors(_ => Model.ApplyFilter());
+		Model.ObservePropertyChanged(x => x.ShowKiKNet).SubscribeLoggingErrors(_ => Model.ApplyFilter());
+		Model.ObservePropertyChanged(x => x.ShowKNet).SubscribeLoggingErrors(_ => Model.ApplyFilter());
+		Model.ObservePropertyChanged(x => x.ShowSuspended).SubscribeLoggingErrors(_ => Model.ApplyFilter());
 
 		// 選択観測点の変更を監視してメイン地図をナビゲート
 		Model.ObservePropertyChanged(x => x.SelectedObservationPoint)
-			.Subscribe(point =>
+			.SubscribeLoggingErrors(point =>
 			{
 				if (point == null || point.Location == null)
 				{
@@ -107,7 +107,7 @@ public class ObservationPointEditorSeries : SeriesBase
 
 		// LeftBottomRectの変更を監視してMapPaddingを更新
 		MapViewModel.ObservePropertyChanged(x => x.LeftBottomRect)
-			.Subscribe(rect =>
+			.SubscribeLoggingErrors(rect =>
 			{
 				// 左下パネルの幅と高さを取得してMapPaddingに設定
 				var leftPadding = rect.Width > 0 ? rect.Width + 10 : 0; // 10はマージン
@@ -141,12 +141,12 @@ public class ObservationPointEditorSeries : SeriesBase
 
 		// 選択状態の双方向バインディング
 		Model.ObservePropertyChanged(x => x.SelectedObservationPoint)
-			.Subscribe(x => MapViewModel.SelectedObservationPoint = x);
+			.SubscribeLoggingErrors(x => MapViewModel.SelectedObservationPoint = x);
 
 		// MapViewModelからModelへの選択状態同期
 		MapViewModel.ObservePropertyChanged(x => x.SelectedObservationPoint)
 			.Where(x => x != Model.SelectedObservationPoint)
-			.Subscribe(x => Model.SelectedObservationPoint = x);
+			.SubscribeLoggingErrors(x => Model.SelectedObservationPoint = x);
 	}
 
 	/// <summary>

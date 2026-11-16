@@ -2,13 +2,13 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
-using R3;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -87,7 +87,7 @@ public partial class AshFallReportGroup : DCReportGroup
 			],
 		};
 
-		this.ObservePropertyChanged(a => a.MapCursor).Subscribe(a => UpdateMapDisplay());
+		this.ObservePropertyChanged(a => a.MapCursor).SubscribeLoggingErrors(a => UpdateMapDisplay());
 	}
 
 	public override bool CheckDuplicate(DCReport report) => report is AshFallReport a && Reports.Any(r => a.Content.SequenceEqual(r.Content));

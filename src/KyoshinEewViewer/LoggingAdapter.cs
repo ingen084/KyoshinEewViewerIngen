@@ -3,7 +3,6 @@ using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services;
 using Microsoft.Extensions.Logging;
 using NReco.Logging.File;
-using R3;
 using Sentry;
 using System;
 using System.Diagnostics;
@@ -140,11 +139,6 @@ public static class LoggingAdapter
 		AppLog.SetFactory(Factory);
 		if (sendCrashReport)
 			ProcessResourceRecorder.Start();
-
-		// R3 は購読ハンドラ内の例外を購読元へ伝播させず、未処理例外ハンドラへ渡して購読を継続する。
-		// 既定では握り潰されるため、ログに残るよう接続しておく
-		ObservableSystem.RegisterUnhandledExceptionHandler(ex
-			=> AppLog.Default.LogWarning(ex, "Rx の購読処理内で例外が発生しました"));
 	}
 
 	private static bool IsSamePath(string a, string b)

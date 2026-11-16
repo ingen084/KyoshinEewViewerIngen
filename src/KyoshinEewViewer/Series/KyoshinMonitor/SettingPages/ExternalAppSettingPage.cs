@@ -1,8 +1,8 @@
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
-using R3;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.SettingPages;
 
@@ -38,7 +38,7 @@ public partial class ExternalAppSettingPage : ObservableObject, ISettingPage
 		Config = config;
 		Receiver = receiver;
 
-		Receiver.ObservePropertyChanged(x => x.State).Subscribe(state =>
+		Receiver.ObservePropertyChanged(x => x.State).SubscribeLoggingErrors(state =>
 		{
 			IsReceiving = state == DmdataEewClientConnectionState.Receiving;
 			IsConnectedNotReceiving = state == DmdataEewClientConnectionState.ConnectedNotReceiving;

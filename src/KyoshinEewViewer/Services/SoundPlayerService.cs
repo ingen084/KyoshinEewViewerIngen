@@ -2,7 +2,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using ManagedBass;
-using R3;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -72,9 +71,9 @@ public partial class SoundPlayerService : ObservableObject
 		}
 
 		Config.Audio.ObservePropertyChanged(x => x.GlobalVolume)
-			.Subscribe(_ => UpdateVolume());
+			.SubscribeLoggingErrors(_ => UpdateVolume());
 		Config.Audio.ObservePropertyChanged(x => x.IsMuted)
-			.Subscribe(_ => UpdateVolume());
+			.SubscribeLoggingErrors(_ => UpdateVolume());
 #if DEBUG
 		TestSound = RegisterSound(
 			new SoundCategory("Test", "テスト"),

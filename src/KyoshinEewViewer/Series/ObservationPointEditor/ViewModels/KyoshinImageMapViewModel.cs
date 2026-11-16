@@ -1,9 +1,9 @@
 using Avalonia;
 using CommunityToolkit.Mvvm.ComponentModel;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models.KyoshinMonitorObservationPoint;
 using KyoshinEewViewer.Series.ObservationPointEditor.Controls;
 using KyoshinMonitorLib.UrlGenerator;
-using R3;
 using SkiaSharp;
 using System;
 using System.Net.Http;
@@ -99,13 +99,13 @@ public partial class KyoshinImageMapViewModel : ObservableObject
 	{
 		// プロパティ変更の監視設定
 		this.ObservePropertyChanged(x => x.Scale)
-			.Subscribe(scale => ScaleText = $"x{scale:F1}");
+			.SubscribeLoggingErrors(scale => ScaleText = $"x{scale:F1}");
 
 		this.ObservePropertyChanged(x => x.SelectedObservationPoint)
-			.Subscribe(UpdateSelectedPointText);
+			.SubscribeLoggingErrors(UpdateSelectedPointText);
 
 		this.ObservePropertyChanged(x => x.CurrentImageType)
-			.Subscribe(async _ => await RefreshImage());
+			.SubscribeLoggingErrors(async _ => await RefreshImage());
 
 		// 初期化
 		_ = LoadBackgroundImage();

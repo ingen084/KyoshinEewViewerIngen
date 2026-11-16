@@ -1,6 +1,6 @@
 using Avalonia.Controls;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.ViewModels;
-using R3;
 using System;
 
 namespace KyoshinEewViewer.Views;
@@ -25,7 +25,7 @@ public partial class DebugWindow : Window
 		{
 			// ScrollToEndプロパティの変更を監視
 			_scrollSubscription = vm.ObservePropertyChanged(x => x.ScrollToEnd)
-				.Subscribe(shouldScroll =>
+				.SubscribeLoggingErrors(shouldScroll =>
 				{
 					if (shouldScroll && vm.LogEntries.Count > 0)
 					{

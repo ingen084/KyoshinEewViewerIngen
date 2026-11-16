@@ -2,13 +2,13 @@ using Avalonia;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Events;
 using KyoshinEewViewer.Map.Data;
 using KyoshinEewViewer.Map.Layers;
 using KyoshinEewViewer.Series;
-using R3;
 using System;
 using System.Collections.Generic;
 
@@ -63,10 +63,10 @@ public partial class SeriesWindowViewModel : ViewModelBase
 		Series = series;
 		Config = config;
 
-		MaxNavigateZoomListener = Config.Map.ObservePropertyChanged(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
+		MaxNavigateZoomListener = Config.Map.ObservePropertyChanged(x => x.MaxNavigateZoom).SubscribeLoggingErrors(x => MaxMapNavigateZoom = x);
 		MaxMapNavigateZoom = Config.Map.MaxNavigateZoom;
 
-		ShowGridListener = Config.Map.ObservePropertyChanged(x => x.ShowGrid).Subscribe(x => UpdateMapLayers());
+		ShowGridListener = Config.Map.ObservePropertyChanged(x => x.ShowGrid).SubscribeLoggingErrors(x => UpdateMapLayers());
 
 		StrongReferenceMessenger.Default.Register<MapLoaded>(this, (_, e) =>
 		{
@@ -85,7 +85,7 @@ public partial class SeriesWindowViewModel : ViewModelBase
 	{
 		MapDisplayParameterListener?.Dispose();
 		MapDisplayParameterListener = Series.ObservePropertyChanged(x => x.MapDisplayParameter)
-			.Subscribe(x => MapDisplayParameter = x);
+			.SubscribeLoggingErrors(x => MapDisplayParameter = x);
 		MapDisplayParameter = Series.MapDisplayParameter;
 
 		Series.RecreateDisplayControl();

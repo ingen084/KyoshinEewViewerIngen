@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using KyoshinMonitorLib;
-using R3;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -14,6 +13,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using KyoshinEewViewer.Core;
 
 namespace PiDASPlusGraph;
 
@@ -124,7 +124,7 @@ public partial class MainWindow : Window
 		{
 			selector.ObservePropertyChanged(x => x.SelectedWindowTheme)
 				.Where(x => x != null)
-				.Subscribe(_ => Dispatcher.UIThread.Post(() =>
+				.SubscribeLoggingErrors(_ => Dispatcher.UIThread.Post(() =>
 				{
 					UpdateGraphResources();
 					IntensityGraph.InvalidateVisual();
@@ -133,7 +133,7 @@ public partial class MainWindow : Window
 				}));
 			selector.ObservePropertyChanged(x => x.SelectedIntensityTheme)
 				.Where(x => x != null)
-				.Subscribe(_ => Dispatcher.UIThread.Post(() =>
+				.SubscribeLoggingErrors(_ => Dispatcher.UIThread.Post(() =>
 				{
 					Intensity.InvalidateVisual();
 				}));

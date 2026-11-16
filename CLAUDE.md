@@ -65,14 +65,14 @@ dotnet build KyoshinEewViewer.sln -t:Rebuild
 
 ### 技術スタック
 
-Avalonia UI (AXAML / MVVM / コンパイル済みバインディング)、CommunityToolkit.Mvvm、R3、System.Reactive、Microsoft.Extensions.DependencyInjection / Logging、KyoshinMonitorLib、FluentAvalonia、Scriban (テンプレートエンジン)、ManagedBass (音声)。
+Avalonia UI (AXAML / MVVM / コンパイル済みバインディング)、CommunityToolkit.Mvvm、System.Reactive、Microsoft.Extensions.DependencyInjection / Logging、KyoshinMonitorLib、FluentAvalonia、Scriban (テンプレートエンジン)、ManagedBass (音声)。
 
-ReactiveUI / Splat / DynamicData は使わない (移行済み)。対応は以下のとおり。
+ReactiveUI / Splat / DynamicData / R3 は使わない (移行済み)。対応は以下のとおり。
 
 | 旧 (ReactiveUI / Splat) | 現行 |
 |---|---|
 | `ReactiveObject` / `RaiseAndSetIfChanged` | `ObservableObject` / `[ObservableProperty]` (CommunityToolkit.Mvvm) |
-| `WhenAnyValue(x => x.Foo)` | `ObservePropertyChanged(x => x.Foo)` (R3) |
+| `WhenAnyValue(x => x.Foo)` | `ObservePropertyChanged(x => x.Foo)` (`KyoshinEewViewer.Core` の `ReactiveExtensions`) |
 | `WhenAnyValue(x => x.A.B)` (入れ子) | `ObservePropertyChanged(x => x.A, x => x.B)` |
 | `WhenAnyValue(a, b, (x, y) => ...)` (合成) | `Observable.CombineLatest(...)` |
 | `ToProperty` / `ObservableAsPropertyHelper` | 通常プロパティ + `Subscribe` で代入 |
@@ -145,7 +145,8 @@ bool プロパティに応じたスタイル切り替えには、コンバータ
 
 ### データ処理
 
-- R3 / System.Reactive によるリアクティブストリーム
+- System.Reactive によるリアクティブストリーム
+- **`ObservePropertyChanged` から始まる購読は `SubscribeLoggingErrors` で終える**。標準の `Subscribe` は、ハンドラーが例外を投げると発行元 (プロパティを代入した側) へ伝播させ、その購読も解除する。`Throttle` / `Delay` / `ThrottleLast` の後段ではハンドラーがスレッドプール上で呼ばれるため、例外がそのままプロセスを落とす。`SubscribeLoggingErrors` は例外を Warning でログに記録して購読を続ける
 - データ更新はスレッドセーフに行う
 - `TelegramProvideService` は同じカテゴリの購読者を順番に `await` する。ハンドラで長く待つと後続の購読者への配信が遅れるので、待つ必要のない処理は完了を待たずに返す
 - **複数のストリームから同じ UI 状態を更新する場合**は、ストリームごとに `ObserveOn` で購読せず、`Observable.Merge` などで1本にまとめてから `ObserveOn` する。System.Reactive の `ObserveOn` は1回のディスパッチで1件しか処理せず、続きを改めてディスパッチャーへ投入するため、別々の購読の間では発行した順に処理されない (例: 先に発行した「取得中」の通知が、後から発行した「取得完了」の通知より後に処理され、表示が「取得中」のまま残る)。実装例は `EarthquakeSeries`
