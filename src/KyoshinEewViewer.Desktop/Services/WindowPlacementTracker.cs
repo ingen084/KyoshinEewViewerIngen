@@ -124,6 +124,7 @@ public sealed class WindowPlacementTracker : IDisposable
 		Window.Position = position;
 		Window.Width = size.Width;
 		Window.Height = size.Height;
+		SyncSizeWithClientSize();
 	}
 
 	private void OnOpened(object? sender, EventArgs e)
@@ -176,6 +177,7 @@ public sealed class WindowPlacementTracker : IDisposable
 		ApplyIntendedClientSize();
 		if (State.IntendedState != WindowState.Normal)
 			Window.WindowState = State.IntendedState;
+		SyncSizeWithClientSize();
 	}
 
 	private void ApplyIntendedClientSize()
@@ -185,6 +187,26 @@ public sealed class WindowPlacementTracker : IDisposable
 			return;
 		Window.Width = size.Width;
 		Window.Height = size.Height;
+	}
+
+	/// <summary>
+	/// Width/Height で要求したサイズを OS が受け付けなかった場合に、Width/Height を実際のクライアント領域のサイズに戻す<br/>
+	/// スナップ中のウィンドウはサイズを変更できない。Width/Height だけが変わったまま残ると、
+	/// 中身の測定には Width/Height、配置には実際のクライアント領域のサイズが使われ、レイアウトが崩れる
+	/// </summary>
+	private void SyncSizeWithClientSize()
+	{
+		// Windows 以外ではサイズの変更が非同期に反映されるため、この時点では受け付けられたかどうか判断できない
+		if (!OperatingSystem.IsWindows())
+			return;
+		// Avalonia はレイアウトの中でウィンドウのサイズを変更し、Windows は受け付けた変更をその場でクライアント領域に反映する
+		Window.UpdateLayout();
+		var clientSize = Window.ClientSize;
+		if (Window.Width == clientSize.Width && Window.Height == clientSize.Height)
+			return;
+		AppLog.Default.LogInformation("ウィンドウのサイズを変更できなかったため、実際のサイズに合わせます: {Requested} → {Actual}", new Size(Window.Width, Window.Height), clientSize);
+		Window.Width = clientSize.Width;
+		Window.Height = clientSize.Height;
 	}
 
 	private WindowPlacement GetCurrentPlacement()
