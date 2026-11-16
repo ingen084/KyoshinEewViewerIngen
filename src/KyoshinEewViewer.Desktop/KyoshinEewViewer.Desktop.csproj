@@ -15,6 +15,11 @@
         <EventSourceSupport>true</EventSourceSupport>
     </PropertyGroup>
 
+    <!-- 長時間の稼働で LOH の空きが使用中の領域を上回ったら詰め直させ、GC が確保したままの空き領域を抑える -->
+    <ItemGroup>
+        <RuntimeHostConfigurationOption Include="System.GC.ConserveMemory" Value="5" />
+    </ItemGroup>
+
     <!-- System.Reactive の windows TFM アセットが Microsoft.WindowsDesktop.App
          (WPF/WinForms ランタイム一式、約130MB) を同梱してしまうため遮断する -->
     <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
