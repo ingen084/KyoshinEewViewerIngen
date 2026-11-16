@@ -15,7 +15,7 @@
         <EventSourceSupport>true</EventSourceSupport>
     </PropertyGroup>
 
-    <!-- System.Reactive / ReactiveUI の windows TFM アセットが Microsoft.WindowsDesktop.App
+    <!-- System.Reactive の windows TFM アセットが Microsoft.WindowsDesktop.App
          (WPF/WinForms ランタイム一式、約130MB) を同梱してしまうため遮断する -->
     <PropertyGroup Condition="$(TargetFramework.Contains('-windows'))">
         <DisableTransitiveFrameworkReferences>true</DisableTransitiveFrameworkReferences>
