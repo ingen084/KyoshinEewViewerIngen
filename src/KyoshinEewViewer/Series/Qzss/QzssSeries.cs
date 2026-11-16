@@ -7,6 +7,7 @@ using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.DCReportParser;
+using KyoshinEewViewer.DCReportParser.Dcx;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Events;
 using KyoshinEewViewer.Map.Data;
@@ -125,29 +126,30 @@ public partial class QzssSeries : SeriesBase
 
 	public void ProcessDCReport(DCReport report)
 	{
-		// 43/44 以外は無視
-		if (report is not JmaDCReport && report is not OtherOrganizationDCReport)
+		// 防災気象情報 (MT43) と、NULL メッセージなどを除いた DCX メッセージ (MT44) 以外は無視
+		if (report is not (JmaDCReport or EvacuationDCXReport or JAlertDCXReport or OverseasDCXReport))
 			return;
 
-		// 他機関の情報を無視
-		if (Config.Qzss.IgnoreOtherOrganizationReport && report is OtherOrganizationDCReport)
+		// DCX メッセージを無視
+		if (Config.Qzss.IgnoreOtherOrganizationReport && report is DCXReport)
 			return;
 		// 訓練・試験を無視
 		if (Config.Qzss.IgnoreTrainingOrTestReport && (
 			(report is JmaDCReport j && j.ReportClassification == ReportClassification.TrainingOrTest) ||
-			(report is OtherOrganizationDCReport o && o.ReportClassification == ReportClassification.TrainingOrTest)
+			report is DCXReport { IsTest: true }
 		))
 			return;
 
+		var receivedTime = GetReceivedTime();
 		var sentence = new string(report.RawData.SelectMany(d => d.ToString("X02")).ToArray()[..^1]);
 		foreach (var g in DCReportGroups)
 		{
 			// すでに受信済みの場合は停止
-			if (g.CheckDuplicate(report))
+			if (g.CheckDuplicate(report, receivedTime))
 				return;
 
 			// 処理できたら終了
-			if (g.TryProcess(report))
+			if (g.TryProcess(report, receivedTime))
 			{
 				WorkflowService.PublishEvent(new QzssEvent(this, QzssEventType.NewSentenceReceived, sentence, g));
 				WorkflowService.PublishEvent(new QzssEvent(this, QzssEventType.ReportGroupUpdated, sentence, g));
@@ -183,7 +185,8 @@ public partial class QzssSeries : SeriesBase
 			FloodReport f => new FloodReportGroup(f, MapData),
 			TyphoonReport t => new TyphoonReportGroup(t),
 			MarineReport m => new MarineReportGroup(m, MapData),
-			OtherOrganizationDCReport r => new DCXReportGroup(r),
+			JAlertDCXReport a => new JAlertReportGroup(a, receivedTime, MapData),
+			DCXReport d => new DCXAreaReportGroup(d, receivedTime, MapData),
 			_ => new UnknownReportGroup(report),
 		};
 		WorkflowService.PublishEvent(new QzssEvent(this, QzssEventType.NewSentenceReceived, sentence, newGroup));
@@ -197,6 +200,17 @@ public partial class QzssSeries : SeriesBase
 
 		if (!GroupAddedSound.Play())
 			ReceivedSound.Play();
+	}
+
+	/// <summary>
+	/// 電文の受信時刻 (UTC)<br/>
+	/// 受信機から時刻を取得できている場合はその時刻、できていない場合はシステムの時刻とする
+	/// </summary>
+	private DateTimeOffset GetReceivedTime()
+	{
+		if (Connector.IsConnected && Connector.LastReceivedTime is { } time)
+			return new DateTimeOffset(time.AddHours(Config.Qzss.TimezoneOffset), TimeSpan.Zero);
+		return TimeProvider.System.GetUtcNow();
 	}
 
 	public void UpdateDisplay()

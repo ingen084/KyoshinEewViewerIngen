@@ -574,8 +574,11 @@ public partial class KyoshinEewViewerConfiguration : ObservableObject, IWindowPl
 		[ObservableProperty]
 		public partial bool HidePositionNumber { get; set; } = true;
 
+		/// <summary>
+		/// 災危通報(拡張) (DCX, MT44) の電文を無視する
+		/// </summary>
 		[ObservableProperty]
-		public partial bool IgnoreOtherOrganizationReport { get; set; } = true;
+		public partial bool IgnoreOtherOrganizationReport { get; set; } = false;
 
 		[ObservableProperty]
 		public partial bool IgnoreTrainingOrTestReport { get; set; } = true;

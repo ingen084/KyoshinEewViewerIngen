@@ -32,7 +32,7 @@
             <CheckBox Content="台風" IsChecked="{Binding Typhoon}" />
             <CheckBox Content="海上" IsChecked="{Binding Marine}" />
             <CheckBox Content="不明" IsChecked="{Binding Unknown}" />
-            <CheckBox Content="DCX" IsChecked="{Binding DCX}" />
+            <CheckBox Content="災危通報(拡張)" IsChecked="{Binding DCX}" />
         </WrapPanel>
     </StackPanel>
 </UserControl>
