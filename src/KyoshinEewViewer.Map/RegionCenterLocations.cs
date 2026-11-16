@@ -1,3 +1,4 @@
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Map.Properties;
 using KyoshinMonitorLib;
 using MessagePack;
@@ -16,7 +17,7 @@ public class RegionCenterLocations
 		using var centerLocationStream = new MemoryStream(Resources.world_center_mpk);
 		CenterLocations = MessagePackSerializer.Deserialize<IImmutableDictionary<int, IImmutableDictionary<long, FloatVector>>>(
 			centerLocationStream,
-			MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray)
+			OneTimeMessagePackOptions.Create(MessagePackCompression.Lz4BlockArray)
 		);
 	}
 

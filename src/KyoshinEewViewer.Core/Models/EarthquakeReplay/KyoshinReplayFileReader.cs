@@ -29,7 +29,7 @@ public class KyoshinReplayFileReader(Stream stream) : IDisposable
 
 	public async Task<ReplayData[]> ReadData(ReplayFileCompressionMode compressionMode)
 	{
-		var option = MessagePackSerializerOptions.Standard;
+		var option = OneTimeMessagePackOptions.Create();
 		switch (compressionMode)
 		{
 			case ReplayFileCompressionMode.GZip:
@@ -54,7 +54,7 @@ public class KyoshinReplayFileReader(Stream stream) : IDisposable
 
 	public async Task WriteData(ReplayData[] data, ReplayFileCompressionMode compressionMode)
 	{
-		var option = MessagePackSerializerOptions.Standard;
+		var option = OneTimeMessagePackOptions.Create();
 		switch (compressionMode)
 		{
 			case ReplayFileCompressionMode.GZip:

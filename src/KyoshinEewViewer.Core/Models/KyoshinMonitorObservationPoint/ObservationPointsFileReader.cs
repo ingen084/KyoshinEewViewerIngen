@@ -25,7 +25,7 @@ public class ObservationPointsFileReader(Stream stream) : IDisposable
 
     public async Task<ObservationPointV2[]> ReadData(ObservationPointsCompressionMode compressionMode)
     {
-        var option = MessagePackSerializerOptions.Standard;
+        var option = OneTimeMessagePackOptions.Create();
         switch (compressionMode)
         {
             case ObservationPointsCompressionMode.GZip:
@@ -50,7 +50,7 @@ public class ObservationPointsFileReader(Stream stream) : IDisposable
 
     public async Task WriteData(ObservationPointV2[] data, ObservationPointsCompressionMode compressionMode)
     {
-        var option = MessagePackSerializerOptions.Standard;
+        var option = OneTimeMessagePackOptions.Create();
         switch (compressionMode)
         {
             case ObservationPointsCompressionMode.GZip:
