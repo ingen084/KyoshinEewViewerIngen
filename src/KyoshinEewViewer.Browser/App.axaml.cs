@@ -45,16 +45,18 @@ public class App : Application
 				DataContext = ServiceLocator.Current.RequireService<MainViewModel>(),
 			};
 
-			KyoshinEewViewerApp.Selector.ApplyTheme(config.Theme.WindowThemeName, config.Theme.IntensityThemeName);
-			KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedIntensityTheme).Where(x => x != null)
+			KyoshinEewViewerApp.Selector.ApplyTheme(config.Theme.WindowTheme, config.Theme.IntensityTheme);
+			KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedIntensityTheme)
 				.Subscribe(x =>
 				{
-					config.Theme.IntensityThemeName = x?.Name ?? "Standard";
+					if (x == null) return;
+					config.Theme.IntensityTheme = x.Meta;
 					FixedObjectRenderer.UpdateIntensityPaintCache(this);
 				});
-			KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
+			KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedWindowTheme).Subscribe(x =>
 			{
-				config.Theme.WindowThemeName = x?.Name ?? "Light";
+				if (x == null) return;
+				config.Theme.WindowTheme = x.Meta;
 				FixedObjectRenderer.UpdateIntensityPaintCache(this);
 			});
 		}
