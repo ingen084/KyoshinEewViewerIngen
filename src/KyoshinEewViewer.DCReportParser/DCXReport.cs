@@ -35,7 +35,8 @@ public class DCXReport(byte[] rawData, Preamble preamble, byte messageType, Sate
 		if (camf.ProviderIdentifier is not (1 or 2 or 3 or 4))
 			return new DCXReport(data, pab, mt, sd, camf, vn);
 
-		if (vn != 1)
+		// 仕様書では 1 固定だが、実際の配信では 0 の電文 (関係省庁の J アラートなど) もあるため受け付ける
+		if (vn is not (0 or 1))
 			throw new DCReportParseException("この Vn には非対応です: " + vn);
 
 		return camf.ProviderIdentifier switch

@@ -68,6 +68,23 @@ public class DCXReportTest
 		Assert.Equal(0b00_10000000, missile.CommonAlertMessage.InstructionCode); // ミサイル発射
 	}
 
+	[Fact(DisplayName = "Vn が 0 の J アラート電文 (2026年11月3日の試験配信) を解析できる")]
+	public void ParseJAlertWithVersionZero()
+	{
+		// 仕様書では Vn は 1 固定だが、実際に配信された関係省庁の電文は 0 だった
+		var report = Assert.IsType<JAlertDCXReport>(DCReport.Parse(Convert.FromHexString("9AB0440DE3E206E32088000000000000000000000FC00000000000019092620" + "0")));
+		var camf = report.CommonAlertMessage;
+
+		Assert.Equal(0, report.Version);
+		Assert.True(report.IsTest);
+		Assert.Equal(3, camf.ProviderIdentifier); // Related Ministries
+		Assert.Equal(113, camf.HazardCategoryAndType); // OTHER - Test alert
+		Assert.Equal(0b00_10001000, camf.InstructionCode); // これは、Jアラートのテストです。
+		Assert.Equal([25, 26, 27, 28, 29, 30], report.PrefectureCodes);
+		// 火曜日 05:22 UTC (試験配信の 14:22 JST)
+		Assert.Equal(new DateTimeOffset(2026, 11, 3, 5, 22, 0, TimeSpan.Zero), camf.GetHazardOnsetTime(new DateTimeOffset(2026, 11, 3, 5, 22, 10, TimeSpan.Zero)));
+	}
+
 	[Fact(DisplayName = "試験配信の J アラート電文の都道府県コードを正しい都道府県として取得できる")]
 	public void ParseJAlertPrefectures()
 	{
