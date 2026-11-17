@@ -5,13 +5,13 @@ using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series;
-using R3;
 using Sentry;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
@@ -109,7 +109,7 @@ public partial class FeedbackSettingPage : ObservableObject, ISettingPage
 				this.ObservePropertyChanged(x => x.Subject).AsUnitObservable(),
 				this.ObservePropertyChanged(x => x.Body).AsUnitObservable(),
 				this.ObservePropertyChanged(x => x.IsSending).AsUnitObservable())
-			.Subscribe(_ => SendCommand.NotifyCanExecuteChanged());
+			.SubscribeLoggingErrors(_ => SendCommand.NotifyCanExecuteChanged());
 
 		Attachments.CollectionChanged += (_, _) => UpdateAttachmentsTotalSizeText();
 		UpdateAttachmentsTotalSizeText();

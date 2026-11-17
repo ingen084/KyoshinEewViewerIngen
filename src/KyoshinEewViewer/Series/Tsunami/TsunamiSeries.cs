@@ -22,7 +22,6 @@ using KyoshinEewViewer.Series.Tsunami.Workflow;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers.Dmdata;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
-using R3;
 using WorkflowsNamespace = KyoshinEewViewer.Services.Workflows;
 using System;
 using System.Collections.Generic;
@@ -553,7 +552,7 @@ public partial class TsunamiSeries : SeriesBase
 		};
 
 		Config.ObservePropertyChanged(x => x.Notification, x => x.Tsunami)
-			.Subscribe(enabled => issuedWorkflow.Enabled = enabled);
+			.SubscribeLoggingErrors(enabled => issuedWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(issuedWorkflow);
 
@@ -587,7 +586,7 @@ public partial class TsunamiSeries : SeriesBase
 		};
 
 		Config.ObservePropertyChanged(x => x.Notification, x => x.Tsunami)
-			.Subscribe(enabled => downgradeWorkflow.Enabled = enabled);
+			.SubscribeLoggingErrors(enabled => downgradeWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(downgradeWorkflow);
 
@@ -621,7 +620,7 @@ public partial class TsunamiSeries : SeriesBase
 		};
 
 		Config.ObservePropertyChanged(x => x.Notification, x => x.Tsunami)
-			.Subscribe(enabled => upgradeWorkflow.Enabled = enabled);
+			.SubscribeLoggingErrors(enabled => upgradeWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(upgradeWorkflow);
 
@@ -655,7 +654,7 @@ public partial class TsunamiSeries : SeriesBase
 		};
 
 		Config.ObservePropertyChanged(x => x.Notification, x => x.Tsunami)
-			.Subscribe(enabled => updatedWorkflow.Enabled = enabled);
+			.SubscribeLoggingErrors(enabled => updatedWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(updatedWorkflow);
 
@@ -680,7 +679,7 @@ public partial class TsunamiSeries : SeriesBase
 		};
 
 		Config.ObservePropertyChanged(x => x.Tsunami, x => x.SwitchAtUpdate)
-			.Subscribe(enabled => switchWorkflow.Enabled = enabled);
+			.SubscribeLoggingErrors(enabled => switchWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(switchWorkflow);
 	}

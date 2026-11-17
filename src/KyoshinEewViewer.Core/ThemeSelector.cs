@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Styling;
 using CommunityToolkit.Mvvm.ComponentModel;
-using R3;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -160,7 +159,7 @@ public class ThemeSelector : ObservableObject
 			window.RequestedThemeVariant = _selectedWindowTheme.Theme.IsDark ? ThemeVariant.Dark : ThemeVariant.Light;
 		}
 
-		this.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
+		this.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).SubscribeLoggingErrors(x =>
 		{
 			if (x?.Style != null)
 			{
@@ -173,7 +172,7 @@ public class ThemeSelector : ObservableObject
 				window.RequestedThemeVariant = x.Theme.IsDark ? ThemeVariant.Dark : ThemeVariant.Light;
 			}
 		});
-		this.ObservePropertyChanged(x => x.SelectedIntensityTheme).Where(x => x != null).Subscribe(x =>
+		this.ObservePropertyChanged(x => x.SelectedIntensityTheme).Where(x => x != null).SubscribeLoggingErrors(x =>
 		{
 			if (x?.Style != null)
 			{

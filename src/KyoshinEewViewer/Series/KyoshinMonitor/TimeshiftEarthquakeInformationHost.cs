@@ -5,11 +5,11 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Services;
-using R3;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using KyoshinEewViewer.Core;
@@ -152,7 +152,7 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 		Observable.CombineLatest(
 				this.ObservePropertyChanged(x => x.Config, x => x.Eew, x => x.EnableKyoshinMonitor).AsUnitObservable(),
 				this.ObservePropertyChanged(x => x.Config, x => x.KyoshinMonitor, x => x.ReceiveMode).AsUnitObservable())
-			.Subscribe(e => {
+			.SubscribeLoggingErrors(e => {
 				AllEewSourceFailed = !Config.Eew.EnableKyoshinMonitor || Config.KyoshinMonitor.ReceiveMode == KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.None;
 			});
 	}

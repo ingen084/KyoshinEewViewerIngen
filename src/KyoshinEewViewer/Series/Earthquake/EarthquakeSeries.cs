@@ -21,7 +21,6 @@ using KyoshinEewViewer.Series.Earthquake.Workflow;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
-using R3;
 using WorkflowsNamespace = KyoshinEewViewer.Services.Workflows;
 using KyoshinMonitorLib;
 using SkiaSharp;
@@ -737,7 +736,7 @@ public partial class EarthquakeSeries : SeriesBase
 		};
 
 		Config.ObservePropertyChanged(x => x.Notification, x => x.GotEq)
-			.Subscribe(enabled => updateWorkflow.Enabled = enabled);
+			.SubscribeLoggingErrors(enabled => updateWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(updateWorkflow);
 
@@ -766,7 +765,7 @@ public partial class EarthquakeSeries : SeriesBase
 		};
 
 		Config.ObservePropertyChanged(x => x.Earthquake, x => x.SwitchAtUpdate)
-			.Subscribe(enabled => switchWorkflow.Enabled = enabled);
+			.SubscribeLoggingErrors(enabled => switchWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(switchWorkflow);
 	}

@@ -3,11 +3,11 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.JmaXmlParser;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinMonitorLib;
-using R3;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive.Linq;
 
 namespace KyoshinEewViewer.Series.Earthquake.Models;
 
@@ -21,7 +21,7 @@ public partial class EarthquakeEvent : ObservableObject
 			this.ObservePropertyChanged(x => x.IsHypocenterOnly),
 			this.ObservePropertyChanged(x => x.IsDetailIntensityApplied),
 			(only, applied) => only || applied
-		).Subscribe(x => IsHypocenterAvailable = x);
+		).SubscribeLoggingErrors(x => IsHypocenterAvailable = x);
 
 		Observable.CombineLatest(
 			this.ObservePropertyChanged(x => x.IsHypocenterOnly),
@@ -42,16 +42,16 @@ public partial class EarthquakeEvent : ObservableObject
 					return "遠地地震情報";
 				return "震源･震度情報";
 			}
-		).Subscribe(x => Title = x);
+		).SubscribeLoggingErrors(x => Title = x);
 
 		this.ObservePropertyChanged(x => x.Depth)
-			.Subscribe(depth => IsVeryShallow = depth <= 0);
+			.SubscribeLoggingErrors(depth => IsVeryShallow = depth <= 0);
 
 		this.ObservePropertyChanged(x => x.Depth)
-			.Subscribe(depth => IsNoDepthData = depth <= -1);
+			.SubscribeLoggingErrors(depth => IsNoDepthData = depth <= -1);
 
 		this.ObservePropertyChanged(x => x.Intensity)
-			.Subscribe(intensity => IsUnknownIntensity = intensity == JmaIntensity.Unknown);
+			.SubscribeLoggingErrors(intensity => IsUnknownIntensity = intensity == JmaIntensity.Unknown);
 	}
 
 	/// <summary>

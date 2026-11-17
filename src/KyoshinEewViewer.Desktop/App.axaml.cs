@@ -16,7 +16,6 @@ using KyoshinEewViewer.Notification;
 using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
-using R3;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -114,7 +113,7 @@ public class App : Application
 
 			KyoshinEewViewerApp.Selector.ApplyTheme(config.Theme.WindowTheme, config.Theme.IntensityTheme);
 			KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedIntensityTheme)
-				.Subscribe(x =>
+				.SubscribeLoggingErrors(x =>
 				{
 					if (x == null) return;
 					config.Theme.IntensityTheme = x.Meta;
@@ -204,7 +203,7 @@ public class App : Application
 							DataContext = ServiceLocator.Current.RequireService<MainViewModel>(),
 						};
 						desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
-						KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
+						KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).SubscribeLoggingErrors(x =>
 						{
 							if (x == null) return;
 							config.Theme.WindowTheme = x.Meta;

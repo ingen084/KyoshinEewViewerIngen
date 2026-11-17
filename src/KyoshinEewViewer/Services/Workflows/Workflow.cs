@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
-using R3;
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -72,10 +72,10 @@ public partial class Workflow : ObservableObject
 
 	public Workflow()
 	{
-		this.ObservePropertyChanged(x => x.Trigger).Subscribe(x => _selectedTriggerInfo = WorkflowService.AllTriggers.FirstOrDefault(t => t.Type == x?.GetType()));
+		this.ObservePropertyChanged(x => x.Trigger).SubscribeLoggingErrors(x => _selectedTriggerInfo = WorkflowService.AllTriggers.FirstOrDefault(t => t.Type == x?.GetType()));
 		this.ObservePropertyChanged(x => x.SelectedTriggerInfo)
 			.Where(x => Trigger?.GetType() != x?.Type)
-			.Subscribe(x => Trigger = x?.Create());
+			.SubscribeLoggingErrors(x => Trigger = x?.Create());
 	}
 
 	[JsonIgnore]

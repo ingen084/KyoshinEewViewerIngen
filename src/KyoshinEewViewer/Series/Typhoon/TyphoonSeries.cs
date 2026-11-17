@@ -8,7 +8,6 @@ using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Series.Typhoon.Models;
 using KyoshinEewViewer.Series.Typhoon.Services;
 using KyoshinEewViewer.Services;
-using R3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -78,7 +77,7 @@ internal partial class TyphoonSeries : SeriesBase
 				SelectedTyphoon = t;
 			});
 
-		this.ObservePropertyChanged(x => x.SelectedTyphoon).Subscribe(i =>
+		this.ObservePropertyChanged(x => x.SelectedTyphoon).SubscribeLoggingErrors(i =>
 		{
 			if (i == null)
 			{
@@ -98,7 +97,7 @@ internal partial class TyphoonSeries : SeriesBase
 			TyphoonLayer.TyphoonItems = [i];
 		});
 
-		TyphoonWatchService.ObservePropertyChanged(x => x.Enabled).Subscribe(e =>
+		TyphoonWatchService.ObservePropertyChanged(x => x.Enabled).SubscribeLoggingErrors(e =>
 		{
 			Enabled = e;
 			if (e)

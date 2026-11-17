@@ -2,7 +2,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services.ExternalPublishers.Axis.ApiModels;
-using R3;
 using System;
 using System.Reactive.Linq;
 using System.Threading;
@@ -85,7 +84,7 @@ public partial class AxisInformationProvider : ObservableObject
 			MessageReceived?.Invoke(message);
 		};
 
-		Config.Axis.ObservePropertyChanged(x => x.Jwt).Subscribe(jwt =>
+		Config.Axis.ObservePropertyChanged(x => x.Jwt).SubscribeLoggingErrors(jwt =>
 		{
 			if (string.IsNullOrWhiteSpace(jwt))
 			{
@@ -116,7 +115,7 @@ public partial class AxisInformationProvider : ObservableObject
 			}
 		});
 
-		Config.Axis.ObservePropertyChanged(x => x.Enable).Debounce(TimeSpan.FromSeconds(1)).Subscribe(enabled =>
+		Config.Axis.ObservePropertyChanged(x => x.Enable).Throttle(TimeSpan.FromSeconds(1)).SubscribeLoggingErrors(enabled =>
 		{
 			if (!IsFeatureRequired)
 				return;

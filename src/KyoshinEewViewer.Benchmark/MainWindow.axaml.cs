@@ -13,7 +13,6 @@ using KyoshinEewViewer.Series.Earthquake;
 using KyoshinEewViewer.Series.KyoshinMonitor;
 using KyoshinEewViewer.Series.Tsunami;
 using KyoshinEewViewer.Services;
-using R3;
 using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Benchmark
@@ -153,19 +152,19 @@ namespace KyoshinEewViewer.Benchmark
 						_selectedSeries.Activating();
 						_selectedSeries.IsActivated = true;
 
-						MapPaddingListener = _selectedSeries.ObservePropertyChanged(x => x.MapPadding).Subscribe(x => Dispatcher.UIThread.Post(() => Map.Padding = x));
+						MapPaddingListener = _selectedSeries.ObservePropertyChanged(x => x.MapPadding).SubscribeLoggingErrors(x => Dispatcher.UIThread.Post(() => Map.Padding = x));
 						Map.Padding = _selectedSeries.MapPadding;
 
-						BackgroundMapLayersListener = _selectedSeries.ObservePropertyChanged(x => x.BackgroundMapLayers).Subscribe(x => UpdateMapLayers());
+						BackgroundMapLayersListener = _selectedSeries.ObservePropertyChanged(x => x.BackgroundMapLayers).SubscribeLoggingErrors(x => UpdateMapLayers());
 
-						BaseMapLayersListener = _selectedSeries.ObservePropertyChanged(x => x.BaseLayers).Subscribe(x => UpdateMapLayers());
+						BaseMapLayersListener = _selectedSeries.ObservePropertyChanged(x => x.BaseLayers).SubscribeLoggingErrors(x => UpdateMapLayers());
 
-						OverlayMapLayersListener = _selectedSeries.ObservePropertyChanged(x => x.OverlayLayers).Subscribe(x => UpdateMapLayers());
+						OverlayMapLayersListener = _selectedSeries.ObservePropertyChanged(x => x.OverlayLayers).SubscribeLoggingErrors(x => UpdateMapLayers());
 
-						CustomColorMapListener = _selectedSeries.ObservePropertyChanged(x => x.CustomColorMap).Subscribe(x => LandLayer.CustomColorMap = x);
+						CustomColorMapListener = _selectedSeries.ObservePropertyChanged(x => x.CustomColorMap).SubscribeLoggingErrors(x => LandLayer.CustomColorMap = x);
 						LandLayer.CustomColorMap = _selectedSeries.CustomColorMap;
 
-						FocusPointListener = _selectedSeries.ObservePropertyChanged(x => x.FocusBound).Subscribe(x => StrongReferenceMessenger.Default.Send(new MapNavigationRequested(x)));
+						FocusPointListener = _selectedSeries.ObservePropertyChanged(x => x.FocusBound).SubscribeLoggingErrors(x => StrongReferenceMessenger.Default.Send(new MapNavigationRequested(x)));
 						StrongReferenceMessenger.Default.Send(new MapNavigationRequested(_selectedSeries.FocusBound));
 
 						_selectedSeries.MapNavigationRequested += OnMapNavigationRequested;

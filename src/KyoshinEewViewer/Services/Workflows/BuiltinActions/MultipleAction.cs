@@ -1,12 +1,12 @@
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
-using R3;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using KyoshinEewViewer.Core;
 
 namespace KyoshinEewViewer.Services.Workflows.BuiltinActions;
 
@@ -91,10 +91,10 @@ public partial class ChildAction : ObservableObject
 
 	public ChildAction()
 	{
-		this.ObservePropertyChanged(x => x.Action).Subscribe(x => _selectedActionInfo = WorkflowService.AllActions.FirstOrDefault(t => t.Type == x?.GetType()));
+		this.ObservePropertyChanged(x => x.Action).SubscribeLoggingErrors(x => _selectedActionInfo = WorkflowService.AllActions.FirstOrDefault(t => t.Type == x?.GetType()));
 		this.ObservePropertyChanged(x => x.SelectedActionInfo)
 			.Where(x => Action?.GetType() != x?.Type)
-			.Subscribe(x => Action = x?.Create());
+			.SubscribeLoggingErrors(x => Action = x?.Create());
 	}
 
 	// アクション選択時の確認ダイアログ処理

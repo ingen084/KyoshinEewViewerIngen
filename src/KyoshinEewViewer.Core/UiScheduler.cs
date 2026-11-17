@@ -6,7 +6,6 @@ namespace KyoshinEewViewer.Core;
 
 /// <summary>
 /// System.Reactive のストリームを UI スレッドへマーシャリングするためのスケジューラ。
-/// ReactiveUI の RxSchedulers.MainThreadScheduler の代替。
 /// </summary>
 public static class UiScheduler
 {

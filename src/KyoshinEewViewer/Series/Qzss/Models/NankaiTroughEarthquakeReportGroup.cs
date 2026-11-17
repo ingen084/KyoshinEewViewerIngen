@@ -1,11 +1,12 @@
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
+using KyoshinEewViewer.Core;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Jma;
-using R3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -43,7 +44,7 @@ public partial class NankaiTroughEarthquakeReportGroup : DCReportGroup
                 this.ObservePropertyChanged(x => x.CurrentProgress),
                 this.ObservePropertyChanged(x => x.TotalPage),
                 (current, total) => current == total ? "受信完了" : $"{current}/{total}")
-            .Subscribe(x => CurrentProgressString = x);
+            .SubscribeLoggingErrors(x => CurrentProgressString = x);
 
         ReportTime = ApplyTimezoneOffset(report.ReportTime);
         TotalPage = report.TotalPage;

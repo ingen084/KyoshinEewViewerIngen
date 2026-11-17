@@ -2,7 +2,6 @@ using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
-using R3;
 using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -37,9 +36,9 @@ public class ObservationPointsDataPageViewModel : ObservableObject
 
 		// 更新サービスからのステータス変更を監視
 		this.ObservePropertyChanged(x => x.ObservationPointsUpdateService, x => x.IsUpdating)
-			.Subscribe(x => OnPropertyChanged(nameof(IsUpdating)));
+			.SubscribeLoggingErrors(x => OnPropertyChanged(nameof(IsUpdating)));
 		this.ObservePropertyChanged(x => x.ObservationPointsUpdateService, x => x.UpdateStatus)
-			.Subscribe(x => OnPropertyChanged(nameof(UpdateStatus)));
+			.SubscribeLoggingErrors(x => OnPropertyChanged(nameof(UpdateStatus)));
 
 		// ヘッダ情報の変更を監視
 		UpdateHeaderInfo();

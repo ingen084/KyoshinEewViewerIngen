@@ -6,10 +6,10 @@ using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using System;
 using System.IO;
+using System.Reactive.Linq;
 using System.Text.Json;
 using Path = System.IO.Path;
 using System.ComponentModel;
-using R3;
 
 namespace KyoshinEewViewer.Views;
 
@@ -139,13 +139,12 @@ public partial class IntensityThemeEditWindow : Window
 		_themeSubscription?.Dispose();
 		var cloned = theme.Theme.Clone();
 		DataContext = cloned;
-		// R3 の Debounce は dotnet/reactive の Throttle 相当
 		_themeSubscription = Observable.FromEvent<PropertyChangedEventHandler, PropertyChangedEventArgs>(
 				h => (_, e) => h(e),
 				h => cloned.PropertyChanged += h,
 				h => cloned.PropertyChanged -= h)
-			.Debounce(TimeSpan.FromMilliseconds(100))
-			.Subscribe(_ =>
+			.Throttle(TimeSpan.FromMilliseconds(100))
+			.SubscribeLoggingErrors(_ =>
 			{
 				UpdateTheme(cloned);
 				IsSaved = false;
