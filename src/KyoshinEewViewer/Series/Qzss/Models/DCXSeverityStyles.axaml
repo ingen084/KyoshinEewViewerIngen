@@ -1,0 +1,27 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- 災危通報(拡張) の深刻度を警戒レベルの色で示すバッジ -->
+    <Style Selector="Border.severity">
+        <Setter Property="Background" Value="{DynamicResource DockTitleBackgroundColor}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SubForegroundColor}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="Padding" Value="4,0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.severity > TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource MainForegroundColor}" />
+    </Style>
+    <Style Selector="Border.severity.moderate">
+        <Setter Property="Background" Value="{DynamicResource WeatherWarningLevel3Color}" />
+    </Style>
+    <Style Selector="Border.severity.severe">
+        <Setter Property="Background" Value="{DynamicResource WeatherWarningLevel4Color}" />
+    </Style>
+    <Style Selector="Border.severity.extreme">
+        <Setter Property="Background" Value="{DynamicResource WeatherWarningLevel5Color}" />
+    </Style>
+    <Style Selector="Border.severity.moderate > TextBlock, Border.severity.severe > TextBlock, Border.severity.extreme > TextBlock">
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+</Styles>

@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using KyoshinEewViewer.DCReportParser;
+using KyoshinEewViewer.DCReportParser.Dcx;
 using KyoshinEewViewer.DCReportParser.Jma;
 using KyoshinEewViewer.Series.Qzss.Models;
 using KyoshinEewViewer.UiTests.Infrastructure;
@@ -25,7 +26,12 @@ public sealed class QzssReportUiTests
 		("53AD5D3594000260A8FCD8800000000000000000000000000000001256CC1680", typeof(FloodReportControl), "防災気象情報(洪水)"),
 		("C6ADE465F900065E0100002800AD90138A00F80CA30000000000001185B5F7C0", typeof(TyphoonReportControl), "防災気象情報(台風)"),
 		("C6ADF465D18002C3F2587F8B101962082C41A588ACB1181623500012199FB000", typeof(MarineReportControl), "防災気象情報(海上)"),
+		// 災危通報(拡張) の試験用データ配信で受信された電文 (KyoshinEewViewer.DCReportParser.Tests のサンプルと同じもの)
+		("9AB0600DE1A488D6E000B2C1E361A5190C460CCB4000000000000011B0C18CB1", typeof(DCXAreaReportControl), "災危通報(拡張) Lアラート"),
+		("9AB0600DE21188EA208000000000000000001FFFFFFFFFFFC00000138C7533B1", typeof(JAlertReportControl), "災危通報(拡張) Jアラート"),
 	];
+
+	private static readonly DateTimeOffset ReceivedTime = new(2024, 12, 3, 14, 0, 0, TimeSpan.Zero);
 
 	[AvaloniaFact]
 	public void 受信した災危通報は種別ごとの詳細画面でバインディングエラーなく表示される()
@@ -66,6 +72,8 @@ public sealed class QzssReportUiTests
 		FloodReport f => new FloodReportGroup(f, null),
 		TyphoonReport t => new TyphoonReportGroup(t),
 		MarineReport m => new MarineReportGroup(m, null),
+		JAlertDCXReport j => new JAlertReportGroup(j, ReceivedTime, null),
+		DCXReport d => new DCXAreaReportGroup(d, ReceivedTime, null),
 		_ => throw new XunitException($"想定外の電文です: {report.GetType().Name}"),
 	};
 }

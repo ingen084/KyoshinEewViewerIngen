@@ -355,12 +355,48 @@
                                     <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
                                 </Panel>
                             </DataTemplate>
-                            <DataTemplate DataType="models:DCXReportGroup">
+                            <DataTemplate DataType="models:DCXAreaReportGroup">
                                 <Panel>
-                                    <Viewbox Width="50" Height="30" Stretch="Fill" StretchDirection="DownOnly" Margin="10,0,0,2" HorizontalAlignment="Left">
-                                        <TextBlock Text="DCX" FontSize="20" Foreground="{DynamicResource MainForegroundColor}" />
+                                    <Viewbox Width="11" Height="15" StretchDirection="DownOnly" Stretch="Fill" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />
                                     </Viewbox>
-                                    <TextBlock Text="未実装" FontSize="14" Foreground="{DynamicResource SubForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+
+                                    <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding KindShortName}" FontSize="20" Foreground="{DynamicResource MainForegroundColor}" />
+                                    </Viewbox>
+                                    <Viewbox Width="120" Stretch="Fill" Margin="65,10,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding HazardName}" FontWeight="Bold" FontSize="20" Foreground="{DynamicResource MainForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
+                                    </Viewbox>
+
+                                    <TextBlock Margin="0,2,5,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Right">
+                                        <Run Text="{Binding StatusName}" />
+                                        <Run Text="/" />
+                                        <Run Text="{Binding MaxSeverityName}" />
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}, Mode=OneWay}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
+                                    <TextBlock Text="{Binding AreaCount, StringFormat={}{0}地域, Mode=OneWay}" FontSize="14" Foreground="{DynamicResource MainForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
+                                </Panel>
+                            </DataTemplate>
+                            <DataTemplate DataType="models:JAlertReportGroup">
+                                <Panel>
+                                    <Viewbox Width="11" Height="15" StretchDirection="DownOnly" Stretch="Fill" Margin="0,0,0,3" VerticalAlignment="Bottom" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding ReportCount}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" HorizontalAlignment="Center" />
+                                    </Viewbox>
+
+                                    <Viewbox Width="50" Height="30" Stretch="Fill" Margin="10,10,0,2" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding KindShortName}" FontSize="20" Foreground="{DynamicResource MainForegroundColor}" />
+                                    </Viewbox>
+                                    <Viewbox Width="120" Stretch="Fill" Margin="65,10,0,0" StretchDirection="DownOnly" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding Summary}" FontWeight="Bold" FontSize="20" Foreground="{DynamicResource MainForegroundColor}" Margin="5,0" VerticalAlignment="Bottom" />
+                                    </Viewbox>
+
+                                    <TextBlock Margin="0,2,5,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Right">
+                                        <Run Text="{Binding MessageTypeName}" />
+                                        <Run Text="/" />
+                                        <Run Text="{Binding SeverityName}" />
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding ReportTime, StringFormat={}{0:MM/dd HH:mm}, Mode=OneWay}" Margin="5,2,0,0" Foreground="{DynamicResource SubForegroundColor}" FontSize="12" HorizontalAlignment="Left" />
+                                    <TextBlock Text="{Binding TargetAreaCount, StringFormat={}{0}地域, Mode=OneWay}" FontSize="14" Foreground="{DynamicResource MainForegroundColor}" Margin="0,3,5,5" VerticalAlignment="Bottom" HorizontalAlignment="Right" />
                                 </Panel>
                             </DataTemplate>
                             <DataTemplate DataType="models:UnknownReportGroup">
