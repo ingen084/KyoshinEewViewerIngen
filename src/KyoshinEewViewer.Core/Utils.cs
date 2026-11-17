@@ -8,7 +8,7 @@ namespace KyoshinEewViewer.Core;
 
 public static class Utils
 {
-	public static string IconFontName => "avares://KyoshinEewViewer.Core/Assets/Fonts/FontAwesome6Free-Solid-900.otf#Font Awesome 6 Free";
+	public static string IconFontName => "resm:KyoshinEewViewer.Core.Assets.Fonts.FontAwesome6Free-Solid-900.otf?assembly=KyoshinEewViewer.Core#Font Awesome 6 Free";
 	public static string? OverrideVersion { get; set; }
 	
 	/// <summary>

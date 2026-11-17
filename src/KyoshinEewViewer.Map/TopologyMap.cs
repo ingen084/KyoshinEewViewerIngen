@@ -1,4 +1,5 @@
 using KyoshinEewViewer.Core.Models;
+using KyoshinEewViewer.Core;
 using MessagePack;
 using System;
 using System.Collections.Generic;
@@ -30,9 +31,9 @@ public class TopologyMap
 	internal void OnZoomUsed(int zoom) => ZoomUsed?.Invoke(zoom);
 
 	public static TopologyMap Load(byte[] data)
-		=> MessagePackSerializer.Deserialize<TopologyMap>(data, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
+		=> MessagePackSerializer.Deserialize<TopologyMap>(data, OneTimeMessagePackOptions.Create(MessagePackCompression.Lz4BlockArray));
 	public static IImmutableDictionary<int, TopologyMap> LoadCollection(Stream stream)
-		=> MessagePackSerializer.Deserialize<IImmutableDictionary<int, TopologyMap>>(stream, MessagePackSerializerOptions.Standard.WithCompression(MessagePackCompression.Lz4BlockArray));
+		=> MessagePackSerializer.Deserialize<IImmutableDictionary<int, TopologyMap>>(stream, OneTimeMessagePackOptions.Create(MessagePackCompression.Lz4BlockArray));
 }
 [MessagePackObject]
 public class TopologyArc

@@ -14,6 +14,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -54,6 +55,16 @@ public partial class RadarSeries : SeriesBase
 
 	public RadarNodataBorderLayer BorderLayer { get; set; }
 
+	/// <summary>
+	/// 自動で取得し直すまでの最短の間隔
+	/// </summary>
+	private static readonly TimeSpan MinAutoReloadInterval = TimeSpan.FromSeconds(50);
+	private long _lastReloadTick;
+	private int _latestRealTimeIndex;
+	private string? _appliedNodataUrl;
+
+	private bool IsAutoReloadDue => Environment.TickCount64 - Interlocked.Read(ref _lastReloadTick) >= MinAutoReloadInterval.TotalMilliseconds;
+
 	public RadarSeries(ILogger<RadarSeries> logger, KyoshinEewViewerConfiguration config, InformationCacheService cacheService, TimerService timerService) : base(MetaData)
 	{
 		Logger = logger;
@@ -90,15 +101,43 @@ public partial class RadarSeries : SeriesBase
 	{
 		TimerService.TimerElapsed += async t =>
 		{
-			if (t.Second != 20)
+			// 表示していない間は取得しない
+			if (t.Second != 20 || !IsActivated)
 				return;
 			// 自動更新が有効であれば更新を そうでなければキャッシュの揮発を行う
-			if (Config.Radar.AutoUpdate)
-				await Reload(false);
-			else
+			if (!Config.Radar.AutoUpdate)
 				await UpdateTiles();
+			else if (IsAutoReloadDue)
+				await Reload(false);
 		};
 		TimerService.StartMainTimer();
+
+		this.ObservePropertyChanged(x => x.IsActivated, pushCurrentValueOnSubscribe: false).SubscribeLoggingErrors(activated =>
+		{
+			if (activated)
+				OnActivated().ConfigureAwait(false);
+			else
+				ReleaseTiles();
+		});
+	}
+
+	private Task OnActivated()
+	{
+		// 一度も取得できていなければ取得する。取得済みの場合は、自動更新が有効で前回の取得から間隔が空いているときだけ取得し直す
+		if (JmaRadarTimes == null || (Config.Radar.AutoUpdate && IsAutoReloadDue))
+			return Reload(false);
+		return UpdateTiles();
+	}
+
+	/// <summary>
+	/// 表示していない間はタイルを保持しない
+	/// </summary>
+	private void ReleaseTiles()
+	{
+		Puller.Cleanup();
+		var oldLayer = MapDisplayParameter.BaseLayers?.FirstOrDefault() as ImageTileLayer;
+		MapDisplayParameter = MapDisplayParameter with { BaseLayers = null };
+		oldLayer?.Provider.Dispose();
 	}
 
 	public override Size MinViewSize { get; } = new(400, 500);
@@ -106,7 +145,9 @@ public partial class RadarSeries : SeriesBase
 	public override void RecreateDisplayControl()
 	{
 		_control = new RadarView { DataContext = this };
-		Reload(true).ConfigureAwait(false);
+		// 取得は表示されたときに行う。取得済みであれば最新の実況に戻す
+		if (JmaRadarTimes != null)
+			TimeSliderValue = _latestRealTimeIndex;
 	}
 
 	public Task ReloadFromGui() => Reload(false);
@@ -115,6 +156,9 @@ public partial class RadarSeries : SeriesBase
 	{
 		if (Client == null)
 			return;
+		// 一度も取得できていない場合は、最新の実況を選択する
+		init |= JmaRadarTimes == null;
+		Interlocked.Exchange(ref _lastReloadTick, Environment.TickCount64);
 		IsLoading = true;
 
 		try
@@ -132,8 +176,9 @@ public partial class RadarSeries : SeriesBase
 			var futureBaseTimes = fbt.OrderBy(j => j.ValidDateTime);
 			JmaRadarTimes = realBaseTimes.Concat(futureBaseTimes).ToArray();
 			TimeSliderSize = JmaRadarTimes?.Length - 1 ?? 0;
-			if (init)
-				TimeSliderValue = realBaseTimes.Count() - 1;
+			_latestRealTimeIndex = realBaseTimes.Count() - 1;
+			if (init && _timeSliderValue != _latestRealTimeIndex)
+				TimeSliderValue = _latestRealTimeIndex;
 			else
 				await UpdateTiles();
 		}
@@ -147,7 +192,7 @@ public partial class RadarSeries : SeriesBase
 	{
 		try
 		{
-			if (JmaRadarTimes == null || JmaRadarTimes.Length <= _timeSliderValue || Client == null)
+			if (!IsActivated || JmaRadarTimes == null || JmaRadarTimes.Length <= _timeSliderValue || Client == null)
 				return;
 
 			Puller.Cleanup();
@@ -163,6 +208,9 @@ public partial class RadarSeries : SeriesBase
 			oldLayer?.Provider.Dispose();
 
 			var url = $"https://www.jma.go.jp/bosai/jmatile/data/nowc/{baseDateTime:yyyyMMddHHmm00}/none/{validDateTime:yyyyMMddHHmm00}/surf/hrpns_nd/data.geojson?id=hrpns_nd";
+			// 同じデータを読み直さない
+			if (url == _appliedNodataUrl)
+				return;
 			var geoJson = await JsonSerializer.DeserializeAsync<GeoJson>(await CacheService.TryGetOrFetchImageAsStreamAsync(url, async () =>
 			{
 				var response = await Client.SendAsync(new HttpRequestMessage(HttpMethod.Get, url));
@@ -172,7 +220,10 @@ public partial class RadarSeries : SeriesBase
 			}));
 
 			if (geoJson != null)
+			{
 				BorderLayer.UpdatePoints(geoJson);
+				_appliedNodataUrl = url;
+			}
 		}
 		catch (Exception ex)
 		{
