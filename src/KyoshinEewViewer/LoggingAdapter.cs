@@ -1,6 +1,7 @@
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NReco.Logging.File;
 using Sentry;
@@ -109,7 +110,7 @@ public static class LoggingAdapter
 
 				PlatformDirectories.EnsureDirectoryExists(fullPath);
 
-				FileProvider = new FileLoggerProvider(Path.Combine(fullPath, "KEVi_{0:yyyy}-{0:MM}-{0:dd}.log"), new FileLoggerOptions
+				var fileLoggerOptions = new FileLoggerOptions
 				{
 					FormatLogFileName = fName => string.Format(fName, DateTime.Now),
 					HandleFileError = e =>
@@ -141,8 +142,10 @@ public static class LoggingAdapter
 						if (e.ErrorException is IOException)
 							e.UseNewLogFileName(Path.Combine(fullPath, $"KEVi_{{0:yyyy}}-{{0:MM}}-{{0:dd}}-{new Random().Next()}.log"));
 					},
-				});
-				builder.AddProvider(FileProvider);
+				};
+				// AddFile と同様に、ファクトリーの構築時に生成する
+				builder.Services.AddSingleton<ILoggerProvider>(_ =>
+					FileProvider = new FileLoggerProvider(Path.Combine(fullPath, "KEVi_{0:yyyy}-{0:MM}-{0:dd}.log"), fileLoggerOptions));
 			}
 			catch (Exception ex)
 			{
