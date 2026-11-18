@@ -90,7 +90,8 @@
         <Style Selector="ui|FANavigationView">
             <Setter Property="MenuItemTemplate">
                 <DataTemplate x:DataType="series:ISettingPage">
-                    <ui:FANavigationViewItem IsVisible="{Binding IsVisible}" Content="{Binding Title}" IconSource="{Binding Icon}" MenuItemsSource="{Binding SubPages}" IsExpanded="True" />
+                    <!-- 子ページのない項目を展開すると、子ページ用の空の FAItemsRepeater が表示され、アクセシビリティ API からの問い合わせで例外が発生する (Common.axaml 参照) -->
+                    <ui:FANavigationViewItem IsVisible="{Binding IsVisible}" Content="{Binding Title}" IconSource="{Binding Icon}" MenuItemsSource="{Binding SubPages}" IsExpanded="{Binding !!SubPages.Length}" />
                 </DataTemplate>
             </Setter>
         </Style>

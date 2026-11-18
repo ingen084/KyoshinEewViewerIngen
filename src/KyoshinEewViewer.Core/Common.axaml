@@ -17,6 +17,11 @@
 		<Setter Property="FontFamily" Value="{StaticResource MainFont}" />
 		<Setter Property="FontWeight" Value="Regular" />
 	</Style>
+	<!-- FluentAvalonia 3.1.0 の FAItemsRepeater は、表示中に子要素がないとアクセシビリティ API からの子要素の問い合わせで例外を投げ、
+	     macOS ではアプリケーションが終了する (amwx/FluentAvalonia#773)。フッターの項目は使わないため、空のまま表示されないよう隠す -->
+	<Style Selector="ui|FANavigationView /template/ ui|FAItemsRepeater#FooterMenuItemsHost">
+		<Setter Property="IsVisible" Value="False" />
+	</Style>
     <!--
     <Style Selector="ui|FAFontIcon">
         <Setter Property="Width" Value="24" />
