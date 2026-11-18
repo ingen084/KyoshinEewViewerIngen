@@ -6,6 +6,21 @@ public struct HypocenterAccuracy(XmlNode node)
 {
 	private XmlNode Node { get; set; } = node;
 
+	/// <summary>
+	/// 震源位置の精度の数値。数値が未定義の場合は NaN。
+	/// </summary>
+	public float Epicenter => Node.TryFindFloatNode(Literals.Epicenter(), out var n) ? n : throw new JmaXmlParseException("Epicenter を数値として取得できません");
+
+	/// <summary>
+	/// 震源深さの精度の数値。数値が未定義の場合は NaN。
+	/// </summary>
+	public float Depth => Node.TryFindFloatNode(Literals.Depth(), out var n) ? n : throw new JmaXmlParseException("Depth を数値として取得できません");
+
+	/// <summary>
+	/// マグニチュードの精度の数値。数値が未定義の場合は NaN。
+	/// </summary>
+	public float MagnitudeCalculation => Node.TryFindFloatNode(Literals.MagnitudeCalculation(), out var n) ? n : throw new JmaXmlParseException("MagnitudeCalculation を数値として取得できません");
+
 	private int? _epicenterRank = null;
 	/// <summary>
 	/// 震源位置の精度のランク <c>0~8</c>
@@ -129,5 +144,5 @@ public struct HypocenterAccuracy(XmlNode node)
 	///		<item>5 点以上</item>
 	/// </list>
 	/// </summary>
-	public int NumberOfMagnitudeCalculation => _numberOfMagnitudeCalculation ??= (Node.TryFindIntNode(Literals.NumberOfMagnitudeCalculation(), out var n) ? n : throw new JmaXmlParseException("Area ノードが存在しません"));
+	public int NumberOfMagnitudeCalculation => _numberOfMagnitudeCalculation ??= (Node.TryFindIntNode(Literals.NumberOfMagnitudeCalculation(), out var n) ? n : throw new JmaXmlParseException("NumberOfMagnitudeCalculation ノードが存在しません"));
 }

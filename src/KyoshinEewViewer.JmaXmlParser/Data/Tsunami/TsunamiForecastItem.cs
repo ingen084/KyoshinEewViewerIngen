@@ -20,6 +20,18 @@ public struct TsunamiForecastItem(XmlNode node)
 	/// </summary>
 	public Category Category => _category ??= (Node.TryFindChild(Literals.Category(), out var n) ? new(n) : throw new JmaXmlParseException("Category ノードが存在しません"));
 
+	/// <summary>
+	/// 共通スキーマでは省略可能な警報等の種類を取得する。存在しない場合は false。
+	/// </summary>
+	public bool TryGetCategory(out Category category)
+	{
+		category = default;
+		if (!Node.TryFindChild(Literals.Category(), out var n))
+			return false;
+		category = new(n);
+		return true;
+	}
+
 	private FirstHeight? _firstHeight = null;
 	/// <summary>
 	/// 津波の到達予想時刻（津波予報区）<br/>
@@ -33,6 +45,12 @@ public struct TsunamiForecastItem(XmlNode node)
 	/// 津波警報・注意報解除時/津波予報発表時には出現しない
 	/// </summary>
 	public MaxHeight? MaxHeight => _maxHeight ??= (Node.TryFindChild("MaxHeight"u8, out var n) ? new(n) : null);
+
+	private string? _duration = null;
+	/// <summary>
+	/// 津波予報の対象期間（ISO 8601 の期間表現）。存在しない場合は null。
+	/// </summary>
+	public string? Duration => _duration ??= (Node.TryFindStringNode("Duration"u8, out var n) ? n : null);
 
 	/// <summary>
 	/// 潮位観測点
