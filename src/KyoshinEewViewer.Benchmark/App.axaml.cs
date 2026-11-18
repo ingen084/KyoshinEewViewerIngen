@@ -17,6 +17,7 @@ namespace KyoshinEewViewer.Benchmark
 		public override void OnFrameworkInitializationCompleted()
 		{
             Utils.OverrideVersion = "SlackBot";
+			KyoshinEewViewerApp.Application = this;
 
 			KyoshinEewViewerApp.Selector = ThemeSelector.Create(".");
 			KyoshinEewViewerApp.Selector.EnableThemes(this);
@@ -25,16 +26,16 @@ namespace KyoshinEewViewer.Benchmark
 			if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
 			{
 				KyoshinEewViewerApp.TopLevelControl = desktop.MainWindow = new MainWindow();
-				KyoshinEewViewerApp.Selector.ApplyTheme(config.Theme.WindowThemeName, config.Theme.IntensityThemeName);
+				KyoshinEewViewerApp.Selector.ApplyTheme(config.Theme.WindowTheme, config.Theme.IntensityTheme);
 				KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedIntensityTheme).Where(x => x != null)
 					.SubscribeLoggingErrors(x =>
 					{
-						config.Theme.IntensityThemeName = x?.Name ?? "Standard";
+						config.Theme.IntensityTheme = x?.Meta ?? new ThemeMeta(ThemeType.BuiltIn, "Standard");
 						FixedObjectRenderer.UpdateIntensityPaintCache(this);
 					});
 				KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).SubscribeLoggingErrors(x =>
 				{
-					config.Theme.WindowThemeName = x?.Name ?? "Light";
+					config.Theme.WindowTheme = x?.Meta ?? new ThemeMeta(ThemeType.BuiltIn, "Light");
 					FixedObjectRenderer.UpdateIntensityPaintCache(this);
 				});
 			}

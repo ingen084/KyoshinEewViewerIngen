@@ -29,10 +29,10 @@ namespace KyoshinEewViewer.Benchmark
 		public EarthquakeSeries EarthquakeSeries { get; }
 		public TsunamiSeries TsunamiSeries { get; }
 
-		public MapLayer[] BackgroundMapLayers => SelectedSeries?.BackgroundMapLayers;
-		public MapLayer[] BaseMapLayers => SelectedSeries?.BaseLayers;
+		public MapLayer[] BackgroundMapLayers => SelectedSeries?.MapDisplayParameter.BackgroundLayers;
+		public MapLayer[] BaseMapLayers => SelectedSeries?.MapDisplayParameter.BaseLayers;
 
-		public MapLayer[] OverlayMapLayers => SelectedSeries?.OverlayLayers;
+		public MapLayer[] OverlayMapLayers => SelectedSeries?.MapDisplayParameter.OverlayLayers;
 
 		private void UpdateMapLayers()
 		{
@@ -72,8 +72,11 @@ namespace KyoshinEewViewer.Benchmark
 				return;
 
 			KyoshinMonitorSeries.Initialize();
+			KyoshinMonitorSeries.RecreateDisplayControl();
 			EarthquakeSeries.Initialize();
+			EarthquakeSeries.RecreateDisplayControl();
 			TsunamiSeries.Initialize();
+			TsunamiSeries.RecreateDisplayControl();
 
 			ClientSize = new Size(1280, 960);
 
@@ -81,7 +84,7 @@ namespace KyoshinEewViewer.Benchmark
 			{
 				var mapData = LandBorderLayer.Map = LandLayer.Map = MapData.LoadDefaultMap();
 				StrongReferenceMessenger.Default.Send(new MapLoaded(mapData));
-				StrongReferenceMessenger.Default.Send(new MapNavigationRequested(SelectedSeries?.FocusBound));
+				StrongReferenceMessenger.Default.Send(SelectedSeries?.MapNavigationRequest ?? new MapNavigationRequest(null));
 				Logger.LogInformation("マップ読込完了");
 			});
 
@@ -92,19 +95,14 @@ namespace KyoshinEewViewer.Benchmark
 
 		protected override void OnClosed(EventArgs e)
 		{
-			SelectedSeries?.Deactivated();
 			KyoshinMonitorSeries?.Dispose();
 			EarthquakeSeries?.Dispose();
 			TsunamiSeries?.Dispose();
 			base.OnClosed(e);
 		}
 
-		private IDisposable MapPaddingListener { get; set; }
-		private IDisposable BackgroundMapLayersListener { get; set; }
-		private IDisposable BaseMapLayersListener { get; set; }
-		private IDisposable OverlayMapLayersListener { get; set; }
-		private IDisposable CustomColorMapListener { get; set; }
-		private IDisposable FocusPointListener { get; set; }
+		private IDisposable MapDisplayParameterListener { get; set; }
+		private IDisposable MapNavigationRequestListener { get; set; }
 
 		private readonly object _switchSelectLocker = new();
 		private SeriesBase _selectedSeries;
@@ -121,53 +119,26 @@ namespace KyoshinEewViewer.Benchmark
 				lock (_switchSelectLocker)
 				{
 					// デタッチ
-					MapPaddingListener?.Dispose();
-					MapPaddingListener = null;
+					MapDisplayParameterListener?.Dispose();
+					MapDisplayParameterListener = null;
 
-					BackgroundMapLayersListener?.Dispose();
-					BackgroundMapLayersListener = null;
-
-					BaseMapLayersListener?.Dispose();
-					BaseMapLayersListener = null;
-
-					OverlayMapLayersListener?.Dispose();
-					OverlayMapLayersListener = null;
-
-					CustomColorMapListener?.Dispose();
-					CustomColorMapListener = null;
-
-					FocusPointListener?.Dispose();
-					FocusPointListener = null;
-
-					if (oldSeries != null)
-					{
-						oldSeries.MapNavigationRequested -= OnMapNavigationRequested;
-						oldSeries.Deactivated();
-						oldSeries.IsActivated = false;
-					}
+					MapNavigationRequestListener?.Dispose();
+					MapNavigationRequestListener = null;
 
 					// アタッチ
 					if (_selectedSeries != null)
 					{
-						_selectedSeries.Activating();
-						_selectedSeries.IsActivated = true;
+						MapDisplayParameterListener = _selectedSeries.ObservePropertyChanged(x => x.MapDisplayParameter).SubscribeLoggingErrors(x =>
+						{
+							Dispatcher.UIThread.Post(() => Map.Padding = x.Padding);
+							LandLayer.CustomColorMap = x.CustomColorMap;
+							UpdateMapLayers();
+						});
+						Map.Padding = _selectedSeries.MapDisplayParameter.Padding;
+						LandLayer.CustomColorMap = _selectedSeries.MapDisplayParameter.CustomColorMap;
 
-						MapPaddingListener = _selectedSeries.ObservePropertyChanged(x => x.MapPadding).SubscribeLoggingErrors(x => Dispatcher.UIThread.Post(() => Map.Padding = x));
-						Map.Padding = _selectedSeries.MapPadding;
-
-						BackgroundMapLayersListener = _selectedSeries.ObservePropertyChanged(x => x.BackgroundMapLayers).SubscribeLoggingErrors(x => UpdateMapLayers());
-
-						BaseMapLayersListener = _selectedSeries.ObservePropertyChanged(x => x.BaseLayers).SubscribeLoggingErrors(x => UpdateMapLayers());
-
-						OverlayMapLayersListener = _selectedSeries.ObservePropertyChanged(x => x.OverlayLayers).SubscribeLoggingErrors(x => UpdateMapLayers());
-
-						CustomColorMapListener = _selectedSeries.ObservePropertyChanged(x => x.CustomColorMap).SubscribeLoggingErrors(x => LandLayer.CustomColorMap = x);
-						LandLayer.CustomColorMap = _selectedSeries.CustomColorMap;
-
-						FocusPointListener = _selectedSeries.ObservePropertyChanged(x => x.FocusBound).SubscribeLoggingErrors(x => StrongReferenceMessenger.Default.Send(new MapNavigationRequested(x)));
-						StrongReferenceMessenger.Default.Send(new MapNavigationRequested(_selectedSeries.FocusBound));
-
-						_selectedSeries.MapNavigationRequested += OnMapNavigationRequested;
+						MapNavigationRequestListener = _selectedSeries.ObservePropertyChanged(x => x.MapNavigationRequest).SubscribeLoggingErrors(OnMapNavigationRequested);
+						OnMapNavigationRequested(_selectedSeries.MapNavigationRequest);
 
 						UpdateMapLayers();
 					}
