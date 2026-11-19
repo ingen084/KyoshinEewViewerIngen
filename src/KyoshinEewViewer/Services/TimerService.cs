@@ -19,6 +19,8 @@ public partial class TimerService
 
 	private static partial Regex TimeRegex();
 
+	private static readonly TimeSpan RegularSyncInterval = TimeSpan.FromMinutes(10);
+
 	private HttpClient HttpClient { get; }
 
 	/// <summary>
@@ -79,7 +81,7 @@ public partial class TimerService
 				Logger.LogDebug("時刻同期を行いました {Time:yyyy/MM/dd HH:mm:ss.fff}", time);
 				MainTimer?.UpdateTime(time);
 			}
-		}, null, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
+		}, null, TimeSpan.FromMinutes(5), RegularSyncInterval);
 
 		MainTimer = new SecondBasedTimer()
 		{
@@ -113,6 +115,11 @@ public partial class TimerService
 			return Task.CompletedTask;
 		};
 	}
+
+	/// <summary>
+	/// 定期の時刻同期を今すぐ実行し、以降は通常の間隔で続ける。同期はスレッドプール上で行う
+	/// </summary>
+	public void SyncTimeNow() => RegularlyTimer.Change(TimeSpan.Zero, RegularSyncInterval);
 
 	public bool Started { get; private set; }
 	public void StartMainTimer()

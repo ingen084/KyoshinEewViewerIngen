@@ -151,13 +151,15 @@ public partial class KyoshinMonitorSeries : SeriesBase
 	}
 
 	// 稼働判断はホストを所有するここに集約し、切り替え途中の一時的な停止をプールに伝えない。
+	// 切断中のホストは再接続の試行だけに絞るため、補充の対象にしない。
 	private void UpdateSocketPoolState()
 	{
 		// 設定変更と自動復帰が重なっても、古い判定が後から反映されないようにする。
 		lock (_socketPoolStateLock)
 			Services.KyoshinMonitorWatchService.SetSocketPoolEnabled(
 				Config.KyoshinMonitor.ReceiveMode == KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.Kmoni
-				&& (RealtimeInformationHost.IsRunning || TimeshiftInformationHost.IsRunning));
+				&& ((RealtimeInformationHost.IsRunning && !RealtimeInformationHost.KyoshinMonitorDisconnected)
+					|| (TimeshiftInformationHost.IsRunning && !TimeshiftInformationHost.KyoshinMonitorDisconnected)));
 	}
 
 	public DateTime CurrentDisplayTime => _currentInformationHost?.CurrentTime ?? DateTime.Now;
@@ -248,6 +250,8 @@ public partial class KyoshinMonitorSeries : SeriesBase
 		config.Eew.ObservePropertyChanged(x => x.ShowDetails).SubscribeLoggingErrors(x => ShowEewAccuracy = x);
 		config.KyoshinMonitor.ObservePropertyChanged(x => x.ShowColorSample).SubscribeLoggingErrors(x => ShowColorSample = x);
 		config.ObservePropertyChanged(x => x.KyoshinMonitor, x => x.ReceiveMode).SubscribeLoggingErrors(_ => UpdateSocketPoolState());
+		RealtimeInformationHost.ObservePropertyChanged(x => x.KyoshinMonitorDisconnected, pushCurrentValueOnSubscribe: false).SubscribeLoggingErrors(_ => UpdateSocketPoolState());
+		TimeshiftInformationHost.ObservePropertyChanged(x => x.KyoshinMonitorDisconnected, pushCurrentValueOnSubscribe: false).SubscribeLoggingErrors(_ => UpdateSocketPoolState());
 	}
 	public override void Initialize()
 	{
