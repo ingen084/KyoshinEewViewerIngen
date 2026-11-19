@@ -42,7 +42,8 @@ internal static class Program
 		})
 		.With(new MacOSPlatformOptions
 		{
-			DisableAvaloniaAppDelegate = true
+			// Avalonia が追加する英語の既定項目 (Services/Hide/Quit など) を出さず、App.axaml の NativeMenu だけを表示する
+			DisableDefaultApplicationMenuItems = true,
 		})
 		.LogToTrace(Avalonia.Logging.LogEventLevel.Error)
 		.UseKeviFonts()
