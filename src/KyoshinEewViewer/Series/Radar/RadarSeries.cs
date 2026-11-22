@@ -102,7 +102,7 @@ public partial class RadarSeries : SeriesBase
 		TimerService.TimerElapsed += async t =>
 		{
 			// 表示していない間は取得しない
-			if (t.Second != 20 || !IsActivated)
+			if (t.Second != 20 || !IsDisplayed)
 				return;
 			// 自動更新が有効であれば更新を そうでなければキャッシュの揮発を行う
 			if (!Config.Radar.AutoUpdate)
@@ -112,16 +112,16 @@ public partial class RadarSeries : SeriesBase
 		};
 		TimerService.StartMainTimer();
 
-		this.ObservePropertyChanged(x => x.IsActivated, pushCurrentValueOnSubscribe: false).SubscribeLoggingErrors(activated =>
+		this.ObservePropertyChanged(x => x.IsDisplayed, pushCurrentValueOnSubscribe: false).SubscribeLoggingErrors(displayed =>
 		{
-			if (activated)
-				OnActivated().ConfigureAwait(false);
+			if (displayed)
+				OnDisplayed().ConfigureAwait(false);
 			else
 				ReleaseTiles();
 		});
 	}
 
-	private Task OnActivated()
+	private Task OnDisplayed()
 	{
 		// 一度も取得できていなければ取得する。取得済みの場合は、自動更新が有効で前回の取得から間隔が空いているときだけ取得し直す
 		if (JmaRadarTimes == null || (Config.Radar.AutoUpdate && IsAutoReloadDue))
@@ -192,7 +192,7 @@ public partial class RadarSeries : SeriesBase
 	{
 		try
 		{
-			if (!IsActivated || JmaRadarTimes == null || JmaRadarTimes.Length <= _timeSliderValue || Client == null)
+			if (!IsDisplayed || JmaRadarTimes == null || JmaRadarTimes.Length <= _timeSliderValue || Client == null)
 				return;
 
 			Puller.Cleanup();

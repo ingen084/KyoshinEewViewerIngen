@@ -90,8 +90,6 @@ public partial class SeriesWindowViewModel : ViewModelBase
 
 		Series.RecreateDisplayControl();
 		OnPropertyChanged(nameof(DisplayControl));
-
-		Series.IsActivated = true;
 	}
 
 	public void DetachFromSeries()
@@ -107,8 +105,6 @@ public partial class SeriesWindowViewModel : ViewModelBase
 		StrongReferenceMessenger.Default.Unregister<MapLoaded>(this);
 		LandBorderLayer.Map = LandLayer.Map = null;
 		MapLayers = null;
-
-		Series.IsActivated = false;
 
 		WindowClosed?.Invoke();
 	}

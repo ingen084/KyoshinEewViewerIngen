@@ -10,6 +10,10 @@ public abstract partial class SeriesBase(SeriesMeta meta) : ObservableObject, ID
 {
 	public SeriesMeta Meta { get; } = meta;
 
+	/// <summary>
+	/// メインウィンドウで選択されているかどうか。
+	/// ナビゲーション項目の IsSelected と双方向にバインドされているため、別ウィンドウでの表示状態はここに含めない
+	/// </summary>
 	[ObservableProperty]
 	public partial bool IsActivated { get; internal set; }
 
@@ -18,6 +22,15 @@ public abstract partial class SeriesBase(SeriesMeta meta) : ObservableObject, ID
 	/// </summary>
 	[ObservableProperty]
 	public partial bool IsSeparated { get; internal set; }
+
+	/// <summary>
+	/// メインウィンドウか別ウィンドウのどちらかで表示されているかどうか
+	/// </summary>
+	[ObservableProperty]
+	public partial bool IsDisplayed { get; private set; }
+
+	partial void OnIsActivatedChanged(bool value) => IsDisplayed = IsActivated || IsSeparated;
+	partial void OnIsSeparatedChanged(bool value) => IsDisplayed = IsActivated || IsSeparated;
 
 	/// <summary>
 	/// DisplayControl の最小表示サイズ。
