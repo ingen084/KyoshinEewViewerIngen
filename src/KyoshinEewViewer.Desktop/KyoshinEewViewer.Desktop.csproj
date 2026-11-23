@@ -95,4 +95,15 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
+
+    <!-- Linux の自己更新は実行ファイルだけを置き換えるため、libbass.so は単一ファイルに同梱する。
+         SDK は同梱するネイティブライブラリを AssetType で見分けるため、付けないと実行ファイルの横へ別ファイルとして出力される。
+         None 項目のメタデータは発行対象へ引き継がれないので、発行対象の一覧が確定した後に付ける -->
+    <Target Name="BundleLibbassInSingleFile" AfterTargets="ComputeResolvedFilesToPublishList">
+        <ItemGroup>
+            <ResolvedFileToPublish Condition="'%(Filename)%(Extension)' == 'libbass.so'">
+                <AssetType>native</AssetType>
+            </ResolvedFileToPublish>
+        </ItemGroup>
+    </Target>
 </Project>
