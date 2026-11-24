@@ -95,4 +95,13 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
+
+    <!-- .NET 11 以降でも Linux 向けのファイルを同梱するように AssetType を明示的に設定する -->
+    <Target Name="BundleLibbassInSingleFile" AfterTargets="ComputeResolvedFilesToPublishList">
+        <ItemGroup>
+            <ResolvedFileToPublish Condition="'%(Filename)%(Extension)' == 'libbass.so'">
+                <AssetType>native</AssetType>
+            </ResolvedFileToPublish>
+        </ItemGroup>
+    </Target>
 </Project>
