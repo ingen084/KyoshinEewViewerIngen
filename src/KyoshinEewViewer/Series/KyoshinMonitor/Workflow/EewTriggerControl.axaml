@@ -58,5 +58,11 @@
         <WrapPanel Margin="5,0">
             <CheckBox Content="訓練も対象にする" IsChecked="{Binding IncludeTraining}" />
         </WrapPanel>
+        <TextBlock Text="重複制御" FontWeight="Bold" />
+        <TextBlock Text="同じ緊急地震速報で複数回トリガーされないようにします。" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" />
+        <WrapPanel Margin="5,0">
+            <CheckBox Content="1つの緊急地震速報につき1回だけトリガーする" IsChecked="{Binding OncePerEew}"
+                      ToolTip.Tip="条件を満たした最初の1回だけトリガーし、同じ地震IDの続報ではトリガーされません。&#xA;訓練の緊急地震速報は実際の地震とは別に数えます。" />
+        </WrapPanel>
     </StackPanel>
 </UserControl>
