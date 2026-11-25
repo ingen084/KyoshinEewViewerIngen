@@ -207,15 +207,23 @@ public abstract partial class EarthquakeInformationHost(bool isReplay, KyoshinEe
 			{
 				if (Config.Eew.FillForecastIntensity && e.FillIntensityForecastMap is { } forecastMap)
 				{
-					foreach (var a in forecastMap)
+					// 設定された下限震度未満の地域は自動ズームの範囲に含めない
+					var minIntensity = Config.Eew.AutoZoomMinForecastIntensity;
+					if (minIntensity != JmaIntensity.Unknown)
 					{
-						foreach (var p in layer.FindPolygon(a.Key))
+						foreach (var a in forecastMap)
 						{
-							CheckLocation((p.BoundingBox.TopLeft - sizeP).CastLocation());
-							CheckLocation((p.BoundingBox.BottomRight + sizeP).CastLocation());
+							if (a.Value < minIntensity)
+								continue;
 
-							CheckLocation2(p.BoundingBox.TopLeft.CastLocation());
-							CheckLocation2(p.BoundingBox.BottomRight.CastLocation());
+							foreach (var p in layer.FindPolygon(a.Key))
+							{
+								CheckLocation((p.BoundingBox.TopLeft - sizeP).CastLocation());
+								CheckLocation((p.BoundingBox.BottomRight + sizeP).CastLocation());
+
+								CheckLocation2(p.BoundingBox.TopLeft.CastLocation());
+								CheckLocation2(p.BoundingBox.BottomRight.CastLocation());
+							}
 						}
 					}
 				}

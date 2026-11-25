@@ -211,6 +211,13 @@ public partial class KyoshinEewViewerConfiguration : ObservableObject, IWindowPl
 		[ObservableProperty]
 		public partial bool FillForecastIntensity { get; set; }
 
+		/// <summary>
+		/// 自動ズームの範囲に含める予想震度の下限
+		/// <see cref="KyoshinMonitorLib.JmaIntensity.Unknown"/> の場合は予想震度の地域を範囲に含めない
+		/// </summary>
+		[ObservableProperty]
+		public partial KyoshinMonitorLib.JmaIntensity AutoZoomMinForecastIntensity { get; set; } = KyoshinMonitorLib.JmaIntensity.Int1;
+
 		[ObservableProperty]
 		public partial bool SwitchAtAnnounce { get; set; }
 

@@ -59,6 +59,22 @@ public partial class SettingWindowViewModel : ViewModelBase
 		{ JmaIntensity.Int6Upper, "震度6強以上" },
 		{ JmaIntensity.Int7, "震度7" },
 	};
+	/// <summary>
+	/// 自動ズームに含める予想震度の下限の選択肢
+	/// </summary>
+	public static Dictionary<JmaIntensity, string> EewAutoZoomForecastIntensityNames { get; } = new()
+	{
+		{ JmaIntensity.Unknown, "予想震度の地域を含めない" },
+		{ JmaIntensity.Int1, "震度1以上" },
+		{ JmaIntensity.Int2, "震度2以上" },
+		{ JmaIntensity.Int3, "震度3以上" },
+		{ JmaIntensity.Int4, "震度4以上" },
+		{ JmaIntensity.Int5Lower, "震度5弱以上" },
+		{ JmaIntensity.Int5Upper, "震度5強以上" },
+		{ JmaIntensity.Int6Lower, "震度6弱以上" },
+		{ JmaIntensity.Int6Upper, "震度6強以上" },
+		{ JmaIntensity.Int7, "震度7" },
+	};
 	public static Dictionary<KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode, string> KyoshinMonitorModeNames { get; } = new()
 	{
 		{ KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.None, "受信しない" },
