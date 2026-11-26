@@ -197,7 +197,7 @@
                     <ToggleSwitch IsChecked="{Binding Config.Qzss.ShowCurrentPositionInMap}" OnContent="する" OffContent="しない" />
                 </ui:FASettingsExpander.Footer>
             </ui:FASettingsExpander>
-            <ui:FASettingsExpander Header="気象庁以外からの電文を無視する">
+            <ui:FASettingsExpander Header="災危通報(拡張)の電文を無視する" Description="Jアラート・Lアラート・自治体発信情報などの災危通報(拡張) (DCX) を表示しません。">
                 <ui:FASettingsExpander.IconSource>
                     <ui:FAFontIconSource Glyph="&#xf3c5;" FontFamily="{StaticResource IconFont}" />
                 </ui:FASettingsExpander.IconSource>

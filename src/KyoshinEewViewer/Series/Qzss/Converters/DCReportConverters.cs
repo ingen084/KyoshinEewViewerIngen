@@ -197,7 +197,7 @@ public class DCReportConverters : IValueConverter
 				4599999 => "宮崎県その他市町村",
 				4699999 => "鹿児島県その他市町村",
 				4799999 => "沖縄県その他市町村",
-				int i => CsvDictionary.AreaInformationCity.TryGetValue(i, out var name) ? name : $"その他({i})",
+				int i => CsvDictionary.AreaInformationCity.TryGetValue(i, out var city) ? city.Name : $"その他({i})",
 				_ => "不明",
 			},
 			"AshFallWarningType" => value switch

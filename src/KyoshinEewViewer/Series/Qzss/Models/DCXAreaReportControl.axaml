@@ -1,0 +1,94 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:KyoshinEewViewer.Series.Qzss.Models"
+             Foreground="{DynamicResource MainForegroundColor}"
+             x:DataType="local:DCXAreaReportGroup"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="KyoshinEewViewer.Series.Qzss.Models.DCXAreaReportControl">
+    <UserControl.Styles>
+        <StyleInclude Source="/Series/Qzss/Models/DCXSeverityStyles.axaml" />
+        <Style Selector="StackPanel.cleared">
+            <Setter Property="Opacity" Value=".6" />
+        </Style>
+    </UserControl.Styles>
+    <Grid RowDefinitions="auto,*" Width="350" HorizontalAlignment="Left">
+        <StackPanel Margin="2,0">
+            <Border Background="{DynamicResource DockTitleBackgroundColor}" CornerRadius="4,4,0,0">
+                <Viewbox Height="27" StretchDirection="DownOnly" Stretch="Fill">
+                    <TextBlock Text="{Binding KindName, StringFormat={}災危通報(拡張) {0}, Mode=OneWay}" FontSize="18" HorizontalAlignment="Center" />
+                </Viewbox>
+            </Border>
+            <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="0,0,4,4" Margin="0,0,0,5">
+                <StackPanel Margin="5,0" TextElement.Foreground="{DynamicResource SubForegroundColor}">
+                    <Viewbox Stretch="Fill" StretchDirection="DownOnly" HorizontalAlignment="Left" Height="22">
+                        <TextBlock>
+                            <Run Text="提供" FontSize="12" />
+                            <Run Text="{Binding CountryRegionName}" FontSize="16" />
+                            <Run Text="{Binding ProviderName}" FontSize="16" />
+                        </TextBlock>
+                    </Viewbox>
+                    <Panel>
+                        <TextBlock HorizontalAlignment="Left">
+                            <Run Text="受信" FontSize="12" />
+                            <Run Text="{Binding ReportTime, StringFormat={}M月dd日 HH時mm分, Mode=OneWay}" FontSize="16" />
+                        </TextBlock>
+                        <TextBlock HorizontalAlignment="Right">
+                            <Run Text="統合" FontSize="12" />
+                            <Run Text="{Binding ReportCount}" FontSize="14" />
+                        </TextBlock>
+                    </Panel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" TextElement.FontSize="16">
+            <Border Background="{DynamicResource DockTitleBackgroundColor}" BorderThickness="4" CornerRadius="4" VerticalAlignment="Top">
+                <StackPanel>
+                    <TextBlock Text="{Binding HazardCategoryName}" FontSize="12" Foreground="{DynamicResource SubForegroundColor}" Margin="5,0" HorizontalAlignment="Center" />
+                    <Viewbox Height="30" Stretch="Fill" StretchDirection="DownOnly" Margin="5,-2,5,5">
+                        <TextBlock Text="{Binding HazardName}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center" />
+                    </Viewbox>
+                    <Border Background="{DynamicResource DockBackgroundColor}" CornerRadius="3" ClipToBounds="True">
+                        <ItemsControl ItemsSource="{Binding Areas}" Classes="Areas">
+                            <ItemsControl.Styles>
+                                <Style Selector="ItemsControl.Areas>ContentPresenter:nth-last-child(1)>StackPanel>Rectangle.AreaSeparator">
+                                    <Setter Property="IsVisible" Value="False" />
+                                </Style>
+                            </ItemsControl.Styles>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="local:DCXAreaState">
+                                    <StackPanel Classes.cleared="{Binding IsCleared}">
+                                        <StackPanel Margin="5,3">
+                                            <Grid ColumnDefinitions="*,auto,auto">
+                                                <Viewbox Stretch="Fill" StretchDirection="DownOnly" Height="26" HorizontalAlignment="Left" Margin="0,0,5,0">
+                                                    <TextBlock Text="{Binding AreaName}" FontSize="18" FontWeight="Bold" />
+                                                </Viewbox>
+                                                <TextBlock Grid.Column="1" Text="{Binding MessageTypeName}" VerticalAlignment="Center" Margin="0,0,5,0" />
+                                                <Border Grid.Column="2" Classes="severity" Classes.moderate="{Binding IsModerate}" Classes.severe="{Binding IsSevere}" Classes.extreme="{Binding IsExtreme}">
+                                                    <TextBlock Text="{Binding SeverityName}" FontSize="14" />
+                                                </Border>
+                                            </Grid>
+                                            <TextBlock Text="{Binding InstructionText, TargetNullValue=避難行動の指示なし}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                            <TextBlock Text="{Binding AdditionalInstructionText}" IsVisible="{Binding AdditionalInstructionText, Converter={x:Static ObjectConverters.IsNotNull}}" TextWrapping="Wrap" />
+                                            <TextBlock FontSize="12" Foreground="{DynamicResource SubForegroundColor}" TextWrapping="Wrap" Margin="0,2,0,0">
+                                                <Run Text="発生" />
+                                                <Run Text="{Binding OnsetTime, StringFormat={}M/dd HH:mm, TargetNullValue=不明, Mode=OneWay}" />
+                                                <Run Text="  継続" />
+                                                <Run Text="{Binding DurationName}" />
+                                                <Run Text="  受信" />
+                                                <Run Text="{Binding ReceivedTime, StringFormat={}HH:mm:ss, Mode=OneWay}" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                        <Rectangle Classes="AreaSeparator" Fill="{DynamicResource DockTitleBackgroundColor}" Height="1" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

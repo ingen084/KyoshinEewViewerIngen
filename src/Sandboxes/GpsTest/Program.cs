@@ -138,8 +138,8 @@ try
 									Console.WriteLine($"DCReport({report.MessageType}): " + report);
 									if (report is JmaDCReport jmaDCReport)
 										Console.WriteLine($"  Dc:{jmaDCReport.DisasterCategoryCode} It:{jmaDCReport.InformationType} Rc:{jmaDCReport.ReportClassification}");
-									else if (report is OtherOrganizationDCReport otherDCReport)
-										Console.WriteLine($"  Rc:{otherDCReport.ReportClassification} Oc:{otherDCReport.OrganizationCode} Raw:{BitConverter.ToString(otherDCReport.RawData)}");
+									else if (report is DCXReport dcxReport)
+										Console.WriteLine($"  {dcxReport.GetType().Name} A1:{dcxReport.CommonAlertMessage.MessageType} A2:{dcxReport.CommonAlertMessage.CountryRegionCode} A3:{dcxReport.CommonAlertMessage.ProviderIdentifier} A4:{dcxReport.CommonAlertMessage.HazardCategoryAndType} Raw:{BitConverter.ToString(dcxReport.RawData)}");
 								}
 								catch (DCReportParseException e)
 								{

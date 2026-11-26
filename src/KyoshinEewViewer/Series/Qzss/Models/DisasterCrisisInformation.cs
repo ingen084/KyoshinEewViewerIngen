@@ -4,10 +4,11 @@ using System.Text.Json.Serialization;
 namespace KyoshinEewViewer.Series.Qzss.Models;
 
 [JsonDerivedType(typeof(AshFallReportGroup))]
-[JsonDerivedType(typeof(DCXReportGroup))]
+[JsonDerivedType(typeof(DCXAreaReportGroup))]
 [JsonDerivedType(typeof(EewReportGroup))]
 [JsonDerivedType(typeof(FloodReportGroup))]
 [JsonDerivedType(typeof(HypocenterReportGroup))]
+[JsonDerivedType(typeof(JAlertReportGroup))]
 [JsonDerivedType(typeof(MarineReportGroup))]
 [JsonDerivedType(typeof(NankaiTroughEarthquakeReportGroup))]
 [JsonDerivedType(typeof(NorthwestPacificTsunamiReportGroup))]
