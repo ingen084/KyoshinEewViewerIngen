@@ -5,7 +5,6 @@ using FluentAvalonia.UI.Controls;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series.Qzss.Services;
 using KyoshinEewViewer.Services;
-using R3;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -116,19 +115,19 @@ public partial class QzssSettingPage : ObservableObject, ISettingPage
 	{
 		Config = config;
 		Connector = connector;
-		Connector.ObservePropertyChanged(x => x.IsConnected).Subscribe(_ => OnPropertyChanged(nameof(CanRunSetup)));
-		Config.Qzss.ObservePropertyChanged(x => x.ConnectionType).Subscribe(_ =>
+		Connector.ObservePropertyChanged(x => x.IsConnected).SubscribeLoggingErrors(_ => OnPropertyChanged(nameof(CanRunSetup)));
+		Config.Qzss.ObservePropertyChanged(x => x.ConnectionType).SubscribeLoggingErrors(_ =>
 		{
 			OnPropertyChanged(nameof(IsSerialConnection));
 			OnPropertyChanged(nameof(IsTcpConnection));
 			OnPropertyChanged(nameof(CanRunSetup));
 		});
-		Config.Qzss.ObservePropertyChanged(x => x.Connect).Subscribe(_ =>
+		Config.Qzss.ObservePropertyChanged(x => x.Connect).SubscribeLoggingErrors(_ =>
 		{
 			OnPropertyChanged(nameof(CanDetectBaudRate));
 			OnPropertyChanged(nameof(CanEditConnection));
 		});
-		Config.Qzss.ObservePropertyChanged(x => x.SerialPort).Subscribe(_ =>
+		Config.Qzss.ObservePropertyChanged(x => x.SerialPort).SubscribeLoggingErrors(_ =>
 			OnPropertyChanged(nameof(CanDetectBaudRate)));
 	}
 

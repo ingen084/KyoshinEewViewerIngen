@@ -6,8 +6,8 @@ using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.Map;
 using CommunityToolkit.Mvvm.Messaging;
 using KyoshinEewViewer.ViewModels;
-using R3;
 using System;
+using System.Reactive.Linq;
 
 namespace KyoshinEewViewer.Views;
 
@@ -25,14 +25,14 @@ public partial class SeriesWindow : Window
 
 		_themeSubscription = KyoshinEewViewerApp.Selector?.ObservePropertyChanged(x => x.SelectedWindowTheme)
 			.Where(x => x != null)
-			.Subscribe(x =>
+			.SubscribeLoggingErrors(x =>
 			{
 				Map.RefreshResourceCache(x!.Theme);
 				MiniMap.RefreshResourceCache(x!.Theme);
 			});
 
 		var config = ServiceLocator.Current.RequireService<KyoshinEewViewerConfiguration>();
-		_manualMapControlSubscription = config.Map.ObservePropertyChanged(x => x.DisableManualMapControl).Subscribe(x =>
+		_manualMapControlSubscription = config.Map.ObservePropertyChanged(x => x.DisableManualMapControl).SubscribeLoggingErrors(x =>
 		{
 			HomeButton.IsVisible = !x;
 			Map.IsDisableManualControl = x;
@@ -43,11 +43,10 @@ public partial class SeriesWindow : Window
 		Map.Zoom = 6;
 		Map.CenterLocation = new KyoshinMonitorLib.Location(36.474f, 135.264f);
 
-		// R3 の ThrottleLast は dotnet/reactive の Sample 相当
 		_miniMapVisibilitySubscription = Observable.CombineLatest(
 				Map.ObservePropertyChanged(m => m.CenterLocation).AsUnitObservable(),
 				Map.ObservePropertyChanged(m => m.Zoom).AsUnitObservable())
-			.ThrottleLast(TimeSpan.FromSeconds(.1)).Subscribe(m =>
+			.ThrottleLast(TimeSpan.FromSeconds(.1)).SubscribeLoggingErrors(m =>
 		{
 			Dispatcher.UIThread.Post(() =>
 			{
@@ -55,7 +54,7 @@ public partial class SeriesWindow : Window
 				ResetMinimapPosition();
 			});
 		});
-		_miniMapBoundsSubscription = MiniMap.ObservePropertyChanged(m => m.Bounds).Subscribe(b => ResetMinimapPosition());
+		_miniMapBoundsSubscription = MiniMap.ObservePropertyChanged(m => m.Bounds).SubscribeLoggingErrors(b => ResetMinimapPosition());
 
 		DataContextChanged += OnDataContextChanged;
 		Opened += OnOpened;
@@ -97,7 +96,7 @@ public partial class SeriesWindow : Window
 			});
 
 			_seriesNavigationSubscription = vm.Series.ObservePropertyChanged(x => x.MapNavigationRequest)
-				.Subscribe(x =>
+				.SubscribeLoggingErrors(x =>
 				{
 					if (config.Map.AutoFocus)
 						NavigateMap(x, config);

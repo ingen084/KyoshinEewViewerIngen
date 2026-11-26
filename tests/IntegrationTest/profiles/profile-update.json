@@ -4,8 +4,7 @@
 	"SeriesEnable": {
 		"kyoshin-monitor": false,
 		"earthquake": false,
-		"tsunami": false,
-		"lightning": false
+		"tsunami": false
 	},
 	"NetworkTime": {
 		"Enable": false

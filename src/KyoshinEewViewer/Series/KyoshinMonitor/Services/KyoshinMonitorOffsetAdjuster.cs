@@ -11,6 +11,8 @@ namespace KyoshinEewViewer.Series.KyoshinMonitor.Services;
 /// </summary>
 internal sealed class KyoshinMonitorOffsetAdjuster(TimeProvider? timeProvider = null)
 {
+	/// <summary>自動調整で延ばすオフセットの上限 (ミリ秒)</summary>
+	public const int MaximumOffset = 5000;
 	private static readonly TimeSpan NormalInterval = TimeSpan.FromMinutes(1);
 	private static readonly TimeSpan MaximumInterval = TimeSpan.FromMinutes(30);
 	private readonly TimeProvider _timeProvider = timeProvider ?? TimeProvider.System;
@@ -48,7 +50,10 @@ internal sealed class KyoshinMonitorOffsetAdjuster(TimeProvider? timeProvider = 
 				_shorteningInterval = TimeSpan.FromTicks(Math.Min(MaximumInterval.Ticks, _shorteningInterval.Ticks * 2));
 			_shorteningPending = false;
 			_lastAdjustmentTimestamp = _timeProvider.GetTimestamp();
-			timer.Offset = Math.Min(5000, offset + 100);
+			// 上限ではオフセットが変わらず、同じ画像を取り直すだけになる
+			if (offset >= MaximumOffset)
+				return response;
+			timer.Offset = Math.Min(MaximumOffset, offset + 100);
 			_expectedOffset = timer.Offset;
 
 			// 次の要求を始める前に応答を破棄し、同時に要求を増やさない。

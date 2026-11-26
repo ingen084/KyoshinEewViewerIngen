@@ -5,11 +5,11 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Services;
-using R3;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using KyoshinEewViewer.Core;
@@ -49,6 +49,12 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 		KyoshinMonitorWatcher.RealtimeDataUpdated += OnRealtimeDataUpdated;
 		KyoshinMonitorWatcher.WarningMessageUpdated += m => WarningMessage = m;
 		KyoshinMonitorWatcher.RealtimeDataParseProcessStarted += t => IsWorking = true;
+		KyoshinMonitorWatcher.DisconnectedStateChanged += disconnected =>
+		{
+			KyoshinMonitorDisconnected = disconnected;
+			if (disconnected)
+				EventStateTracker.Clear();
+		};
 
 		TimerService.DelayedTimerElapsed += (time) =>
 		{
@@ -116,7 +122,8 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 
 		KyoshinMonitorWatcher.RealtimeDataUpdated += e =>
 		{
-			if (e.data != null)
+			// 切断中は観測点のない更新でも切断の表示を残す
+			if (!KyoshinMonitorDisconnected)
 				WarningMessage = null;
 			IsWorking = false;
 			CurrentDisplayTime = e.time;
@@ -151,9 +158,10 @@ public class TimeshiftEarthquakeInformationHost : EarthquakeInformationHost
 		// 全EEWソース受信失敗の判定
 		Observable.CombineLatest(
 				this.ObservePropertyChanged(x => x.Config, x => x.Eew, x => x.EnableKyoshinMonitor).AsUnitObservable(),
-				this.ObservePropertyChanged(x => x.Config, x => x.KyoshinMonitor, x => x.ReceiveMode).AsUnitObservable())
-			.Subscribe(e => {
-				AllEewSourceFailed = !Config.Eew.EnableKyoshinMonitor || Config.KyoshinMonitor.ReceiveMode == KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.None;
+				this.ObservePropertyChanged(x => x.Config, x => x.KyoshinMonitor, x => x.ReceiveMode).AsUnitObservable(),
+				this.ObservePropertyChanged(x => x.KyoshinMonitorDisconnected).AsUnitObservable())
+			.SubscribeLoggingErrors(e => {
+				AllEewSourceFailed = !Config.Eew.EnableKyoshinMonitor || Config.KyoshinMonitor.ReceiveMode == KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.None || KyoshinMonitorDisconnected;
 			});
 	}
 

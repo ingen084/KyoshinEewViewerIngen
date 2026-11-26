@@ -17,7 +17,6 @@ using KyoshinEewViewer.Series.Qzss.Services;
 using KyoshinEewViewer.Series.Qzss.SettingPages;
 using KyoshinEewViewer.Series.Qzss.Workflow;
 using KyoshinEewViewer.Services;
-using R3;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -55,7 +54,7 @@ public partial class QzssSeries : SeriesBase
 		NankaiTroughCompletedSound = soundPlayer.RegisterSound(SoundCategory, "NankaiTroughCompleted", "南海トラフ情報受信完了", "南海トラフに関する情報の受信が完了した場合に鳴動します。");
 
 		Connector = connector;
-		Connector.ObservePropertyChanged(s => s.CurrentLocation).Subscribe(s =>
+		Connector.ObservePropertyChanged(s => s.CurrentLocation).SubscribeLoggingErrors(s =>
 		{
 			if (s == null)
 				return;
@@ -72,11 +71,11 @@ public partial class QzssSeries : SeriesBase
 
 		// タイムゾーンオフセットの設定を監視
 		Config.Qzss.ObservePropertyChanged(s => s.TimezoneOffset)
-			.Subscribe(s => DCReportGroup.TimezoneOffset = s);
+			.SubscribeLoggingErrors(s => DCReportGroup.TimezoneOffset = s);
 
-		Config.Qzss.ObservePropertyChanged(s => s.ShowCurrentPositionInMap).Subscribe(s => UpdateDisplay());
+		Config.Qzss.ObservePropertyChanged(s => s.ShowCurrentPositionInMap).SubscribeLoggingErrors(s => UpdateDisplay());
 
-		this.ObservePropertyChanged(s => s.SelectedDCReportGroup).Subscribe(g =>
+		this.ObservePropertyChanged(s => s.SelectedDCReportGroup).SubscribeLoggingErrors(g =>
 		{
 			_navigationRequestSubscription?.Dispose();
 			_navigationRequestSubscription = null;
@@ -87,8 +86,8 @@ public partial class QzssSeries : SeriesBase
 
 			if (g == null)
 				return;
-			_mapDisplayParameterSubscription = g.ObservePropertyChanged(s => s.MapDisplayParameter).Subscribe(s => UpdateDisplay());
-			_navigationRequestSubscription = g.ObservePropertyChanged(s => s.MapNavigationRequest).Subscribe(s => UpdateDisplay());
+			_mapDisplayParameterSubscription = g.ObservePropertyChanged(s => s.MapDisplayParameter).SubscribeLoggingErrors(s => UpdateDisplay());
+			_navigationRequestSubscription = g.ObservePropertyChanged(s => s.MapNavigationRequest).SubscribeLoggingErrors(s => UpdateDisplay());
 		});
 	}
 

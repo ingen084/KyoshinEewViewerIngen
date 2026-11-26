@@ -20,7 +20,6 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Events;
 using KyoshinEewViewer.Series.Tsunami;
 using KyoshinEewViewer.Series.Tsunami.Events;
 using KyoshinEewViewer.Services;
-using R3;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -88,7 +87,7 @@ namespace SlackBot
 			TsunamiSeries = ServiceLocator.Current.RequireService<TsunamiSeries>();
 
 			KyoshinEewViewerApp.Selector?.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null)
-					.Subscribe(x =>
+					.SubscribeLoggingErrors(x =>
 					{
 						Map.RefreshResourceCache(x!.Theme);
 						MiniMap.RefreshResourceCache(x!.Theme);
@@ -137,7 +136,7 @@ namespace SlackBot
 			Observable.CombineLatest(
 					Map.ObservePropertyChanged(m => m.CenterLocation).AsUnitObservable(),
 					Map.ObservePropertyChanged(m => m.Zoom).AsUnitObservable())
-				.Subscribe(_ =>
+				.SubscribeLoggingErrors(_ =>
 			{
 				Dispatcher.UIThread.Post(() =>
 				{
@@ -146,7 +145,7 @@ namespace SlackBot
 				});
 			});
 
-			MiniMap.ObservePropertyChanged(m => m.Bounds).Subscribe(_ => ResetMiniMapPosition());
+			MiniMap.ObservePropertyChanged(m => m.Bounds).SubscribeLoggingErrors(_ => ResetMiniMapPosition());
 
 			StrongReferenceMessenger.Default.Register<MapNavigationRequest>(this, (_, x) =>
 			{
@@ -344,7 +343,7 @@ namespace SlackBot
 					// アタッチ
 					if (_selectedSeries != null)
 					{
-						MapDisplayParameterListener = _selectedSeries.ObservePropertyChanged(x => x.MapDisplayParameter).Subscribe(x =>
+						MapDisplayParameterListener = _selectedSeries.ObservePropertyChanged(x => x.MapDisplayParameter).SubscribeLoggingErrors(x =>
 						{
 							Dispatcher.UIThread.Post(() => Map.Padding = x.Padding);
 							LandLayer.CustomColorMap = x.CustomColorMap;
@@ -356,7 +355,7 @@ namespace SlackBot
 						LandLayer.CustomColorMap = _selectedSeries.MapDisplayParameter.CustomColorMap;
 						MiniMapLandLayer.CustomColorMap = _selectedSeries.MapDisplayParameter.CustomColorMap;
 
-						MapNavigationRequestListener = _selectedSeries.ObservePropertyChanged(x => x.MapNavigationRequest).Subscribe(OnMapNavigationRequested);
+						MapNavigationRequestListener = _selectedSeries.ObservePropertyChanged(x => x.MapNavigationRequest).SubscribeLoggingErrors(OnMapNavigationRequested);
 						OnMapNavigationRequested(_selectedSeries.MapNavigationRequest);
 
 						UpdateMapLayers();

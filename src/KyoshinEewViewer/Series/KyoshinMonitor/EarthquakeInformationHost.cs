@@ -98,6 +98,12 @@ public abstract partial class EarthquakeInformationHost(bool isReplay, KyoshinEe
 	[ObservableProperty]
 	public partial string DmdataEewClientStateDescription { get; set; } = "";
 
+	/// <summary>
+	/// 強震モニタを長時間受信できず、表示を停止しているか
+	/// </summary>
+	[ObservableProperty]
+	public partial bool KyoshinMonitorDisconnected { get; set; }
+
 	[ObservableProperty]
 	public partial bool AllEewSourceFailed { get; set; }
 

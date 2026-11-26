@@ -140,6 +140,8 @@ dotnet test tests/KyoshinEewViewer.DCReportParser.Tests/
 
 このプロジェクトは [MIT License](LICENSE) の下で配布されています。
 
+改変したものを配布する場合や、名称・アイコンを利用する場合は、[派生物の配布と名称・アイコンの利用](fork-policy.md)を確認してください。
+
 ---
 
 ## リンク
@@ -147,5 +149,6 @@ dotnet test tests/KyoshinEewViewer.DCReportParser.Tests/
 - **公式リポジトリ**: https://github.com/ingen084/KyoshinEewViewerIngen
 - **リリース版ダウンロード**: https://github.com/ingen084/KyoshinEewViewerIngen/releases
 - **イシュー報告**: https://github.com/ingen084/KyoshinEewViewerIngen/issues
+- **行動規範**: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
 - **開発の支援 (pixivFANBOX)**: https://ingen084.fanbox.cc
 - **開発ドキュメント**: [CLAUDE.md](CLAUDE.md)

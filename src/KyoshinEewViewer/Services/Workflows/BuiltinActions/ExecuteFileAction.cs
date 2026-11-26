@@ -4,6 +4,7 @@ using Scriban;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -38,6 +39,12 @@ public partial class ExecuteFileAction : WorkflowAction
 
 	[ObservableProperty]
 	public partial bool WaitToEnd { get; set; } = true;
+
+	/// <summary>
+	/// コンソールアプリケーションのウィンドウを表示する (Windows のみ)
+	/// </summary>
+	[ObservableProperty]
+	public partial bool ShowWindow { get; set; }
 
 	[JsonIgnore]
 	[ObservableProperty]
@@ -94,7 +101,7 @@ public partial class ExecuteFileAction : WorkflowAction
 		if (UseShellExecute)
 		{
 			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-				return new ProcessStartInfo("cmd", $"/c start /b {filePath.Replace("&", "^&")}")
+				return new ProcessStartInfo("cmd", "/c " + BuildStartCommand(filePath))
 				{
 					WorkingDirectory = workingDirectory,
 					CreateNoWindow = true,
@@ -116,7 +123,27 @@ public partial class ExecuteFileAction : WorkflowAction
 		return new ProcessStartInfo(filePath, arguments)
 		{
 			WorkingDirectory = workingDirectory,
-			CreateNoWindow = true,
+			CreateNoWindow = !ShowWindow,
 		};
+	}
+
+	/// <summary>
+	/// 既定のアプリで開くための start コマンドを組み立てる (Windows)
+	/// </summary>
+	private string BuildStartCommand(string filePath)
+	{
+		// start は最初の引用符付き文字列をウィンドウタイトルとして扱うため、引用符で囲まれたパスの前には空のタイトルを置く
+		var command = filePath.StartsWith("\"\"") ? filePath[2..].TrimStart() : filePath;
+		var title = command.StartsWith('"') ? "\"\" " : "";
+
+		// start はバッチファイルを cmd /K で起動し、終了後も cmd が入力待ちのまま残るため、cmd /c を介して起動する
+		// その場合は外側と内側の cmd で2回解釈されるので、& は2重にエスケープする
+		var target = command.StartsWith('"') ? command[1..].Split('"')[0] : command.Split(' ', '\t')[0];
+		command = !target.Contains("://") && Path.GetExtension(target).ToLowerInvariant() is ".bat" or ".cmd"
+			? "cmd /c " + command.Replace("&", "^^^&")
+			: command.Replace("&", "^&");
+
+		// cmd 自体は常に非表示にし、/b を外すと start が起動するコンソールアプリに新しいウィンドウが割り当てられる
+		return $"start {(ShowWindow ? "" : "/b ")}{title}{command}";
 	}
 }

@@ -19,7 +19,6 @@ using KyoshinEewViewer.Series.Radar;
 using KyoshinEewViewer.Series.Tsunami;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.Services.Workflows.BuiltinTriggers;
-using R3;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -134,8 +133,8 @@ public partial class MainViewModel : ViewModelBase
 				{
 					_selectedSeries.IsActivated = true;
 
-					MapDisplayParameterListener = _selectedSeries.ObservePropertyChanged(x => x.MapDisplayParameter).Subscribe(x => MapDisplayParameter = x);
-					MapNavigationRequestListener = _selectedSeries.ObservePropertyChanged(x => x.MapNavigationRequest).Subscribe(OnMapNavigationRequested);
+					MapDisplayParameterListener = _selectedSeries.ObservePropertyChanged(x => x.MapDisplayParameter).SubscribeLoggingErrors(x => MapDisplayParameter = x);
+					MapNavigationRequestListener = _selectedSeries.ObservePropertyChanged(x => x.MapNavigationRequest).SubscribeLoggingErrors(OnMapNavigationRequested);
 				}
 				DisplayControl = _selectedSeries?.DisplayControl;
 			}
@@ -214,12 +213,12 @@ public partial class MainViewModel : ViewModelBase
 		}
 		NotificationService.Initialize();
 
-		Config.ObservePropertyChanged(x => x.WindowScale).Subscribe(x => Scale = x);
+		Config.ObservePropertyChanged(x => x.WindowScale).SubscribeLoggingErrors(x => Scale = x);
 
-		Config.Map.ObservePropertyChanged(x => x.MaxNavigateZoom).Subscribe(x => MaxMapNavigateZoom = x);
+		Config.Map.ObservePropertyChanged(x => x.MaxNavigateZoom).SubscribeLoggingErrors(x => MaxMapNavigateZoom = x);
 		MaxMapNavigateZoom = Config.Map.MaxNavigateZoom;
 
-		Config.Map.ObservePropertyChanged(x => x.ShowGrid).Subscribe(x => UpdateMapLayers());
+		Config.Map.ObservePropertyChanged(x => x.ShowGrid).SubscribeLoggingErrors(x => UpdateMapLayers());
 
 		updateCheckService.Updated += x =>
 		{
@@ -278,7 +277,7 @@ public partial class MainViewModel : ViewModelBase
 			// マルチウィンドウ機能が無効になったときにすべてのサブウィンドウを閉じる
 			Config.MultiWindow.ObservePropertyChanged(x => x.Enable)
 				.Where(x => !x)
-				.Subscribe(_ => SubWindowsService.CloseAllSeriesWindows());
+				.SubscribeLoggingErrors(_ => SubWindowsService.CloseAllSeriesWindows());
 		}
 
 		SeriesController.RegisterSeries(KyoshinMonitorSeries.MetaData);
@@ -289,7 +288,6 @@ public partial class MainViewModel : ViewModelBase
 
 #if DEBUG
 		SeriesController.RegisterSeries(Series.Typhoon.TyphoonSeries.MetaData);
-		SeriesController.RegisterSeries(Series.Lightning.LightningSeries.MetaData);
 		SeriesController.RegisterSeries(Series.ShakeDetectionVerifier.ShakeDetectionVerifierSeries.MetaData);
 #endif
 		SeriesController.RegisterSeries(ObservationPointEditorSeries.MetaData);

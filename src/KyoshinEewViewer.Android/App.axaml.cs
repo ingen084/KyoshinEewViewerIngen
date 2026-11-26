@@ -11,7 +11,6 @@ using KyoshinEewViewer.CustomControl;
 using KyoshinEewViewer.Series;
 using KyoshinEewViewer.ViewModels;
 using KyoshinEewViewer.Views;
-using R3;
 using System;
 using System.Linq;
 using System.Reactive.Linq;
@@ -68,7 +67,7 @@ public class App : Application
 
 			KyoshinEewViewerApp.Selector.ApplyTheme(config.Theme.WindowTheme, config.Theme.IntensityTheme);
 			KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedIntensityTheme)
-				.Subscribe(x =>
+				.SubscribeLoggingErrors(x =>
 				{
 					if (x == null) return;
 					config.Theme.IntensityTheme = x.Meta;

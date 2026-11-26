@@ -8,7 +8,7 @@ namespace KyoshinEewViewer.Tests.Services;
 
 /// <summary>
 /// DI 登録の検証。
-/// Splat では未登録の nullable 引数が null として解決されていたが、MS.DI は例外になるため、
+/// MS.DI は未登録の引数を nullable でも解決できず例外にするため、
 /// プラットフォーム固有サービスを持たない構成でも解決できることを保証する。
 /// </summary>
 public class ServiceRegistrationTests

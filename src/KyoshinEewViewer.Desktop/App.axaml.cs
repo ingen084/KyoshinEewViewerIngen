@@ -16,7 +16,6 @@ using KyoshinEewViewer.Notification;
 using KyoshinEewViewer.Series;
 using KyoshinEewViewer.Services;
 using KyoshinEewViewer.ViewModels;
-using R3;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -114,7 +113,7 @@ public class App : Application
 
 			KyoshinEewViewerApp.Selector.ApplyTheme(config.Theme.WindowTheme, config.Theme.IntensityTheme);
 			KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedIntensityTheme)
-				.Subscribe(x =>
+				.SubscribeLoggingErrors(x =>
 				{
 					if (x == null) return;
 					config.Theme.IntensityTheme = x.Meta;
@@ -204,7 +203,7 @@ public class App : Application
 							DataContext = ServiceLocator.Current.RequireService<MainViewModel>(),
 						};
 						desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
-						KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).Subscribe(x =>
+						KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).SubscribeLoggingErrors(x =>
 						{
 							if (x == null) return;
 							config.Theme.WindowTheme = x.Meta;
@@ -294,6 +293,15 @@ public class App : Application
 				}
 			}).ConfigureAwait(false);
 
+			// macOS の Dock アイコンのクリックで、トレイに格納したメインウィンドウも開く。
+			// クリックはウィンドウの表示中にも届くため、表示中なら前面に出すのは AppKit に任せ、他のウィンドウより手前に割り込ませない
+			if (this.TryGetFeature<IActivatableLifetime>() is { } activatable)
+				activatable.Activated += (_, e) =>
+				{
+					if (e.Kind == ActivationKind.Reopen && MainWindow is { IsVisible: false } or { WindowState: WindowState.Minimized })
+						StrongReferenceMessenger.Default.Send(new ShowMainWindowRequested());
+				};
+
 			desktop.Exit += (s, e) =>
 			{
 				StrongReferenceMessenger.Default.Send(new ApplicationClosing());
@@ -345,4 +353,12 @@ public class App : Application
 	public void OpenSettingsClicked(object sender, EventArgs args)
 		=> StrongReferenceMessenger.Default.Send(new ShowSettingWindowRequested());
 
+	public void HideClicked(object sender, EventArgs args)
+		=> this.TryGetFeature<IActivatableLifetime>()?.TryEnterBackground();
+
+	public void QuitClicked(object sender, EventArgs args)
+	{
+		if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+			desktop.TryShutdown();
+	}
 }

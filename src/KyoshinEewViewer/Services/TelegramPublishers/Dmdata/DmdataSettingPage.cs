@@ -4,7 +4,6 @@ using DmdataSharp.Redundancy;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Series;
-using R3;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,7 +48,7 @@ public partial class DmdataSettingPage : ObservableObject, ISettingPage
 		
 		// WebSocket接続状態を監視
 		DmdataRedundantTelegramPublisher.ObservePropertyChanged(x => x.RedundancyStatus)
-			.Subscribe(status =>
+			.SubscribeLoggingErrors(status =>
 			{
 				IsWebSocketConnected = status == RedundancyStatus.FullyConnected || 
 				                      status == RedundancyStatus.PartiallyConnected;

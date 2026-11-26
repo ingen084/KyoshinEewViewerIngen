@@ -52,7 +52,11 @@
 
 	<NativeMenu.Menu>
 		<NativeMenu>
-			<NativeMenuItem Header="設定" Click="OpenSettingsClicked" />
+			<NativeMenuItem Header="設定…" Gesture="Meta+OemComma" Click="OpenSettingsClicked" />
+			<NativeMenuItemSeparator />
+			<NativeMenuItem Header="KyoshinEewViewer for ingen を非表示" Gesture="Meta+H" Click="HideClicked" />
+			<NativeMenuItemSeparator />
+			<NativeMenuItem Header="KyoshinEewViewer for ingen を終了" Gesture="Meta+Q" Click="QuitClicked" />
 		</NativeMenu>
 	</NativeMenu.Menu>
 </Application>

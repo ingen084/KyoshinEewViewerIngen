@@ -8,7 +8,8 @@
 
 ## 開発の支援
 
-[pixivFANBOX](https://ingen084.fanbox.cc) で開発を支援していただけます。
+[pixivFANBOX](https://ingen084.fanbox.cc) で開発の支援を受け付けています。  
+支援いただいたお金は検証環境や開発に使用させていただきます。
 
 ## 揺れの到達予想円について
 

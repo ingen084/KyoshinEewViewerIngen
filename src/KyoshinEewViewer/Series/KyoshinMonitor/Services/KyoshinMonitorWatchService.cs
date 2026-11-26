@@ -106,9 +106,36 @@ public class KyoshinMonitorWatchService
 	/// 画像取得成功時刻の比較で時刻ジャンプを検出した際に発火する
 	/// </summary>
 	public event Action<TimeSpan>? TimeJumpDetected;
+	/// <summary>
+	/// 強震モニタを長時間受信できず表示を停止したとき (true) と、受信が戻ったとき (false) に発火する
+	/// </summary>
+	public event Action<bool>? DisconnectedStateChanged;
+	/// <summary>
+	/// PCの時刻が進んでいるために受信できないと判断し、時刻同期のやり直しを求めるときに発火する
+	/// </summary>
+	public event Action? TimeSyncRequested;
+
+	/// <summary>
+	/// 強震モニタを長時間受信できず、表示を停止して再試行しているか
+	/// </summary>
+	public bool IsDisconnected => ConnectionMonitor.IsDisconnected;
 
 	private DateTime? _lastSuccessfulFetchTime;
 	private KyoshinMonitorOffsetAdjuster OffsetAdjuster { get; } = new();
+	private KyoshinMonitorConnectionMonitor ConnectionMonitor { get; } = new();
+	private KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode? _lastReceiveMode;
+	/// <summary>受信できない間に表示している警告</summary>
+	private string? _failureMessage;
+	/// <summary>受信できない間に時刻同期のやり直しを求めたか</summary>
+	private bool _timeSyncRequested;
+
+	private enum FailureCause
+	{
+		Connection,
+		DataNotUpdated,
+		OffsetTooShort,
+		ClockAhead,
+	}
 
 	public KyoshinMonitorWatchService(ILogger<KyoshinMonitorWatchService> logger, KyoshinEewViewerConfiguration config, EewController eewControlService, ObservationPointsUpdateService observationPointsUpdateService)
 	{
@@ -149,7 +176,7 @@ public class KyoshinMonitorWatchService
 
 			Logger.LogInformation("観測点情報を読み込みました。");
 		}
-		WarningMessageUpdated?.Invoke("初回のデータ取得中です。しばらくお待ち下さい。");
+		UpdateWarningMessage("初回のデータ取得中です。しばらくお待ち下さい。");
 	}
 
 	private bool IsRunning { get; set; }
@@ -176,8 +203,24 @@ public class KyoshinMonitorWatchService
 		if (IsRunning)
 			return;
 
+		// 受信モードが変わったら、以前の取得先での接続状態を引き継がない
+		var receiveMode = Config.KyoshinMonitor.ReceiveMode;
+		if (_lastReceiveMode != receiveMode)
+		{
+			_lastReceiveMode = receiveMode;
+			if (ConnectionMonitor.Reset())
+				OnRecovered();
+		}
+
 		// 無効化時はなにもしない
-		if (Config.KyoshinMonitor.ReceiveMode == KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.None)
+		if (receiveMode == KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.None)
+		{
+			RealtimeDataUpdated?.Invoke((time, [], []));
+			return;
+		}
+
+		// 切断中は再接続を試みる時刻になるまで取得せず、観測点を表示しないまま時刻だけ進める
+		if (!ConnectionMonitor.ShouldAttempt())
 		{
 			RealtimeDataUpdated?.Invoke((time, [], []));
 			return;
@@ -196,17 +239,26 @@ public class KyoshinMonitorWatchService
 		{
 			// 画像をGET (タイムアウトまで打ち切らず、遅延データもそのまま処理する)
 			var offset = Config.Timer.Offset;
+			var autoAdjust = Config.Timer.AutoOffsetIncrement;
 			using var response = await OffsetAdjuster.FetchAsync(
 				Config.Timer, () => GetWithDelayWarningAsync(imageUrl, time));
 			if (response.StatusCode != HttpStatusCode.OK)
 			{
-				WarningMessageUpdated?.Invoke(response.StatusCode == HttpStatusCode.NotFound
+				if (response.StatusCode == HttpStatusCode.NotFound)
+				{
+					if (ReportNotFound(time, offset, autoAdjust, response))
+						return;
+				}
+				else if (ReportFetchFailure(time, $"HTTP {(int)response.StatusCode}", FailureCause.Connection))
+					return;
+				UpdateWarningMessage(response.StatusCode == HttpStatusCode.NotFound
 					? Config.Timer.Offset != offset
 						? $"{time:HH:mm:ss} オフセットを調整しました。"
 						: $"{time:HH:mm:ss} オフセットを調整してください。"
 					: $"{time:HH:mm:ss} HTTPエラー ({(int)response.StatusCode})");
 				return;
 			}
+			ReportReachable();
 
 			// 画像取得成功時の時刻ジャンプ検出
 			if (_lastSuccessfulFetchTime is { } lastTime)
@@ -302,31 +354,40 @@ public class KyoshinMonitorWatchService
 		}
 		catch (AggregateException ex)
 		{
-			WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} 取得エラー");
-			Logger.LogWarning(ex, "取得に失敗しました。");
+			if (!ReportFetchFailure(time, ex.Message, FailureCause.Connection))
+			{
+				UpdateWarningMessage($"{time:HH:mm:ss} 取得エラー");
+				Logger.LogWarning(ex, "取得に失敗しました。");
+			}
 			trans.Finish(ex, SpanStatus.InternalError);
 		}
 		catch (TaskCanceledException ex)
 		{
-			WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} タイムアウトしました。");
-			Logger.LogWarning(ex, "取得にタイムアウトしました。");
+			if (!ReportFetchFailure(time, "タイムアウト", FailureCause.Connection))
+			{
+				UpdateWarningMessage($"{time:HH:mm:ss} タイムアウトしました。");
+				Logger.LogWarning(ex, "取得にタイムアウトしました。");
+			}
 			trans.Finish(ex, SpanStatus.DeadlineExceeded);
 		}
 		catch (KyoshinMonitorException ex)
 		{
-			WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} {ex.Message}");
+			UpdateWarningMessage($"{time:HH:mm:ss} {ex.Message}");
 			Logger.LogWarning(ex, "取得にタイムアウトしました。");
 			trans.Finish(ex, SpanStatus.DeadlineExceeded);
 		}
 		catch (HttpRequestException ex)
 		{
-			WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} HTTPエラー");
-			Logger.LogWarning(ex, "HTTPエラー");
+			if (!ReportFetchFailure(time, ex.Message, FailureCause.Connection))
+			{
+				UpdateWarningMessage($"{time:HH:mm:ss} HTTPエラー");
+				Logger.LogWarning(ex, "HTTPエラー");
+			}
 			trans.Finish(ex);
 		}
 		catch (Exception ex)
 		{
-			WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} 汎用エラー({ex.Message})");
+			UpdateWarningMessage($"{time:HH:mm:ss} 汎用エラー({ex.Message})");
 			Logger.LogWarning(ex, "汎用エラー");
 			trans.Finish(ex);
 		}
@@ -381,6 +442,98 @@ public class KyoshinMonitorWatchService
 		_lastSuccessfulFetchTime = null;
 	}
 
+	private void ReportReachable()
+	{
+		if (ConnectionMonitor.ReportReachable() is not { } outage)
+			return;
+		Logger.LogInformation("強震モニタの受信が戻りました (約{Seconds:0}秒間受信できませんでした)", outage.TotalSeconds);
+		OnRecovered();
+	}
+
+	private void OnRecovered()
+	{
+		_failureMessage = null;
+		_timeSyncRequested = false;
+		DisconnectedStateChanged?.Invoke(false);
+	}
+
+	/// <summary>
+	/// 404 を記録する。オフセットの自動調整で解消する見込みがある間は、これだけでは受信失敗としない
+	/// </summary>
+	/// <param name="offset">取得前のオフセット。取得中に自動調整で延びた値では判断しない</param>
+	/// <returns>受信失敗の状態のため、取得ごとの警告を出さない場合 true</returns>
+	private bool ReportNotFound(DateTime time, int offset, bool autoAdjust, HttpResponseMessage response)
+	{
+		var serverDate = response.Headers.Date;
+		var clockAhead = KyoshinMonitorConnectionMonitor.EstimateClockAhead(time, offset, serverDate);
+		var cause = clockAhead >= KyoshinMonitorConnectionMonitor.ClockAheadThreshold ? FailureCause.ClockAhead
+			: autoAdjust ? FailureCause.DataNotUpdated
+			: FailureCause.OffsetTooShort;
+		var canAdjust = autoAdjust && offset < KyoshinMonitorOffsetAdjuster.MaximumOffset;
+		return ReportFetchFailure(time,
+			$"HTTP 404 (Offset={offset}ms, Date={serverDate:yyyy/MM/dd HH:mm:ss zzz}, Age={response.Headers.Age}, ずれ={clockAhead?.TotalSeconds:0.0}秒)",
+			cause, clockAhead, canDisconnect: !canAdjust);
+	}
+
+	/// <summary>
+	/// 受信に失敗したことを記録する。失敗が続いた場合は表示を停止する
+	/// </summary>
+	/// <param name="canDisconnect">false の場合、これだけでは受信失敗の状態に入らない</param>
+	/// <returns>受信失敗の状態のため、取得ごとの警告を出さない場合 true</returns>
+	private bool ReportFetchFailure(DateTime time, string reason, FailureCause cause, TimeSpan? clockAhead = null, bool canDisconnect = true)
+	{
+		var entered = ConnectionMonitor.ReportFailure(canDisconnect);
+		if (!ConnectionMonitor.IsDisconnected)
+			return false;
+
+		if (entered)
+		{
+			Logger.LogWarning("強震モニタを{Threshold:0}秒以上受信できないため、表示を停止します。{Delay:0}秒後から再試行します: {Reason}",
+				KyoshinMonitorConnectionMonitor.DisconnectThreshold.TotalSeconds, ConnectionMonitor.NextRetryDelay.TotalSeconds, reason);
+			ResetHistories();
+			DisconnectedStateChanged?.Invoke(true);
+		}
+		else if (canDisconnect)
+			Logger.LogInformation("強震モニタを受信できませんでした。{Delay:0}秒後に再試行します: {Reason}", ConnectionMonitor.NextRetryDelay.TotalSeconds, reason);
+		// 失敗した試行の間も、観測点を表示しないまま時刻を進める
+		RealtimeDataUpdated?.Invoke((time, [], []));
+
+		// オフセットを自動調整している間は、直前の原因の表示を残す
+		if (!canDisconnect)
+			return true;
+
+		var message = cause switch
+		{
+			FailureCause.ClockAhead => $"PCの時刻が約{Math.Round(clockAhead?.TotalSeconds ?? 0):0}秒進んでいます。時刻を確認してください。",
+			FailureCause.DataNotUpdated => "強震モニタのデータが更新されていません。",
+			FailureCause.OffsetTooShort => "データを取得できません。オフセットを確認してください。",
+			_ => "強震モニタに接続できません。自動で再接続します。",
+		};
+		if (message != _failureMessage)
+		{
+			_failureMessage = message;
+			WarningMessageUpdated?.Invoke(message);
+		}
+
+		if (cause == FailureCause.ClockAhead && !_timeSyncRequested)
+		{
+			_timeSyncRequested = true;
+			Logger.LogWarning("PCの時刻が強震モニタより約{Seconds:0.0}秒進んでいるため、時刻同期をやり直します", clockAhead?.TotalSeconds);
+			TimeSyncRequested?.Invoke();
+		}
+		return true;
+	}
+
+	/// <summary>
+	/// 警告を通知する。受信失敗の状態ではその表示を上書きしない
+	/// </summary>
+	private void UpdateWarningMessage(string message)
+	{
+		if (ConnectionMonitor.IsDisconnected)
+			return;
+		WarningMessageUpdated?.Invoke(message);
+	}
+
 	private void UpdateKyoshinMonitorEew(KyoshinMonitorLib.ApiResult.WebApi.Eew? eewData, DateTime time)
 	{
 		// 新しい情報の場合のみ更新を通知する
@@ -432,7 +585,7 @@ public class KyoshinMonitorWatchService
 			if (await Task.WhenAny(responseTask, Task.Delay(DelayWarningThreshold)) != responseTask)
 			{
 				trace?.MarkDelayed();
-				WarningMessageUpdated?.Invoke($"{time:HH:mm:ss} 取得が遅延しています。");
+				UpdateWarningMessage($"{time:HH:mm:ss} 取得が遅延しています。");
 			}
 			var response = await responseTask;
 			trace?.Complete(response);

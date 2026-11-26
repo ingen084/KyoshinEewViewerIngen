@@ -16,7 +16,6 @@ using System.Security.Cryptography;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using R3;
 using Microsoft.Extensions.Logging;
 
 namespace KyoshinEewViewer.Services;
@@ -118,7 +117,7 @@ public partial class UpdateCheckService : ObservableObject
 				Logger.LogWarning(ex, "UpdateCheck Error");
 			}
 		}, null, Timeout.Infinite, Timeout.Infinite);
-		config.Update.ObservePropertyChanged(x => x.Enable).Subscribe(x => CheckUpdateTask.Change(TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(100)));
+		config.Update.ObservePropertyChanged(x => x.Enable).SubscribeLoggingErrors(x => CheckUpdateTask.Change(TimeSpan.FromSeconds(10), TimeSpan.FromMinutes(100)));
 	}
 
 	/// <summary>

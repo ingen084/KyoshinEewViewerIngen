@@ -11,13 +11,13 @@ using KyoshinEewViewer.Series.KyoshinMonitor.SettingPages;
 using KyoshinEewViewer.Series.KyoshinMonitor.Templates;
 using KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 using KyoshinEewViewer.Services;
-using R3;
 using WorkflowsNamespace = KyoshinEewViewer.Services.Workflows;
 using KyoshinEewViewer.Services.Workflows.BuiltinActions;
 using KyoshinMonitorLib;
 using KyoshinEewViewer.Services.ExternalPublishers.Axis;
 using System;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading;
 using Avalonia;
 using Microsoft.Extensions.Logging;
@@ -96,14 +96,14 @@ public partial class KyoshinMonitorSeries : SeriesBase
 			}
 
 			MapNavigationSubscription?.Dispose();
-			MapNavigationSubscription = value.ObservePropertyChanged(x => x.MapNavigationRequest).Subscribe(x =>
+			MapNavigationSubscription = value.ObservePropertyChanged(x => x.MapNavigationRequest).SubscribeLoggingErrors(x =>
 			{
 				MapNavigationRequest = x;
 				UpdatePadding();
 			});
 
 			MapDisplayParameterSubscription?.Dispose();
-			MapDisplayParameterSubscription = value.ObservePropertyChanged(x => x.MapDisplayParameter).Subscribe(x => MapDisplayParameter = x with { OverlayLayers = [ShakeDetectionAreaLayer!, KyoshinMonitorLayer!], Padding = MapDisplayParameter.Padding });
+			MapDisplayParameterSubscription = value.ObservePropertyChanged(x => x.MapDisplayParameter).SubscribeLoggingErrors(x => MapDisplayParameter = x with { OverlayLayers = [ShakeDetectionAreaLayer!, KyoshinMonitorLayer!], Padding = MapDisplayParameter.Padding });
 
 			NowReplaying = value.IsReplay;
 		}
@@ -151,13 +151,15 @@ public partial class KyoshinMonitorSeries : SeriesBase
 	}
 
 	// 稼働判断はホストを所有するここに集約し、切り替え途中の一時的な停止をプールに伝えない。
+	// 切断中のホストは再接続の試行だけに絞るため、補充の対象にしない。
 	private void UpdateSocketPoolState()
 	{
 		// 設定変更と自動復帰が重なっても、古い判定が後から反映されないようにする。
 		lock (_socketPoolStateLock)
 			Services.KyoshinMonitorWatchService.SetSocketPoolEnabled(
 				Config.KyoshinMonitor.ReceiveMode == KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.Kmoni
-				&& (RealtimeInformationHost.IsRunning || TimeshiftInformationHost.IsRunning));
+				&& ((RealtimeInformationHost.IsRunning && !RealtimeInformationHost.KyoshinMonitorDisconnected)
+					|| (TimeshiftInformationHost.IsRunning && !TimeshiftInformationHost.KyoshinMonitorDisconnected)));
 	}
 
 	public DateTime CurrentDisplayTime => _currentInformationHost?.CurrentTime ?? DateTime.Now;
@@ -243,11 +245,13 @@ public partial class KyoshinMonitorSeries : SeriesBase
 					showSnpLocation ? snpLocation : null,
 					eewClientEnabled && showEewClientLocation ? eewClientLocation : null,
 				}.OfType<KyoshinMonitorLib.Location>().ToArray())
-			.Subscribe(locations => KyoshinMonitorLayer.UserLocations = locations);
+			.SubscribeLoggingErrors(locations => KyoshinMonitorLayer.UserLocations = locations);
 
-		config.Eew.ObservePropertyChanged(x => x.ShowDetails).Subscribe(x => ShowEewAccuracy = x);
-		config.KyoshinMonitor.ObservePropertyChanged(x => x.ShowColorSample).Subscribe(x => ShowColorSample = x);
-		config.ObservePropertyChanged(x => x.KyoshinMonitor, x => x.ReceiveMode).Subscribe(_ => UpdateSocketPoolState());
+		config.Eew.ObservePropertyChanged(x => x.ShowDetails).SubscribeLoggingErrors(x => ShowEewAccuracy = x);
+		config.KyoshinMonitor.ObservePropertyChanged(x => x.ShowColorSample).SubscribeLoggingErrors(x => ShowColorSample = x);
+		config.ObservePropertyChanged(x => x.KyoshinMonitor, x => x.ReceiveMode).SubscribeLoggingErrors(_ => UpdateSocketPoolState());
+		RealtimeInformationHost.ObservePropertyChanged(x => x.KyoshinMonitorDisconnected, pushCurrentValueOnSubscribe: false).SubscribeLoggingErrors(_ => UpdateSocketPoolState());
+		TimeshiftInformationHost.ObservePropertyChanged(x => x.KyoshinMonitorDisconnected, pushCurrentValueOnSubscribe: false).SubscribeLoggingErrors(_ => UpdateSocketPoolState());
 	}
 	public override void Initialize()
 	{
@@ -374,7 +378,7 @@ public partial class KyoshinMonitorSeries : SeriesBase
 
 		// 設定変更監視でEnabled状態を制御
 		Config.ObservePropertyChanged(x => x.Notification, x => x.EewReceived)
-			.Subscribe(enabled => eewReceivedWorkflow.Enabled = enabled);
+			.SubscribeLoggingErrors(enabled => eewReceivedWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(eewReceivedWorkflow);
 
@@ -408,7 +412,7 @@ public partial class KyoshinMonitorSeries : SeriesBase
 		};
 
 		Config.ObservePropertyChanged(x => x.Eew, x => x.SwitchAtAnnounce)
-			.Subscribe(enabled => eewSwitchWorkflow.Enabled = enabled);
+			.SubscribeLoggingErrors(enabled => eewSwitchWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(eewSwitchWorkflow);
 
@@ -430,7 +434,7 @@ public partial class KyoshinMonitorSeries : SeriesBase
 		};
 
 		Config.ObservePropertyChanged(x => x.KyoshinMonitor, x => x.SwitchAtShakeDetect)
-			.Subscribe(enabled => shakeSwitchWorkflow.Enabled = enabled);
+			.SubscribeLoggingErrors(enabled => shakeSwitchWorkflow.Enabled = enabled);
 
 		WorkflowService.SystemWorkflows.Add(shakeSwitchWorkflow);
 	}

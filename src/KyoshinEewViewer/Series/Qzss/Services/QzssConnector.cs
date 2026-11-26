@@ -6,11 +6,11 @@ using KyoshinEewViewer.Core.Models.Events;
 using KyoshinEewViewer.DCReportParser;
 using KyoshinEewViewer.DCReportParser.Exceptions;
 using KyoshinMonitorLib;
-using R3;
 using System;
 using System.Diagnostics;
 using System.IO.Ports;
 using System.Net.Sockets;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -127,7 +127,7 @@ public partial class QzssConnector : ObservableObject
 			port.Open();
 			parser.Reset();
 			IsConnected = true;
-			using (Config.Qzss.ObservePropertyChanged(x => x.Connect).Where(c => !c).Subscribe(x => port.Close()))
+			using (Config.Qzss.ObservePropertyChanged(x => x.Connect).Where(c => !c).SubscribeLoggingErrors(x => port.Close()))
 			{
 				if (ShouldLogStatus($"opened:{portName}"))
 					Logger.LogInformation("{SerialPort} をオープンしました", portName);
@@ -154,7 +154,7 @@ public partial class QzssConnector : ObservableObject
 
 		using var client = new TcpClient { ReceiveTimeout = TcpTimeoutMs };
 		// 接続解除されたらソケットを閉じ、接続待ち・受信待ちを打ち切る
-		using var disconnectSubscription = Config.Qzss.ObservePropertyChanged(x => x.Connect).Where(c => !c).Subscribe(x => client.Close());
+		using var disconnectSubscription = Config.Qzss.ObservePropertyChanged(x => x.Connect).Where(c => !c).SubscribeLoggingErrors(x => client.Close());
 
 		using (var timeout = new CancellationTokenSource(TcpTimeoutMs))
 		{

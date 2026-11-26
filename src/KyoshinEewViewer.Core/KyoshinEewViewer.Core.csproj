@@ -3,8 +3,14 @@
     <ItemGroup>
         <AvaloniaResource Include="**\*.axaml" />
         <AvaloniaResource Include="Common.axaml" />
-        <AvaloniaResource Include="Assets\**" />
+        <AvaloniaResource Include="Assets\**" Exclude="Assets\Fonts\**" />
+        <!-- フォントは Skia からコピーなしで参照できるよう、通常の埋め込みリソースにする (KyoshinEewViewerFonts 参照) -->
+        <EmbeddedResource Include="Assets\Fonts\**" />
     </ItemGroup>
+
+    <PropertyGroup>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="$(AvaloniaVersion)" />

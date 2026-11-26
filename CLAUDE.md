@@ -45,7 +45,6 @@ dotnet build KyoshinEewViewer.sln -t:Rebuild
 | Earthquake | JMA XML 地震情報の処理 |
 | Tsunami | 津波警報 |
 | Typhoon | 台風追跡 |
-| Lightning | 落雷検知 |
 | Radar | 気象レーダー |
 | Qzss | 衛星災害危機管理通報(災危通報) |
 
@@ -65,21 +64,7 @@ dotnet build KyoshinEewViewer.sln -t:Rebuild
 
 ### 技術スタック
 
-Avalonia UI (AXAML / MVVM / コンパイル済みバインディング)、CommunityToolkit.Mvvm、R3、System.Reactive、Microsoft.Extensions.DependencyInjection / Logging、KyoshinMonitorLib、FluentAvalonia、Scriban (テンプレートエンジン)、ManagedBass (音声)。
-
-ReactiveUI / Splat / DynamicData は使わない (移行済み)。対応は以下のとおり。
-
-| 旧 (ReactiveUI / Splat) | 現行 |
-|---|---|
-| `ReactiveObject` / `RaiseAndSetIfChanged` | `ObservableObject` / `[ObservableProperty]` (CommunityToolkit.Mvvm) |
-| `WhenAnyValue(x => x.Foo)` | `ObservePropertyChanged(x => x.Foo)` (R3) |
-| `WhenAnyValue(x => x.A.B)` (入れ子) | `ObservePropertyChanged(x => x.A, x => x.B)` |
-| `WhenAnyValue(a, b, (x, y) => ...)` (合成) | `Observable.CombineLatest(...)` |
-| `ToProperty` / `ObservableAsPropertyHelper` | 通常プロパティ + `Subscribe` で代入 |
-| `MessageBus.Current.Listen<T>()` / `SendMessage` | `StrongReferenceMessenger.Default.Register<T>` / `Send` |
-| `ReactiveCommand.Create` / `CreateFromTask` | `RelayCommand` / `AsyncRelayCommand` |
-| `Locator.Current` / `SplatRegistrations` | `ServiceLocator.Current` / `IServiceCollection` |
-| `ILogManager` / `LogHost` | `ILogger<T>` / `AppLog` |
+Avalonia UI (AXAML / MVVM / コンパイル済みバインディング)、CommunityToolkit.Mvvm、System.Reactive、Microsoft.Extensions.DependencyInjection / Logging、KyoshinMonitorLib、FluentAvalonia、Scriban (テンプレートエンジン)、ManagedBass (音声)。
 
 ## 開発パターン
 
@@ -145,8 +130,11 @@ bool プロパティに応じたスタイル切り替えには、コンバータ
 
 ### データ処理
 
-- R3 / System.Reactive によるリアクティブストリーム
+- System.Reactive によるリアクティブストリーム
+- プロパティの変更は `ObservePropertyChanged(x => x.Foo)` (`KyoshinEewViewer.Core` の `ReactiveExtensions`) で監視する。入れ子のプロパティは `ObservePropertyChanged(x => x.A, x => x.B)`、複数の値の合成は `Observable.CombineLatest(...)` を使う
+- **`ObservePropertyChanged` から始まる購読は `SubscribeLoggingErrors` で終える**。標準の `Subscribe` は、ハンドラーが例外を投げると発行元 (プロパティを代入した側) へ伝播させ、その購読も解除する。`Throttle` / `Delay` / `ThrottleLast` の後段ではハンドラーがスレッドプール上で呼ばれるため、例外がそのままプロセスを落とす。`SubscribeLoggingErrors` は例外を Warning でログに記録して購読を続ける
 - データ更新はスレッドセーフに行う
+- クラス間のメッセージは `StrongReferenceMessenger.Default` (`Register<T>` / `Send`) で送受信する
 - `TelegramProvideService` は同じカテゴリの購読者を順番に `await` する。ハンドラで長く待つと後続の購読者への配信が遅れるので、待つ必要のない処理は完了を待たずに返す
 - **複数のストリームから同じ UI 状態を更新する場合**は、ストリームごとに `ObserveOn` で購読せず、`Observable.Merge` などで1本にまとめてから `ObserveOn` する。System.Reactive の `ObserveOn` は1回のディスパッチで1件しか処理せず、続きを改めてディスパッチャーへ投入するため、別々の購読の間では発行した順に処理されない (例: 先に発行した「取得中」の通知が、後から発行した「取得完了」の通知より後に処理され、表示が「取得中」のまま残る)。実装例は `EarthquakeSeries`
 - **地図レイヤー描画**: CPU側でビットマップに事前ラスタライズしてキャッシュするのではなく、シェーダー (`SKRuntimeEffect`/SKSL) で毎フレーム、メッシュデータから直接画面出力へ変換する方式を優先する。テクスチャとして GPU にデータを渡す場合は「画像キャッシュ」ではなくデータ格納形式として扱う。ズームに応じた LOD (一次メッシュ粒度の切り替えなど) も選択肢に入れる

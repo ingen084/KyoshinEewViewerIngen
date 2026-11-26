@@ -2,7 +2,6 @@ using KyoshinEewViewer.Series.KyoshinMonitor.Services.Eew;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
 using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Services;
-using R3;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +11,7 @@ using SkiaSharp;
 using KyoshinEewViewer.Map;
 using KyoshinEewViewer.Services.ExternalPublishers.Axis;
 using KyoshinEewViewer.Services.ExternalPublishers.Axis.ApiModels;
+using System.Reactive.Linq;
 using System.Text.Json;
 using KyoshinEewViewer.Services.ExternalPublishers.Axis.ApiModels.Message;
 using KyoshinMonitorLib;
@@ -70,21 +70,28 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		AxisEewReceiver = new AxisEewReceiver(AppLog.Create<AxisEewReceiver>(), EewController);
 		DmdataEewClientReceiver = new DmdataEewClientReceiver(AppLog.Create<DmdataEewClientReceiver>(), config, EewController, TimerService);
 
-		DmdataEewClientReceiver.ObservePropertyChanged(x => x.IsEnabled).Subscribe(x => DmdataEewClientEnabled = x);
-		DmdataEewClientReceiver.ObservePropertyChanged(x => x.State).Subscribe(x =>
+		DmdataEewClientReceiver.ObservePropertyChanged(x => x.IsEnabled).SubscribeLoggingErrors(x => DmdataEewClientEnabled = x);
+		DmdataEewClientReceiver.ObservePropertyChanged(x => x.State).SubscribeLoggingErrors(x =>
 		{
 			DmdataEewClientDisconnected = x == DmdataEewClientConnectionState.Disconnected;
 			DmdataEewClientNotReceiving = x == DmdataEewClientConnectionState.ConnectedNotReceiving;
 		});
-		DmdataEewClientReceiver.ObservePropertyChanged(x => x.StateDescription).Subscribe(x => DmdataEewClientStateDescription = x);
+		DmdataEewClientReceiver.ObservePropertyChanged(x => x.StateDescription).SubscribeLoggingErrors(x => DmdataEewClientStateDescription = x);
 		config.Eew.ObservePropertyChanged(x => x.PreferCalculatedIntensityForecast, pushCurrentValueOnSubscribe: false)
-			.Subscribe(_ => EewController.RefreshEewUpdated(TimerService.CurrentTime));
+			.SubscribeLoggingErrors(_ => EewController.RefreshEewUpdated(TimerService.CurrentTime));
 
-		EewTelegramSubscriber.ObservePropertyChanged(x => x.Enabled).Subscribe(x => DmdataReceiving = x);
-		EewTelegramSubscriber.ObservePropertyChanged(x => x.WarningOnlyEnabled).Subscribe(x => DmdataWarningOnlyReceiving = x);
-		EewTelegramSubscriber.ObservePropertyChanged(x => x.IsDisconnected).Subscribe(x => DmdataDisconnected = x);
+		EewTelegramSubscriber.ObservePropertyChanged(x => x.Enabled).SubscribeLoggingErrors(x => DmdataReceiving = x);
+		EewTelegramSubscriber.ObservePropertyChanged(x => x.WarningOnlyEnabled).SubscribeLoggingErrors(x => DmdataWarningOnlyReceiving = x);
+		EewTelegramSubscriber.ObservePropertyChanged(x => x.IsDisconnected).SubscribeLoggingErrors(x => DmdataDisconnected = x);
 		KyoshinMonitorWatcher.WarningMessageUpdated += m => WarningMessage = m;
 		KyoshinMonitorWatcher.RealtimeDataParseProcessStarted += t => IsWorking = true;
+		KyoshinMonitorWatcher.DisconnectedStateChanged += disconnected =>
+		{
+			KyoshinMonitorDisconnected = disconnected;
+			if (disconnected)
+				EventStateTracker.Clear();
+		};
+		KyoshinMonitorWatcher.TimeSyncRequested += TimerService.SyncTimeNow;
 
 		AxisInformationProvider = axisInformationProvider;
 
@@ -137,7 +144,8 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 
 		KyoshinMonitorWatcher.RealtimeDataUpdated += e =>
 		{
-			if (e.data != null)
+			// 切断中は観測点のない更新でも切断の表示を残す
+			if (!KyoshinMonitorDisconnected)
 				WarningMessage = null;
 			IsWorking = false;
 			CurrentDisplayTime = e.time;
@@ -170,8 +178,8 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 		};
 		IsSignalNowEewReceiving = SignalNowEewReceiver.CanReceive;
 
-		Config.Axis.ObservePropertyChanged(x => x.Enable).Subscribe(e => AxisReceiving = e);
-		AxisInformationProvider.ObservePropertyChanged(x => x.IsConnected).Subscribe(e => {
+		Config.Axis.ObservePropertyChanged(x => x.Enable).SubscribeLoggingErrors(e => AxisReceiving = e);
+		AxisInformationProvider.ObservePropertyChanged(x => x.IsConnected).SubscribeLoggingErrors(e => {
 			AxisDisconnected = !e || (!AxisInformationProvider.CurrentPayload?.Channels.Contains("eew") ?? true);
 		});
 		AxisInformationProvider.MessageReceived += AxisMessageReceived;
@@ -187,13 +195,14 @@ public class RealtimeEarthquakeInformationHost : EarthquakeInformationHost
 				this.ObservePropertyChanged(x => x.DmdataEewClientDisconnected).AsUnitObservable(),
 				this.ObservePropertyChanged(x => x.DmdataEewClientNotReceiving).AsUnitObservable(),
 				this.ObservePropertyChanged(x => x.Config, x => x.Eew, x => x.EnableKyoshinMonitor).AsUnitObservable(),
-				this.ObservePropertyChanged(x => x.Config, x => x.KyoshinMonitor, x => x.ReceiveMode).AsUnitObservable())
-			.Subscribe(e => {
+				this.ObservePropertyChanged(x => x.Config, x => x.KyoshinMonitor, x => x.ReceiveMode).AsUnitObservable(),
+				this.ObservePropertyChanged(x => x.KyoshinMonitorDisconnected).AsUnitObservable())
+			.SubscribeLoggingErrors(e => {
 				AllEewSourceFailed = (!AxisReceiving || AxisDisconnected) &&
 									 !IsSignalNowEewReceiving &&
 									 (!DmdataReceiving || DmdataDisconnected) &&
 									 (!DmdataEewClientEnabled || DmdataEewClientDisconnected || DmdataEewClientNotReceiving) &&
-									 (!Config.Eew.EnableKyoshinMonitor || Config.KyoshinMonitor.ReceiveMode == KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.None);
+									 (!Config.Eew.EnableKyoshinMonitor || Config.KyoshinMonitor.ReceiveMode == KyoshinEewViewerConfiguration.KyoshinMonitorConfig.Mode.None || KyoshinMonitorDisconnected);
 			});
 	}
 

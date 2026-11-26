@@ -13,6 +13,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using KyoshinEewViewer.Series;
+using Microsoft.Extensions.Logging;
 
 namespace SlackBot
 {

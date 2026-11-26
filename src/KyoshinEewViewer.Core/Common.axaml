@@ -2,8 +2,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="using:FluentAvalonia.UI.Controls">
 	<Styles.Resources>
-		<FontFamily x:Key="IconFont">avares://KyoshinEewViewer.Core/Assets/Fonts/FontAwesome6Free-Solid-900.otf#Font Awesome 6 Free</FontFamily>
-		<FontFamily x:Key="MainFont">avares://KyoshinEewViewer.Core/Assets/Fonts/NotoSansJP/#Noto Sans JP</FontFamily>
+		<FontFamily x:Key="IconFont">resm:KyoshinEewViewer.Core.Assets.Fonts.FontAwesome6Free-Solid-900.otf?assembly=KyoshinEewViewer.Core#Font Awesome 6 Free</FontFamily>
+		<FontFamily x:Key="MainFont">resm:KyoshinEewViewer.Core.Assets.Fonts.NotoSansJP?assembly=KyoshinEewViewer.Core#Noto Sans JP</FontFamily>
 	</Styles.Resources>
 	<Style Selector="TextBlock.icon">
 		<Setter Property="FontFamily" Value="{StaticResource IconFont}" />
@@ -16,6 +16,11 @@
     <Style Selector="Window">
 		<Setter Property="FontFamily" Value="{StaticResource MainFont}" />
 		<Setter Property="FontWeight" Value="Regular" />
+	</Style>
+	<!-- FluentAvalonia 3.1.0 の FAItemsRepeater は、表示中に子要素がないとアクセシビリティ API からの子要素の問い合わせで例外を投げ、
+	     macOS ではアプリケーションが終了する (amwx/FluentAvalonia#773)。フッターの項目は使わないため、空のまま表示されないよう隠す -->
+	<Style Selector="ui|FANavigationView /template/ ui|FAItemsRepeater#FooterMenuItemsHost">
+		<Setter Property="IsVisible" Value="False" />
 	</Style>
     <!--
     <Style Selector="ui|FAFontIcon">

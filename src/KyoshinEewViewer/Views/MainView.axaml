@@ -109,10 +109,7 @@
             <Setter Property="Foreground" Value="{DynamicResource AccentFillColorDefaultBrush}" />
         </Style>
     </UserControl.Styles>
-    <LayoutTransformControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <LayoutTransformControl.LayoutTransform>
-            <ScaleTransform ScaleX="{Binding Scale}" ScaleY="{Binding Scale}" />
-        </LayoutTransformControl.LayoutTransform>
+    <cc:MinScaleViewbox Scale="{Binding Scale}" ClipToBounds="True">
         <Panel>
             <ui:FANavigationView Name="NavView"
                                Margin="0,-1,0,0"
@@ -279,5 +276,5 @@
                 </StackPanel>
             </Panel>
         </Panel>
-    </LayoutTransformControl>
+    </cc:MinScaleViewbox>
 </UserControl>

@@ -5,7 +5,6 @@ namespace KyoshinEewViewer.Core;
 
 /// <summary>
 /// DI でロガーを受け取れない静的クラスなどから使う既定のロガー。
-/// Splat の LogHost.Default の代替。
 /// </summary>
 public static class AppLog
 {

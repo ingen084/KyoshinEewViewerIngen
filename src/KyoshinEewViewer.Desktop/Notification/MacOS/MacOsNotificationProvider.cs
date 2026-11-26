@@ -11,6 +11,7 @@ namespace KyoshinEewViewer.Desktop.Notification.MacOS;
 
 /// <summary>
 /// NSUserNotification による通知プロバイダ (失敗時は osascript にフォールバック)。
+/// 通知をクリックするとメインウィンドウを開く。
 /// <para>
 /// 通知許可はコード署名アイデンティティに紐付くため、バンドルが無署名だと
 /// deliverNotification: はエラーも例外も出さず黙って破棄する (例外ベースのフォールバックにも落ちない)。
@@ -20,6 +21,23 @@ namespace KyoshinEewViewer.Desktop.Notification.MacOS;
 /// </summary>
 public class MacOsNotificationProvider : NotificationProvider
 {
+	private const string CenterDelegateClassName = "KeviUserNotificationCenterDelegate";
+
+	// NSUserNotificationCenter は delegate を保持しないため、解放せずにプロセスの終了まで持ち続ける
+	private static IntPtr _centerDelegate;
+
+	public MacOsNotificationProvider()
+	{
+		try
+		{
+			InstallCenterDelegate();
+		}
+		catch (Exception ex)
+		{
+			AppLog.Default.LogWarning(ex, "通知のクリックを受け取る準備に失敗しました");
+		}
+	}
+
 	public override void SendNotice(NotificationRequest request)
 	{
 		try
@@ -49,6 +67,64 @@ public class MacOsNotificationProvider : NotificationProvider
 
 	[DllImport(ObjCLibrary, EntryPoint = "objc_msgSend")]
 	private static extern IntPtr MsgSend(IntPtr receiver, IntPtr selector, IntPtr arg1);
+
+	[DllImport(ObjCLibrary, EntryPoint = "objc_allocateClassPair")]
+	private static extern IntPtr AllocateClassPair(IntPtr superclass, [MarshalAs(UnmanagedType.LPStr)] string name, nint extraBytes);
+
+	[DllImport(ObjCLibrary, EntryPoint = "objc_registerClassPair")]
+	private static extern void RegisterClassPair(IntPtr cls);
+
+	[DllImport(ObjCLibrary, EntryPoint = "class_addMethod")]
+	[return: MarshalAs(UnmanagedType.U1)]
+	private static extern bool AddMethod(IntPtr cls, IntPtr selector, IntPtr implementation, [MarshalAs(UnmanagedType.LPStr)] string types);
+
+	/// <summary>
+	/// 通知のクリックを受け取る NSUserNotificationCenterDelegate を、Objective-C のクラスとして実行時に作って登録する
+	/// </summary>
+	private static unsafe void InstallCenterDelegate()
+	{
+		if (_centerDelegate != IntPtr.Zero)
+			return;
+
+		var centerClass = GetClass("NSUserNotificationCenter");
+		if (centerClass == IntPtr.Zero)
+			throw new PlatformNotSupportedException("NSUserNotificationCenter を利用できません");
+
+		var delegateClass = GetClass(CenterDelegateClassName);
+		if (delegateClass == IntPtr.Zero)
+		{
+			delegateClass = AllocateClassPair(GetClass("NSObject"), CenterDelegateClassName, 0);
+			if (delegateClass == IntPtr.Zero)
+				throw new InvalidOperationException("通知センターの delegate クラスを作成できません");
+			delegate* unmanaged<IntPtr, IntPtr, IntPtr, IntPtr, void> didActivate = &OnDidActivateNotification;
+			// v@:@@ = 戻り値 void, self, _cmd, center, notification
+			if (!AddMethod(delegateClass, GetSelector("userNotificationCenter:didActivateNotification:"), (IntPtr)didActivate, "v@:@@"))
+				throw new InvalidOperationException("通知センターの delegate にメソッドを追加できません");
+			RegisterClassPair(delegateClass);
+		}
+
+		var center = MsgSend(centerClass, GetSelector("defaultUserNotificationCenter"));
+		if (center == IntPtr.Zero)
+			throw new InvalidOperationException("NSUserNotificationCenter を取得できません");
+
+		var centerDelegate = MsgSend(MsgSend(delegateClass, GetSelector("alloc")), GetSelector("init"));
+		MsgSend(center, GetSelector("setDelegate:"), centerDelegate);
+		_centerDelegate = centerDelegate;
+	}
+
+	[UnmanagedCallersOnly]
+	private static void OnDidActivateNotification(IntPtr self, IntPtr selector, IntPtr center, IntPtr notification)
+	{
+		// ネイティブから呼ばれるため、例外を外へ出すとプロセスが落ちる
+		try
+		{
+			NotificationActivation.Handle(string.Empty);
+		}
+		catch (Exception ex)
+		{
+			AppLog.Default.LogWarning(ex, "通知のクリックを処理できませんでした");
+		}
+	}
 
 	private static void DeliverNative(NotificationRequest request)
 	{
