@@ -25,10 +25,10 @@ public class NorthwestPacificTsunamiReport : JmaDCReport
 			var offset = 56 + i * 28;
 			var taD1 = GetValue(offset, 1) == 1;
 			var taH1 = (byte)GetValue(offset + 1, 5);
-			if (taH1 is not 31 and (< 0 or > 23))
+			if (taH1 is not 31 and > 23)
 				throw new DCReportParseException($"TaH1_{i + 1} が範囲外です: " + taH1);
 			var taM1 = (byte)GetValue(offset + 6, 6);
-			if (taM1 is not 63 and (< 0 or > 59))
+			if (taM1 is not 63 and > 59)
 				throw new DCReportParseException($"TaM1_{i + 1} が範囲外です: " + taM1);
 
 			var isArrived = taH1 == 31 && taM1 == 63;

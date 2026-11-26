@@ -10,6 +10,7 @@ using KyoshinEewViewer.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -64,7 +65,8 @@ public class SubWindowsService : ISubWindowsService
 			Marshal.SizeOf(intColor));
 	}
 	private IDisposable Subscribe(Window window)
-		=> KyoshinEewViewerApp.Selector.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).SubscribeLoggingErrors(x => ApplyTheme(window));
+		=> KyoshinEewViewerApp.Selector?.ObservePropertyChanged(x => x.SelectedWindowTheme).Where(x => x != null).SubscribeLoggingErrors(x => ApplyTheme(window))
+			?? Disposable.Empty;
 
 	public void ShowSettingWindow()
 	{

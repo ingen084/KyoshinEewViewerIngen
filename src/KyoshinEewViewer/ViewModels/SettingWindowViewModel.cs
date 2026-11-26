@@ -132,7 +132,7 @@ public partial class SettingWindowViewModel : ViewModelBase
 		RegisteredSounds = SoundPlayerService.RegisteredSounds.Select(s => new SoundConfigViewModel(s.Key, s.Value)).ToArray();
 		OpenSoundFile = new AsyncRelayCommand<KyoshinEewViewerConfiguration.SoundConfig>(async config =>
 		{
-			if (KyoshinEewViewerApp.TopLevelControl == null)
+			if (KyoshinEewViewerApp.TopLevelControl == null || config == null)
 				return;
 			var files = await KyoshinEewViewerApp.TopLevelControl.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
 			{

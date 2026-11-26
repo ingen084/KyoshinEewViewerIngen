@@ -27,7 +27,7 @@ public class WorkflowDisplayControlAnalyzer : DiagnosticAnalyzer
 		"Serialization",
 		DiagnosticSeverity.Error,
 		isEnabledByDefault: true,
-		description: "WorkflowTrigger / WorkflowAction を継承する型の Control 返却プロパティに [JsonIgnore] が無いと、リリース(トリム)ビルドでワークフロー全体の読み込みが NotSupportedException で失敗します。");
+		description: "WorkflowTrigger / WorkflowAction を継承する型の Control 返却プロパティに [JsonIgnore] が無いと、リリース(トリム)ビルドでワークフロー全体の読み込みが NotSupportedException で失敗します.");
 
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

@@ -97,7 +97,7 @@ public class HypocenterReport : JmaDCReport
 			throw new DCReportParseException("De が範囲外です: " + Depth);
 
 		Magnitude = (byte)GetValue(105, 7);
-		if (Magnitude is not 126 and not 127 and (< 0 or > 101))
+		if (Magnitude is not 126 and not 127 and > 101)
 			throw new DCReportParseException("Ma が範囲外です: " + Magnitude);
 
 		Epicenter = (int)GetValue(112, 10);

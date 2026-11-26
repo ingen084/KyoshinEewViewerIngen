@@ -38,7 +38,7 @@ public class XamlCommandBindingAnalyzer : DiagnosticAnalyzer
 		"XamlBinding",
 		DiagnosticSeverity.Error,
 		isEnabledByDefault: true,
-		description: "Avalonia 12.1 のコンパイル済みバインディングは同名メソッドから 1引数版を優先して選択する (object 1個 > その他の 1引数版 > 引数なし)。CommandParameter 未指定 (null) のまま値型 1引数版が選ばれると unbox で NullReferenceException になる。",
+		description: "Avalonia 12.1 のコンパイル済みバインディングは同名メソッドから 1引数版を優先して選択する (object 1個 > その他の 1引数版 > 引数なし)。CommandParameter 未指定 (null) のまま値型 1引数版が選ばれると unbox で NullReferenceException になる.",
 		customTags: new[] { WellKnownDiagnosticTags.CompilationEnd });
 
 	private static readonly DiagnosticDescriptor ValueTypeParameterRule = new(
@@ -48,7 +48,7 @@ public class XamlCommandBindingAnalyzer : DiagnosticAnalyzer
 		"XamlBinding",
 		DiagnosticSeverity.Error,
 		isEnabledByDefault: true,
-		description: "コンパイル済みバインディングの Command は CommandParameter を unbox して引数へ渡すため、値型引数に null (未指定) や文字列リテラルが渡ると実行時にクラッシュする。",
+		description: "コンパイル済みバインディングの Command は CommandParameter を unbox して引数へ渡すため、値型引数に null (未指定) や文字列リテラルが渡ると実行時にクラッシュする.",
 		customTags: new[] { WellKnownDiagnosticTags.CompilationEnd });
 
 	private static readonly XNamespace XamlNs = "http://schemas.microsoft.com/winfx/2006/xaml";
