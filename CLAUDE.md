@@ -45,7 +45,6 @@ dotnet build KyoshinEewViewer.sln -t:Rebuild
 | Earthquake | JMA XML 地震情報の処理 |
 | Tsunami | 津波警報 |
 | Typhoon | 台風追跡 |
-| Lightning | 落雷検知 |
 | Radar | 気象レーダー |
 | Qzss | 衛星災害危機管理通報(災危通報) |
 

@@ -5,7 +5,6 @@
 		"kyoshin-monitor": false,
 		"earthquake": true,
 		"tsunami": false,
-		"lightning": false,
 		"qzss": true
 	},
 	"NetworkTime": {

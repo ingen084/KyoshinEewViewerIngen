@@ -36,7 +36,7 @@ launcher はコマンドライン引数をKEVi本体に転送するため、laun
 
 ### 用意されているテンプレート
 
-- **`templates/test-profile.json`**: 汎用のテスト起動用。`SeriesEnable`（kyoshin-monitor/earthquake/tsunami/lightning）を全てfalseにし、外部サーバーアクセスを全抑制済み。
+- **`templates/test-profile.json`**: 汎用のテスト起動用。`SeriesEnable`（kyoshin-monitor/earthquake/tsunami）を全てfalseにし、外部サーバーアクセスを全抑制済み。
 - **`templates/test-profile-eq.json`**: earthquakeシリーズのみ有効化した派生版。地震情報レイヤーの描画・ホバー確認用。起動時にJMA XMLフィードの取得が1回走る点が汎用テンプレートと異なる。`<repo>\tmp\test-profile-eq\config.json` へコピーして使う。
 - **`templates/test-profile-qzss.json`**: qzss(災危通報)シリーズのみ有効化し、起動時にそのタブを選択する派生版。設定ウィンドウの「デバッグメニュー」にある災危通報 HEX 入力から電文を手動投入して表示確認する用途。`<repo>\tmp\test-profile-qzss\config.json` へコピーして使う。
 - **`templates/test-profile-eewclient.json`**: kyoshin-monitorシリーズを有効化しつつ強震モニタ取得(`ReceiveMode=0`)・観測点更新・強震モニタ経由EEWを止め、EEW Client by DMDATA.JP 連携 (`Eew.DmdataEewClient`、ポート58325) だけを有効にした派生版。`scripts/mock_eewclient.py` (要 `pip install websockets`) を `python -X utf8 scripts/mock_eewclient.py 58325` で起動しておくと、接続直後に `start` → `server-status` (no-auth → connecting → open) → 訓練データ 1報 (`Eew.DmdataEewClient.ReceiveTraining` が true の場合のみ処理され、EEW パネルに「訓練」と表示される。テンプレートでは false) → EEW 3報 (同一通番の再配信含む、地点予測付き) を模擬配信する。`<repo>\tmp\test-profile-eewclient\config.json` へコピーして使う。接続状態はメインウィンドウ時刻横の「EEW Client」インジケータとログ (`DmdataEewClientReceiver`) で確認できる。

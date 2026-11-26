@@ -7,7 +7,6 @@ using KyoshinEewViewer.Series.Earthquake;
 using KyoshinEewViewer.Series.Earthquake.Services;
 using KyoshinEewViewer.Series.KyoshinMonitor;
 using KyoshinEewViewer.Series.KyoshinMonitor.Services;
-using KyoshinEewViewer.Series.Lightning;
 using KyoshinEewViewer.Series.ObservationPointEditor;
 using KyoshinEewViewer.Series.Qzss;
 using KyoshinEewViewer.Series.Qzss.Services;
@@ -76,7 +75,6 @@ public static class KyoshinEewViewerApp
 		services.AddSingleton<TsunamiSeries>();
 		services.AddSingleton<TyphoonSeries>();
 		services.AddSingleton<RadarSeries>();
-		services.AddSingleton<LightningSeries>();
 		services.AddSingleton<QzssConnector>();
 		services.AddSingleton<QzssSeries>();
 		services.AddSingleton<ShakeDetectionVerifierSeries>();
