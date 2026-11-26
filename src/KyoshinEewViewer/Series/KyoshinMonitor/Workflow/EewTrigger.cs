@@ -1,10 +1,12 @@
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
+using KyoshinEewViewer.Series.KyoshinMonitor.Models;
 using KyoshinEewViewer.Services.Workflows;
 using KyoshinMonitorLib;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using System.Threading;
 
 namespace KyoshinEewViewer.Series.KyoshinMonitor.Workflow;
 
@@ -76,10 +78,25 @@ public partial class EewTrigger : WorkflowTrigger
 	public partial bool UseAndCondition { get; set; } = true;
 
 	/// <summary>
+	/// 同じEEWでは条件を満たした最初の1回だけトリガーするか
+	/// </summary>
+	[ObservableProperty]
+	public partial bool OncePerEew { get; set; } = false;
+
+	/// <summary>
 	/// 訓練でもトリガーするか
 	/// </summary>
 	[ObservableProperty]
 	public partial bool IncludeTraining { get; set; } = false;
+
+	/// <summary>
+	/// 一度トリガーしたEEWの記録を保持する期間
+	/// </summary>
+	private static readonly TimeSpan OncePerEewRetention = TimeSpan.FromHours(24);
+
+	private readonly Lock _triggeredEewLock = new();
+	private readonly HashSet<string> _triggeredEewKeys = [];
+	private readonly Queue<(string Key, DateTime TriggeredAt)> _triggeredEewHistory = [];
 
 	public override bool CheckTrigger(WorkflowEvent content)
 	{
@@ -107,7 +124,7 @@ public partial class EewTrigger : WorkflowTrigger
 		if (!conditionMatch)
 			return false;
 
-		return eewEvent.EventSubType switch
+		var eventSubTypeMatch = eewEvent.EventSubType switch
 		{
 			EewEventType.New => New,
 			EewEventType.UpdateNewSerial => Continue,
@@ -122,6 +139,35 @@ public partial class EewTrigger : WorkflowTrigger
 			EewEventType.DecreaseMaxIntensity => DecreaseInIntensity,
 			_ => false,
 		};
+		if (!eventSubTypeMatch)
+			return false;
+
+		// 同じEEWでは条件を満たした最初の1回だけトリガーする
+		return !OncePerEew || TryMarkEewTriggered(eewEvent);
+	}
+
+	/// <summary>
+	/// 同じEEWでまだトリガーしていない場合のみ記録して true を返す
+	/// </summary>
+	private bool TryMarkEewTriggered(EewEvent eewEvent)
+	{
+		var key = Eew.GetKey(eewEvent.EewId, eewEvent.IsTraining);
+		var now = DateTime.UtcNow;
+		lock (_triggeredEewLock)
+		{
+			// 保持期間を過ぎた記録を破棄する
+			while (_triggeredEewHistory.TryPeek(out var oldest) && now - oldest.TriggeredAt >= OncePerEewRetention)
+			{
+				_triggeredEewHistory.Dequeue();
+				_triggeredEewKeys.Remove(oldest.Key);
+			}
+
+			if (!_triggeredEewKeys.Add(key))
+				return false;
+
+			_triggeredEewHistory.Enqueue((key, now));
+			return true;
+		}
 	}
 
 	public override WorkflowEvent CreateTestEvent()
