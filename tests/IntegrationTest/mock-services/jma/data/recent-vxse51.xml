@@ -25,11 +25,11 @@
       <Observation>
         <MaxInt>4</MaxInt>
         <Pref>
-          <Name>石川県</Name>
+          <Name>テスト県</Name>
           <Code>17</Code>
           <MaxInt>4</MaxInt>
           <Area>
-            <Name>石川県能登</Name>
+            <Name>テスト県北部</Name>
             <Code>390</Code>
             <MaxInt>4</MaxInt>
           </Area>

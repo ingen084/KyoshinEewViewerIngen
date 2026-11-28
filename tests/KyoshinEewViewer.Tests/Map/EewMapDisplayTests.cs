@@ -10,11 +10,11 @@ public class EewMapDisplayTests
 	[Fact(DisplayName = "継続中と最終報のラベルを指定形式で組み立てる")]
 	public void 継続中と最終報のラベルを指定形式で組み立てる()
 	{
-		var ongoing = CreateEew(serialNo: 1, place: "岩手県沖", magnitude: 3.7f, intensity: JmaIntensity.Int1);
-		var final = CreateEew(serialNo: 4, place: "岩手県沖", magnitude: 3.5f, intensity: JmaIntensity.Int1, isFinal: true);
+		var ongoing = CreateEew(serialNo: 1, place: "テスト県沖", magnitude: 3.7f, intensity: JmaIntensity.Int1);
+		var final = CreateEew(serialNo: 4, place: "テスト県沖", magnitude: 3.5f, intensity: JmaIntensity.Int1, isFinal: true);
 
-		Assert.Equal("#1 岩手県沖 M3.7 最大震度1", EewMapDisplay.BuildLabel(ongoing));
-		Assert.Equal("#4(終) 岩手県沖 M3.5 最大震度1", EewMapDisplay.BuildLabel(final));
+		Assert.Equal("#1 テスト県沖 M3.7 最大震度1", EewMapDisplay.BuildLabel(ongoing));
+		Assert.Equal("#4(終) テスト県沖 M3.5 最大震度1", EewMapDisplay.BuildLabel(final));
 	}
 
 	[Fact(DisplayName = "確定と未確定のキャンセル状態をラベルで区別する")]
@@ -30,10 +30,10 @@ public class EewMapDisplayTests
 	[Fact(DisplayName = "訓練のラベルには先頭に訓練と表示する")]
 	public void 訓練のラベルには先頭に訓練と表示する()
 	{
-		var training = CreateEew(serialNo: 2, place: "石川県能登地方", magnitude: 7.6f, intensity: JmaIntensity.Int7) with { IsTraining = true };
+		var training = CreateEew(serialNo: 2, place: "サンプル県サンプル地方", magnitude: 7.6f, intensity: JmaIntensity.Int7) with { IsTraining = true };
 		var cancelled = CreateEew(serialNo: 3, isCancelled: true, isTrueCancelled: true) with { IsTraining = true };
 
-		Assert.Equal("[訓練] #2 石川県能登地方 M7.6 最大震度7", EewMapDisplay.BuildLabel(training));
+		Assert.Equal("[訓練] #2 サンプル県サンプル地方 M7.6 最大震度7", EewMapDisplay.BuildLabel(training));
 		Assert.StartsWith("[訓練] #3(取消) ", EewMapDisplay.BuildLabel(cancelled));
 	}
 

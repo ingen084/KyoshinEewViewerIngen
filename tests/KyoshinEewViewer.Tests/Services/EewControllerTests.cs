@@ -596,7 +596,7 @@ public class EewControllerTests
 				DisplaySource = "AXIS 警報電文",
 				SerialNo = 1,
 				Codes = [451, 443],
-				Names = ["愛知県西部", "静岡県西部"],
+				Names = ["テスト県西部", "サンプル県西部"],
 				IsWarningTelegram = true,
 			},
 		};

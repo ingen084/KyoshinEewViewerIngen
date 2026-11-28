@@ -9,7 +9,7 @@
     <id>urn:uuid:00000000-0000-0000-0000-000000000011</id>
     <updated>2026-01-01T08:05:00+09:00</updated>
     <author><name>結合テスト</name></author>
-    <link type="application/xml" href="http://127.0.0.1:8621/jma/data/ibaraki-vxse53.xml" />
+    <link type="application/xml" href="http://127.0.0.1:8621/jma/data/older-vxse53.xml" />
     <content type="text">結合テスト用の電文</content>
   </entry>
   <entry>
@@ -17,7 +17,7 @@
     <id>urn:uuid:00000000-0000-0000-0000-000000000012</id>
     <updated>2026-01-01T12:02:00+09:00</updated>
     <author><name>結合テスト</name></author>
-    <link type="application/xml" href="http://127.0.0.1:8621/jma/data/noto-vxse51.xml" />
+    <link type="application/xml" href="http://127.0.0.1:8621/jma/data/recent-vxse51.xml" />
     <content type="text">結合テスト用の電文</content>
   </entry>
   <entry>
@@ -25,7 +25,7 @@
     <id>urn:uuid:00000000-0000-0000-0000-000000000013</id>
     <updated>2026-01-01T12:05:00+09:00</updated>
     <author><name>結合テスト</name></author>
-    <link type="application/xml" href="http://127.0.0.1:8621/jma/data/noto-vxse53.xml" />
+    <link type="application/xml" href="http://127.0.0.1:8621/jma/data/recent-vxse53.xml" />
     <content type="text">結合テスト用の電文</content>
   </entry>
 </feed>

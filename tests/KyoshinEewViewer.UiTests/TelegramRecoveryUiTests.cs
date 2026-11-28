@@ -194,7 +194,7 @@ public sealed class TelegramRecoveryUiTests
 		Assert.Contains(TelegramScenario.InitialEarthquake.Place, Ui.VisibleTexts(app.EarthquakeWindow));
 
 		// 切断中に発表された地震情報は、DmdataSharp による再接続後に取得し直す
-		var missed = new TelegramFixtures.EarthquakeTelegram("fixture-eq-2", "20261018101800", new(2026, 10, 18, 10, 18, 0, TimeSpan.FromHours(9)), "茨城県南部");
+		var missed = new TelegramFixtures.EarthquakeTelegram("fixture-eq-2", "20261018101800", new(2026, 10, 18, 10, 18, 0, TimeSpan.FromHours(9)), "サンプル県南部");
 		app.Network.Publish(missed);
 		socket.Reconnect();
 
@@ -212,7 +212,7 @@ public sealed class TelegramRecoveryUiTests
 
 		var socket = app.Network.Socket!;
 		socket.Drop();
-		var missed = new TelegramFixtures.EarthquakeTelegram("fixture-eq-3", "20261018103000", new(2026, 10, 18, 10, 30, 0, TimeSpan.FromHours(9)), "茨城県南部");
+		var missed = new TelegramFixtures.EarthquakeTelegram("fixture-eq-3", "20261018103000", new(2026, 10, 18, 10, 30, 0, TimeSpan.FromHours(9)), "サンプル県南部");
 		app.Network.Publish(missed);
 
 		// WebSocketには再接続できたが、電文を取得するAPIが一時的に応答しない
@@ -271,7 +271,7 @@ public sealed class TelegramRecoveryUiTests
 
 		// 取得できれば失敗の回数を数え直す。失敗中に発表された地震情報も受信する
 		app.Network.DmdataAvailable = true;
-		var next = new TelegramFixtures.EarthquakeTelegram("fixture-eq-4", "20261018104000", new(2026, 10, 18, 10, 40, 0, TimeSpan.FromHours(9)), "茨城県南部");
+		var next = new TelegramFixtures.EarthquakeTelegram("fixture-eq-4", "20261018104000", new(2026, 10, 18, 10, 40, 0, TimeSpan.FromHours(9)), "サンプル県南部");
 		app.Network.Publish(next);
 		await app.WaitAsync(
 			() => Ui.VisibleTexts(app.EarthquakeWindow).Contains(next.Place),

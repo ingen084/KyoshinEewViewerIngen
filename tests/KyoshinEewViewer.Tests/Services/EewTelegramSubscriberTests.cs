@@ -96,7 +96,7 @@ public class EewTelegramSubscriberTests
 			      <ArrivalTime>2026-11-08T12:00:00+09:00</ArrivalTime>
 			      <Hypocenter>
 			        <Area>
-			          <Name>千葉県東方沖</Name>
+			          <Name>テスト県東方沖</Name>
 			          <Code type="震央地名">350</Code>
 			          <jmx_eb:Coordinate description="北緯３５．７度　東経１４０．８度　深さ　３０ｋｍ" datum="日本測地系">+35.7+140.8-30000/</jmx_eb:Coordinate>
 			        </Area>

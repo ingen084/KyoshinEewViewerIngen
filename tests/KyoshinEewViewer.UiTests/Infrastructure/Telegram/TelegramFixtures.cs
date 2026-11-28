@@ -72,19 +72,19 @@ internal static class TelegramFixtures
 			        </CodeDefine>
 			        <MaxInt>3</MaxInt>
 			        <Pref>
-			          <Name>千葉県</Name>
+			          <Name>テスト県</Name>
 			          <Code>12</Code>
 			          <MaxInt>3</MaxInt>
 			          <Area>
-			            <Name>千葉県北東部</Name>
+			            <Name>テスト県北東部</Name>
 			            <Code>340</Code>
 			            <MaxInt>3</MaxInt>
 			            <City>
-			              <Name>銚子市</Name>
+			              <Name>テスト市</Name>
 			              <Code>1220200</Code>
 			              <MaxInt>3</MaxInt>
 			              <IntensityStation>
-			                <Name>銚子市川口町＊</Name>
+			                <Name>テスト市テスト町＊</Name>
 			                <Code>1220221</Code>
 			                <Int>3</Int>
 			              </IntensityStation>

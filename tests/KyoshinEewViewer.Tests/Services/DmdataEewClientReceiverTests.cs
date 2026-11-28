@@ -48,7 +48,7 @@ public class DmdataEewClientReceiverTests
 		=> $$"""
 			{"type":"eew","eventId":"{{EventId}}","serial":"{{serial}}","author":"気象庁本庁",
 			 "isTest":{{(isTest ? "true" : "false")}},"isCanceled":{{(isCanceled ? "true" : "false")}},"isLastInfo":false,"isPlumOnly":false,"isLevelOver":false,"isWarning":false,
-			 "epicenterName":"石川県能登地方","epicenterLocation":[137.2,37.5],"depth":10,"magnitude":5.7,
+			 "epicenterName":"テスト県テスト地方","epicenterLocation":[137.2,37.5],"depth":10,"magnitude":5.7,
 			 "originTime":"2026-09-14T01:30:00+09:00","arrivalTime":"2026-09-14T01:30:02+09:00",
 			 "accuracy":{"epicenters":["3","3"],"depth":"3","magnitudeCalculation":"2"},
 			 "maxInt":{"from":"{{maxInt}}","to":"{{maxInt}}"},
