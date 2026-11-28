@@ -1,9 +1,11 @@
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.Core.Models;
 using KyoshinEewViewer.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NReco.Logging.File;
 using Sentry;
+using Sentry.Extensions.Logging;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -22,6 +24,15 @@ public static class LoggingAdapter
 	/// デバッグウィンドウ用のメモリ内ログプロバイダ
 	/// </summary>
 	public static InMemoryLoggerProvider? InMemoryProvider { get; private set; }
+	/// <summary>
+	/// プロセスが終了する前に書き出すため、ファイルロガーだけを個別に保持する
+	/// </summary>
+	private static FileLoggerProvider? FileProvider { get; set; }
+
+	/// <summary>
+	/// 未処理例外を記録するロガーのカテゴリ名
+	/// </summary>
+	private const string UnhandledExceptionCategory = "KyoshinEewViewer.UnhandledException";
 
 	public static bool EnableConsoleLogger { get; set; }
 	public static bool EnableDebugLog { get; set; }
@@ -55,6 +66,9 @@ public static class LoggingAdapter
 					o.AutoSessionTracking = true;
 					o.MinimumBreadcrumbLevel = LogLevel.Information;
 					o.MinimumEventLevel = LogLevel.Error;
+					// 未処理例外は SDK の統合が unhandled として送る。ロガーからも送ると、先に届いた方が残り、
+					// 後の方は重複として捨てられるため、unhandled の扱いやセッションのクラッシュ記録が失われることがある
+					o.AddLogEntryFilter((category, _, _, _) => category == UnhandledExceptionCategory);
 					// メモリ不足の原因を調べられるよう、プロセスの資源の使用量を添付する
 					o.SetBeforeSend((e, _) => ProcessResourceRecorder.Attach(e));
 					o.ConfigureScope(s =>
@@ -96,10 +110,10 @@ public static class LoggingAdapter
 
 				PlatformDirectories.EnsureDirectoryExists(fullPath);
 
-				builder.AddFile(Path.Combine(fullPath, "KEVi_{0:yyyy}-{0:MM}-{0:dd}.log"), fileLoggerOpts =>
+				var fileLoggerOptions = new FileLoggerOptions
 				{
-					fileLoggerOpts.FormatLogFileName = fName => string.Format(fName, DateTime.Now);
-					fileLoggerOpts.HandleFileError = e =>
+					FormatLogFileName = fName => string.Format(fName, DateTime.Now),
+					HandleFileError = e =>
 					{
 						// 権限が存在しない場合、書き込めなかった場所とは別のディレクトリにフォールバック
 						// スタートアップ登録から起動した場合などは、カレントディレクトリにも書き込めないことがある
@@ -127,8 +141,11 @@ public static class LoggingAdapter
 						// ログファイルのオープンに失敗した場合
 						if (e.ErrorException is IOException)
 							e.UseNewLogFileName(Path.Combine(fullPath, $"KEVi_{{0:yyyy}}-{{0:MM}}-{{0:dd}}-{new Random().Next()}.log"));
-					};
-				});
+					},
+				};
+				// AddFile と同様に、ファクトリーの構築時に生成する
+				builder.Services.AddSingleton<ILoggerProvider>(_ =>
+					FileProvider = new FileLoggerProvider(Path.Combine(fullPath, "KEVi_{0:yyyy}-{0:MM}-{0:dd}.log"), fileLoggerOptions));
 			}
 			catch (Exception ex)
 			{
@@ -137,8 +154,29 @@ public static class LoggingAdapter
 			}
 		});
 		AppLog.SetFactory(Factory);
+		AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 		if (sendCrashReport)
 			ProcessResourceRecorder.Start();
+	}
+
+	private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+	{
+		try
+		{
+			var logger = Factory?.CreateLogger(UnhandledExceptionCategory);
+			if (e.ExceptionObject is Exception ex)
+				logger?.LogCritical(ex, "未処理の例外が発生しました");
+			else
+				logger?.LogCritical("未処理の例外が発生しました: {ExceptionObject}", e.ExceptionObject);
+
+			// このハンドラーから戻るとプロセスが終了するため、キューに残っているログを書き出す
+			if (e.IsTerminating)
+				FileProvider?.Dispose();
+		}
+		catch
+		{
+			// 終了処理中の例外で元の例外の報告を妨げない
+		}
 	}
 
 	private static bool IsSamePath(string a, string b)
