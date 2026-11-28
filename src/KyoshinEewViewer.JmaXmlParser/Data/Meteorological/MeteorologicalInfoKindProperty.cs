@@ -1,45 +1,41 @@
-using System.Collections.Generic;
-using System.Linq;
-using U8Xml;
-
 namespace KyoshinEewViewer.JmaXmlParser.Data.Meteorological;
-public struct MeteorologicalInfoKindProperty(XmlNode node)
-{
-	private XmlNode Node { get; set; } = node;
 
-	private string? _type = null;
+[JmaXmlType]
+public sealed partial class MeteorologicalInfoKindProperty<TView>
+{
 	/// <summary>
 	/// 要素名
 	/// </summary>
-	public string Type => _type ??= (Node.TryFindStringNode(Literals.Type(), out var n) ? n : throw new JmaXmlParseException("Type ノードが存在しません"));
+	[JmaXml("Type!")]
+	public partial string Type { get; }
 
-	private TyphoonNamePart? _typhoonNamePart = null;
 	/// <summary>
 	/// Type=呼称 のときに出現
 	/// </summary>
-	public TyphoonNamePart TyphoonNamePart => _typhoonNamePart ??= (Node.TryFindChild(Literals.TyphoonNamePart(), out var n) ? new(n) : throw new JmaXmlParseException("TyphoonNamePart ノードが存在しません"));
+	[JmaXml("TyphoonNamePart!")]
+	public partial TyphoonNamePart<TView> TyphoonNamePart { get; }
 
-	private ClassPart? _classPart = null;
 	/// <summary>
 	/// Type=階級 のときに出現
 	/// </summary>
-	public ClassPart ClassPart => _classPart ??= (Node.TryFindChild(Literals.ClassPart(), out var n) ? new(n) : throw new JmaXmlParseException("ClassPart ノードが存在しません"));
+	[JmaXml("ClassPart!")]
+	public partial ClassPart<TView> ClassPart { get; }
 
-	private CenterPart? _centerPart = null;
 	/// <summary>
 	/// Type=中心 のときに出現
 	/// </summary>
-	public CenterPart CenterPart => _centerPart ??= (Node.TryFindChild(Literals.CenterPart(), out var n) ? new(n) : throw new JmaXmlParseException("CenterPart ノードが存在しません"));
-
-	private WindPart? _windPart = null;
-	/// <summary>
-	/// Type=風 のときに出現
-	/// </summary>
-	public WindPart WindPart => _windPart ??= (Node.TryFindChild(Literals.WindPart(), out var n) ? new(n) : throw new JmaXmlParseException("WindPart ノードが存在しません"));
+	[JmaXml("CenterPart!")]
+	public partial CenterPart<TView> CenterPart { get; }
 
 	/// <summary>
 	/// Type=風 のときに出現
 	/// </summary>
-	public IEnumerable<WarningAreaPart> WarningAreaParts
-		=> Node.Children.Where(c => c.Name == Literals.WarningAreaPart()).Select(c => new WarningAreaPart(c));
+	[JmaXml("WindPart!")]
+	public partial WindPart<TView> WindPart { get; }
+
+	/// <summary>
+	/// Type=風 のときに出現
+	/// </summary>
+	[JmaXml("WarningAreaPart*")]
+	public partial JmaXmlList<WarningAreaPart<TView>> WarningAreaParts { get; }
 }

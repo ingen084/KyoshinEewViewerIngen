@@ -81,8 +81,8 @@ async Task OpenFile()
 			case "JmaXmlTelegramReplayData":
 				var xmlPath = Prompt.Input<string>("XML ファイルパスを入力してください");
 				using (var stream = File.OpenRead(xmlPath))
-				using (var jmaxml = new JmaXmlDocument(stream))
 				{
+					var jmaxml = JmaXml.Read<JmaXmlTelegramHeaderView>(stream);
 					data.Add(new JmaXmlTelegramReplayData
 					{
 						Time = jmaxml.Control.DateTime.LocalDateTime,

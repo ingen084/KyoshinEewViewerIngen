@@ -90,10 +90,11 @@
 		<PackageReference Include="DmdataSharp" Version="0.6.0.3" />
 	</ItemGroup>
 
-	<!-- 独自アナライザー (KEVI001 / KEVIXAML001,002) を全プロジェクトへ適用する。
+	<!-- 独自アナライザー (KEVI001 / KEVIXAML001,002) と JMA XML の読み取りコードのジェネレーター (KEVIJMA001〜003) を全プロジェクトへ適用する。
 	     AXAML は XamlCommandBindingAnalyzer が Command バインディングを検査できるよう解析対象として渡す -->
 	<ItemGroup>
 		<ProjectReference Include="$(MSBuildThisFileDirectory)src\KyoshinEewViewer.CodeAnalysis\KyoshinEewViewer.CodeAnalysis.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+		<ProjectReference Include="$(MSBuildThisFileDirectory)src\KyoshinEewViewer.JmaXmlParser.Generator\KyoshinEewViewer.JmaXmlParser.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 		<AdditionalFiles Include="$(MSBuildProjectDirectory)\**\*.axaml" Exclude="$(MSBuildProjectDirectory)\bin\**;$(MSBuildProjectDirectory)\obj\**" />
 	</ItemGroup>
 

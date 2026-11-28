@@ -1,20 +1,17 @@
-using U8Xml;
-
 namespace KyoshinEewViewer.JmaXmlParser.Data.Tsunami;
 
-public struct TsunamiData(XmlNode node)
+[JmaXmlType]
+public sealed partial class TsunamiData<TView>
 {
-	private XmlNode Node { get; set; } = node;
-
-	private TsunamiForecast? _forecast = null;
 	/// <summary>
 	/// 津波の予測に関する情報
 	/// </summary>
-	public TsunamiForecast? Forecast => _forecast ??= (Node.TryFindChild(Literals.Forecast(), out var n) ? new(n) : null);
+	[JmaXml("Forecast?")]
+	public partial TsunamiForecast<TView>? Forecast { get; }
 
-	private TsunamiObservation? _observation = null;
 	/// <summary>
 	/// 津波の観測に関する情報
 	/// </summary>
-	public TsunamiObservation? Observation => _observation ??= (Node.TryFindChild(Literals.Observation(), out var n) ? new(n) : null);
+	[JmaXml("Observation?")]
+	public partial TsunamiObservation<TView>? Observation { get; }
 }

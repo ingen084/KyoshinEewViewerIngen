@@ -1,28 +1,17 @@
-using System.Collections.Generic;
-using System.Linq;
-using U8Xml;
-
 namespace KyoshinEewViewer.JmaXmlParser.Data.Tsunami;
 
-public struct TsunamiForecast(XmlNode node)
+[JmaXmlType]
+public sealed partial class TsunamiForecast<TView>
 {
-	private XmlNode Node { get; set; } = node;
-
 	/// <summary>
 	/// コード体系の定義
 	/// </summary>
-	public IEnumerable<CodeDefineType> CodeDefineTypes
-	{
-		get {
-			if (!Node.TryFindChild(Literals.CodeDefine(), out var n))
-				return Enumerable.Empty<CodeDefineType>();
-			return n.Children.Where(c => c.Name == Literals.Type()).Select(c => new CodeDefineType(c));
-		}
-	}
+	[JmaXml("CodeDefine?/Type*")]
+	public partial JmaXmlList<CodeDefineType<TView>> CodeDefineTypes { get; }
 
 	/// <summary>
 	/// 津波予報のアイテム
 	/// </summary>
-	public IEnumerable<TsunamiForecastItem> Items
-		=> Node.Children.Where(c => c.Name == Literals.Item()).Select(c => new TsunamiForecastItem(c));
+	[JmaXml("Item*")]
+	public partial JmaXmlList<TsunamiForecastItem<TView>> Items { get; }
 }

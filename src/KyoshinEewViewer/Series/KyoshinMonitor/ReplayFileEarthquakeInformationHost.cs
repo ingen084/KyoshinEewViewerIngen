@@ -307,7 +307,7 @@ public partial class ReplayFileEarthquakeInformationHost : EarthquakeInformation
 	private void ProcessJmaXmlEew(string xml, DateTime time)
 	{
 		using var stream = new MemoryStream(Encoding.UTF8.GetBytes(xml));
-		using var report = new JmaXmlDocument(stream);
+		var report = JmaXml.Read<ReplayEewView>(stream);
 
 		// サポート外であれば見なかったことにする
 		if (report.Control.Title == "緊急地震速報配信テスト")

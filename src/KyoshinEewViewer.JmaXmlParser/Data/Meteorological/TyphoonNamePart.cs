@@ -1,30 +1,26 @@
-using U8Xml;
-
 namespace KyoshinEewViewer.JmaXmlParser.Data.Meteorological;
 
-public struct TyphoonNamePart(XmlNode node)
+[JmaXmlType]
+public sealed partial class TyphoonNamePart<TView>
 {
-	private XmlNode Node { get; set; } = node;
-
-	private string? _name = null;
 	/// <summary>
 	/// 台風の英字の呼名
 	/// </summary>
-	public string? Name => _name ??= (Node.TryFindStringNode(Literals.Name(), out var n) ? n : null);
+	[JmaXml("Name?")]
+	public partial string? Name { get; }
 
-	private string? _nameKana = null;
 	/// <summary>
 	/// 台風のカナの呼名
 	/// </summary>
-	public string? NameKana => _nameKana ??= (Node.TryFindStringNode(Literals.NameKana(), out var n) ? n : null);
+	[JmaXml("NameKana?")]
+	public partial string? NameKana { get; }
 
-	private string? _number = null;
 	/// <summary>
 	/// 台風番号
 	/// </summary>
-	public string? Number => _number ??= (Node.TryFindStringNode(Literals.Number(), out var n) ? n : null);
+	[JmaXml("Number?")]
+	public partial string? Number { get; }
 
-	private string? _remark = null;
 	/// <summary>
 	/// 台風番号
 	/// <list type="bullet">
@@ -40,5 +36,6 @@ public struct TyphoonNamePart(XmlNode node)
 	/// <item>温帯低気圧化しつつある</item>
 	/// </list>
 	/// </summary>
-	public string? Remark => _remark ??= (Node.TryFindStringNode(Literals.Remark(), out var n) ? n : null);
+	[JmaXml("Remark?")]
+	public partial string? Remark { get; }
 }

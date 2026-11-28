@@ -27,6 +27,7 @@ on:
       - 'src/KyoshinEewViewer.Core/PlatformDirectories.cs'
       - 'src/KyoshinEewViewer.DCReportParser/**'
       - 'src/KyoshinEewViewer.JmaXmlParser/**'
+      - 'src/KyoshinEewViewer.JmaXmlParser.Generator/**'
       - 'src/KyoshinEewViewer/Views/SettingWindow.axaml'
       - 'src/KyoshinEewViewer/Views/SettingPages/**'
       - 'src/KyoshinEewViewer/Views/*ThemeEditWindow*'

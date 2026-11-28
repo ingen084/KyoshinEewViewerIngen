@@ -64,7 +64,7 @@ public partial class EarthquakeEvent : ObservableObject
 	public ObservableCollection<EarthquakeInformationFragment> Fragments { get; } = [];
 
 	// メモ イベントIDの振り分けは上位でやる
-	public EarthquakeInformationFragment? ProcessTelegram(Telegram telegram, JmaXmlDocument document)
+	public EarthquakeInformationFragment? ProcessTelegram(Telegram telegram, JmaXmlDocument<EarthquakeFragmentView> document)
 	{
 		if (ProcessedTelegramIds.Contains(telegram.Key))
 			return null;

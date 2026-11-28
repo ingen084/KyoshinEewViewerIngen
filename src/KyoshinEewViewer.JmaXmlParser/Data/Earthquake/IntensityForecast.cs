@@ -1,102 +1,46 @@
-using System.Collections.Generic;
-using System.Linq;
-using U8Xml;
-
 namespace KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 
-public struct IntensityForecast(XmlNode node)
+[JmaXmlType]
+public sealed partial class IntensityForecast<TView>
 {
-	private XmlNode Node { get; set; } = node;
-
 	/// <summary>
 	/// コード体系の定義
 	/// <para>「緊急地震速報（地震動予報）」及び「緊急地震速報（予報）」のとき、<br/>
 	/// 震度予測を行う府県予報区（Pref）、細分区域（Area）が１つも無い場合は空になる</para>
 	/// </summary>
-	public IEnumerable<CodeDefineType> CodeDefineTypes
-	{
-		get {
-			if (!Node.TryFindChild(Literals.CodeDefine(), out var n))
-				return Enumerable.Empty<CodeDefineType>();
-			return n.Children.Where(c => c.Name == Literals.Type()).Select(c => new CodeDefineType(c));
-		}
-	}
+	[JmaXml("CodeDefine?/Type*")]
+	public partial JmaXmlList<CodeDefineType<TView>> CodeDefineTypes { get; }
 
-	private string? _forecastIntFrom = null;
 	/// <summary>
 	/// 最大予測震度の下限 <c>0~7,不明</c>
 	/// <para>通常上限と同じだが、「～程度以上」と表現するときのみ上限は 「over」となる</para>
 	/// </summary>
-	public string ForecastIntFrom
-	{
-		get {
-			if (_forecastIntFrom != null)
-				return _forecastIntFrom;
-			if (!Node.TryFindChild(Literals.ForecastInt(), out var n))
-				throw new JmaXmlParseException("ForecastInt ノードが存在しません");
-			if (!n.TryFindStringNode(Literals.From(), out var r))
-				throw new JmaXmlParseException("From ノードが存在しません");
-			return _forecastIntFrom = r;
-		}
-	}
+	[JmaXml("ForecastInt!/From!")]
+	public partial string ForecastIntFrom { get; }
 
-	private string? _forecastIntTo = null;
 	/// <summary>
 	/// 最大予測震度の上限 <c>0~7,over,不明</c>
 	/// <para>通常下限と同じだが、「～程度以上」と表現するときのみ上限は 「over」となる</para>
 	/// </summary>
-	public string ForecastIntTo
-	{
-		get {
-			if (_forecastIntTo != null)
-				return _forecastIntTo;
-			if (!Node.TryFindChild(Literals.ForecastInt(), out var n))
-				throw new JmaXmlParseException("ForecastInt ノードが存在しません");
-			if (!n.TryFindStringNode(Literals.To(), out var r))
-				throw new JmaXmlParseException("To ノードが存在しません");
-			return _forecastIntTo = r;
-		}
-	}
+	[JmaXml("ForecastInt!/To!")]
+	public partial string ForecastIntTo { get; }
 
-	private string? _forecastLgIntFrom = null;
 	/// <summary>
 	/// 最大予測長周期地震動階級の下限 <c>0~4,不明</c><br/>
 	/// 「緊急地震速報（警報）」、「緊急地震速報（地震動予報）」の場合かつ震源が150km未満の場合以外は null
 	/// <para>通常上限と同じだが、「～程度以上」と表現するときのみ上限は 「over」となる</para>
 	/// </summary>
-	public string? ForecastLgIntFrom
-	{
-		get {
-			if (_forecastLgIntFrom != null)
-				return _forecastLgIntFrom;
-			if (!Node.TryFindChild(Literals.ForecastLgInt(), out var n))
-				return null;
-			if (!n.TryFindStringNode(Literals.From(), out var r))
-				throw new JmaXmlParseException("From ノードが存在しません");
-			return _forecastLgIntFrom = r;
-		}
-	}
+	[JmaXml("ForecastLgInt?/From!")]
+	public partial string? ForecastLgIntFrom { get; }
 
-	private string? _forecastLgIntTo = null;
 	/// <summary>
 	/// 最大予測長周期地震動階級の上限 <c>0~4,over,不明</c><br/>
 	/// 「緊急地震速報（警報）」、「緊急地震速報（地震動予報）」の場合かつ震源が150km未満の場合以外は null
 	/// <para>通常下限と同じだが、「～程度以上」と表現するときのみ上限は 「over」となる</para>
 	/// </summary>
-	public string? ForecastLgIntTo
-	{
-		get {
-			if (_forecastLgIntTo != null)
-				return _forecastLgIntTo;
-			if (!Node.TryFindChild(Literals.ForecastLgInt(), out var n))
-				return null;
-			if (!n.TryFindStringNode(Literals.To(), out var r))
-				throw new JmaXmlParseException("To ノードが存在しません");
-			return _forecastLgIntTo = r;
-		}
-	}
+	[JmaXml("ForecastLgInt?/To!")]
+	public partial string? ForecastLgIntTo { get; }
 
-	private int? _maxIntChange = null;
 	/// <summary>
 	/// 最大予測震度変化 0~2<br/>
 	/// 「緊急地震速報（警報）」、「緊急地震速報（地震動予報）」及び「緊急地震速報（予報）」の場合、<br/>
@@ -107,20 +51,9 @@ public struct IntensityForecast(XmlNode node)
 	/// 2. 最大予測震度が 1.0 以上小さくなった<br/>
 	/// </para>
 	/// </summary>
-	public int? MaxIntChange
-	{
-		get {
-			if (_maxIntChange != null)
-				return _maxIntChange;
-			if (!Node.TryFindChild(Literals.Appendix(), out var n))
-				return null;
-			if (!n.TryFindIntNode(Literals.MaxIntChange(), out var r))
-				throw new JmaXmlParseException("MaxIntChange ノードが存在しません");
-			return _maxIntChange = r;
-		}
-	}
+	[JmaXml("Appendix?/MaxIntChange!")]
+	public partial int? MaxIntChange { get; }
 
-	private int? _maxLgIntChange = null;
 	/// <summary>
 	/// 最大予測長周期地震動階級変化 0~2<br/>
 	/// 「緊急地震速報（警報）」、「緊急地震速報（地震動予報）」及び「緊急地震速報（予報）」の場合、<br/>
@@ -132,20 +65,9 @@ public struct IntensityForecast(XmlNode node)
 	/// 2. 最大予測長周期地震動階級が 1 以上小さくなった<br/>
 	/// </para>
 	/// </summary>
-	public int? MaxLgIntChange
-	{
-		get {
-			if (_maxLgIntChange != null)
-				return _maxLgIntChange;
-			if (!Node.TryFindChild(Literals.Appendix(), out var n))
-				return null;
-			if (!n.TryFindIntNode(Literals.MaxLgIntChange(), out var r))
-				return null;
-			return _maxLgIntChange = r;
-		}
-	}
+	[JmaXml("Appendix?/MaxLgIntChange?")]
+	public partial int? MaxLgIntChange { get; }
 
-	private int? _maxIntChangeReason = null;
 	/// <summary>
 	/// 最大予測値変化の理由 0~4,9<br/>
 	/// 「緊急地震速報（警報）」、「緊急地震速報（地震動予報）」及び「緊急地震速報（予報）」の場合、<br/>
@@ -158,22 +80,12 @@ public struct IntensityForecast(XmlNode node)
 	/// 4. 震源の深さが変化したため(上記のいずれにもあてはまらず、30.0km 以上の変化)<br/>
 	/// 9. PLUM 法による予測により変化したため</para>
 	/// </summary>
-	public int? MaxIntChangeReason
-	{
-		get {
-			if (_maxIntChangeReason != null)
-				return _maxIntChangeReason;
-			if (!Node.TryFindChild(Literals.Appendix(), out var n))
-				return null;
-			if (!n.TryFindIntNode(Literals.MaxIntChangeReason(), out var r))
-				throw new JmaXmlParseException("MaxIntChangeReason ノードが存在しません");
-			return _maxIntChangeReason = r;
-		}
-	}
+	[JmaXml("Appendix?/MaxIntChangeReason!")]
+	public partial int? MaxIntChangeReason { get; }
 
 	/// <summary>
 	/// 府県予報区の諸要素
 	/// </summary>
-	public IEnumerable<Pref> Prefs
-		=> Node.Children.Where(c => c.Name == Literals.Pref()).Select(c => new Pref(c));
+	[JmaXml("Pref*")]
+	public partial JmaXmlList<Pref<TView>> Prefs { get; }
 }

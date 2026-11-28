@@ -8,6 +8,9 @@ if (path == null || !File.Exists(path))
 }
 
 using var file = File.OpenRead(path);
-using var document = new JmaXmlDocument(file);
+var document = JmaXml.Read<SandboxView>(file);
 
 ;
+
+[JmaXmlView]
+partial struct SandboxView;

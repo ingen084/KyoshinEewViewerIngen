@@ -1,69 +1,66 @@
-using U8Xml;
-
 namespace KyoshinEewViewer.JmaXmlParser.Data;
 
 /// <summary>
 /// 物理量を表す<br/>
 /// 例: 気圧、気温、風向、風速、湿度、震度、マグニチュード など
 /// </summary>
-public struct PhysicalQuantity(XmlNode node)
+[JmaXmlType]
+public sealed partial class PhysicalQuantity<TView>
 {
-	private XmlNode Node { get; set; } = node;
-
-	private string? _name = null;
 	/// <summary>
 	/// 自身のノードの名前<br/>
 	/// 例: Pressure、Temperature
 	/// </summary>
-	public string Name => _name ??= Node.Name.ToString();
+	[JmaXml(".name")]
+	public partial string Name { get; }
 
-	private string? _type = null;
 	/// <summary>
 	/// 基本要素の種別<br/>
 	/// 例: 気圧、最低気温、風向、風速、Mj
 	/// </summary>
-	public string Type => _type ??= (Node.TryFindStringAttribute(Literals.AttrType(), out var n) ? n : throw new JmaXmlParseException("type 属性が存在しません"));
+	[JmaXml("@type!")]
+	public partial string Type { get; }
 
-	private string? _unit = null;
 	/// <summary>
 	/// 単位<br/>
 	/// 例: hPa、度、１６方位漢字、m/s、ノット<br/>
 	/// マグニチュードの場合 <c>null</c>
 	/// </summary>
-	public string? Unit => _unit ??= (Node.TryFindStringAttribute(Literals.AttrUnit(), out var n) ? n : null);
+	[JmaXml("@unit?")]
+	public partial string? Unit { get; }
 
-	private int? _refId = null;
 	/// <summary>
 	/// 時系列の際の参照番号<br/>
 	/// 存在しない場合 <c>null</c>
 	/// </summary>
-	public int? RefId => _refId ??= (Node.TryFindIntAttribute(Literals.AttrRefId(), out var n) ? n : null);
+	[JmaXml("@refID?")]
+	public partial int? RefId { get; }
 
-	private string? _condition = null;
 	/// <summary>
 	/// 値の状態など<br/>
 	/// 例: 約、以上、不明<br/>
 	/// 存在しない場合 <c>null</c>
 	/// </summary>
-	public string? Condition => _condition ??= (Node.TryFindStringAttribute(Literals.AttrCondition(), out var n) ? n : null);
+	[JmaXml("@condition?")]
+	public partial string? Condition { get; }
 
-	private string? _description = null;
 	/// <summary>
 	/// 文字列表現<br/>
 	/// 例: 気圧不明、風向不明、風速不明、M6.6、M 不明<br/>
 	/// 存在しない場合 <c>null</c>
 	/// </summary>
-	public string? Description => _description ??= (Node.TryFindStringAttribute(Literals.AttrDescription(), out var n) ? n : null);
+	[JmaXml("@description?")]
+	public partial string? Description { get; }
 
-	private string? _value = null;
 	/// <summary>
 	/// 値
 	/// </summary>
-	public string Value => _value ??= Node.InnerText.ToString();
+	[JmaXml(".")]
+	public partial string Value { get; }
 
-	public bool TryGetIntValue(out int value)
-		=> Node.InnerText.TryToInt32(out value);
+	[JmaXml(".")]
+	public partial bool TryGetIntValue(out int value);
 
-	public bool TryGetFloatValue(out float value)
-		=> Node.InnerText.TryToFloat32(out value);
+	[JmaXml(".")]
+	public partial bool TryGetFloatValue(out float value);
 }

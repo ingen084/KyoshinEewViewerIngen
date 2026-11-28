@@ -1,12 +1,8 @@
-using U8Xml;
-
 namespace KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 
-public struct HypocenterAccuracy(XmlNode node)
+[JmaXmlType]
+public sealed partial class HypocenterAccuracy<TView>
 {
-	private XmlNode Node { get; set; } = node;
-
-	private int? _epicenterRank = null;
 	/// <summary>
 	/// 震源位置の精度のランク <c>0~8</c>
 	/// <list type="number" start="0">
@@ -22,21 +18,9 @@ public struct HypocenterAccuracy(XmlNode node)
 	///		<item>EPOS（内陸〔観測網内〕）</item>
 	/// </list>
 	/// </summary>
-	public int EpicenterRank
-	{
-		get {
-			if (_epicenterRank is { } r)
-				return r;
-			if (!Node.TryFindChild(Literals.Epicenter(), out var n))
-				throw new JmaXmlParseException("Epicenter ノードが存在しません");
-			if (!n.TryFindIntAttribute(Literals.AttrRank(), out r))
-				throw new JmaXmlParseException("rank 属性が存在しません");
-			_epicenterRank = r;
-			return r;
-		}
-	}
+	[JmaXml("Epicenter!@rank!")]
+	public partial int EpicenterRank { get; }
 
-	private int? _epicenterRank2 = null;
 	/// <summary>
 	/// 震源位置の精度のランク2 <c>0~4,9</c><br/>
 	/// <list type="number">
@@ -49,21 +33,9 @@ public struct HypocenterAccuracy(XmlNode node)
 	///	9. 震源とマグニチュードに基づく震度予測手法での精度が最終報相当<br/>（推定震源とマグニチュードはこれ以降変化しない。ただし、PLUM法により予測震度が今後変化する可能性はある。）
 	/// <para>（※1,9 以外については気象庁の部内システムでの利用（予告無く変更することがある））</para>
 	/// </summary>
-	public int EpicenterRank2
-	{
-		get {
-			if (_epicenterRank2 is { } r)
-				return r;
-			if (!Node.TryFindChild(Literals.Epicenter(), out var n))
-				throw new JmaXmlParseException("Epicenter ノードが存在しません");
-			if (!n.TryFindIntAttribute(Literals.AttrRank2(), out r))
-				throw new JmaXmlParseException("rank2 属性が存在しません");
-			_epicenterRank2 = r;
-			return r;
-		}
-	}
+	[JmaXml("Epicenter!@rank2!")]
+	public partial int EpicenterRank2 { get; }
 
-	private int? _depthRank = null;
 	/// <summary>
 	/// 震源深さの精度のランク <c>0~8</c>
 	/// <list type="number" start="0">
@@ -78,21 +50,9 @@ public struct HypocenterAccuracy(XmlNode node)
 	///		<item>EPOS（内陸〔観測網内〕）</item>
 	/// </list>
 	/// </summary>
-	public int DepthRank
-	{
-		get {
-			if (_depthRank is { } r)
-				return r;
-			if (!Node.TryFindChild(Literals.Depth(), out var n))
-				throw new JmaXmlParseException("Depth ノードが存在しません");
-			if (!n.TryFindIntAttribute(Literals.AttrRank(), out r))
-				throw new JmaXmlParseException("rank 属性が存在しません");
-			_depthRank = r;
-			return r;
-		}
-	}
+	[JmaXml("Depth!@rank!")]
+	public partial int DepthRank { get; }
 
-	private int? _magnitudeCalculationRank = null;
 	/// <summary>
 	/// マグニチュードの精度値 <c>0,2~8</c>
 	/// <para>0. 不明<br/>
@@ -103,21 +63,9 @@ public struct HypocenterAccuracy(XmlNode node)
 	/// 6. EPOS<br/>
 	/// 8. P 波／S 波レベル超え、または仮定震源要素の場合</para>
 	/// </summary>
-	public int MagnitudeCalculationRank
-	{
-		get {
-			if (_magnitudeCalculationRank is { } r)
-				return r;
-			if (!Node.TryFindChild(Literals.MagnitudeCalculation(), out var n))
-				throw new JmaXmlParseException("MagnitudeCalculation ノードが存在しません");
-			if (!n.TryFindIntAttribute(Literals.AttrRank(), out r))
-				throw new JmaXmlParseException("rank 属性が存在しません");
-			_magnitudeCalculationRank = r;
-			return r;
-		}
-	}
+	[JmaXml("MagnitudeCalculation!@rank!")]
+	public partial int MagnitudeCalculationRank { get; }
 
-	private int? _numberOfMagnitudeCalculation = null;
 	/// <summary>
 	/// マグニチュード計算使用観測点数 <c>0~5</c>
 	/// <list type="number" start="0">
@@ -129,5 +77,6 @@ public struct HypocenterAccuracy(XmlNode node)
 	///		<item>5 点以上</item>
 	/// </list>
 	/// </summary>
-	public int NumberOfMagnitudeCalculation => _numberOfMagnitudeCalculation ??= (Node.TryFindIntNode(Literals.NumberOfMagnitudeCalculation(), out var n) ? n : throw new JmaXmlParseException("Area ノードが存在しません"));
+	[JmaXml("NumberOfMagnitudeCalculation!")]
+	public partial int NumberOfMagnitudeCalculation { get; }
 }

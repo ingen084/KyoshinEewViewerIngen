@@ -1,11 +1,8 @@
-using U8Xml;
-
 namespace KyoshinEewViewer.JmaXmlParser.Data.Meteorological;
-public struct ClassPart(XmlNode node)
-{
-	private XmlNode Node { get; set; } = node;
 
-	private string? _typhoonClass = null;
+[JmaXmlType]
+public sealed partial class ClassPart<TView>
+{
 	/// <summary>
 	/// 台風の階級
 	/// <list type="bullet">
@@ -19,9 +16,9 @@ public struct ClassPart(XmlNode node)
 	/// </list>
 	/// 「延長予報 X 時間後」では記述なし
 	/// </summary>
-	public string? TyphoonClass => _typhoonClass ??= (Node.TryFindStringNode(Literals.JmaEbTyphoonClass(), out var n) ? n : null);
+	[JmaXml("jmx_eb:TyphoonClass?")]
+	public partial string? TyphoonClass { get; }
 
-	private string? _areaClass = null;
 	/// <summary>
 	/// 台風の大きさ
 	/// <list type="bullet">
@@ -30,9 +27,9 @@ public struct ClassPart(XmlNode node)
 	/// </list>
 	/// 「予報 X 時間後」及び「延長予報 X 時間後」では省略する
 	/// </summary>
-	public string? AreaClass => _areaClass ??= (Node.TryFindStringNode(Literals.JmaEbAreaClass(), out var n) ? n : null);
+	[JmaXml("jmx_eb:AreaClass?")]
+	public partial string? AreaClass { get; }
 
-	private string? _intensityClass = null;
 	/// <summary>
 	/// 台風の強さ
 	/// <list type="bullet">
@@ -42,5 +39,6 @@ public struct ClassPart(XmlNode node)
 	/// </list>
 	/// 「延長予報 X 時間後」では省略
 	/// </summary>
-	public string? IntensityClass => _intensityClass ??= (Node.TryFindStringNode(Literals.JmaEbIntensityClass(), out var n) ? n : null);
+	[JmaXml("jmx_eb:IntensityClass?")]
+	public partial string? IntensityClass { get; }
 }
