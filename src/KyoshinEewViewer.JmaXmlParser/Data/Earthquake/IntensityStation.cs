@@ -23,9 +23,22 @@ public struct IntensityStation(XmlNode node)
 	private string? _int = null;
 	/// <summary>
 	/// 最大震度<br/>
+	/// Int 要素が存在しない場合は null。<br/>
 	/// 基準となる震度以上（当面は震度５弱以上とする）と考えられるが震度の値を入手していない市町村のみしか存在しない場合 震度５弱以上未入電 になる
 	/// </summary>
-	public string Int => _int ??= (Node.TryFindStringNode(Literals.Int(), out var n) ? n : throw new JmaXmlParseException("Int ノードが存在しません"));
+	public string? Int => _int ??= (Node.TryFindStringNode(Literals.Int(), out var n) ? n : null);
+
+	private string? _lgInt = null;
+	/// <summary>
+	/// 観測点の長周期地震動階級。存在しない場合は null。
+	/// </summary>
+	public string? LgInt => _lgInt ??= (Node.TryFindStringNode("LgInt"u8, out var n) ? n : null);
+
+	private float? _k = null;
+	/// <summary>
+	/// 計測震度。存在しない場合は null。
+	/// </summary>
+	public float? K => _k ??= (Node.TryFindFloatNode("K"u8, out var n) ? n : null);
 
 	private string? _revise = null;
 	/// <summary>
@@ -48,7 +61,7 @@ public struct IntensityStation(XmlNode node)
 		=> Node.Children.Where(c => c.Name == Literals.LgIntPerPeriod()).Select(c => new LgIntPerPeriod(c));
 
 	/// <summary>
-	/// 各周期毎の加速度
+	/// 各周期帯における絶対速度応答スペクトルの最大値。
 	/// </summary>
 	public IEnumerable<SvaPerPeriod> SvaPerPeriods
 		=> Node.Children.Where(c => c.Name == Literals.SvaPerPeriod()).Select(c => new SvaPerPeriod(c));

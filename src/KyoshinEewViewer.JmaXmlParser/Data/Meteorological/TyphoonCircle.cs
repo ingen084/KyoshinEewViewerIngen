@@ -15,24 +15,39 @@ public struct TyphoonCircle(XmlNode node)
 	/// <item>強風域</item>
 	/// <item>予報円</item>
 	/// </list>
+	/// 存在しない場合は null。
 	/// </summary>
-	public string Type => _type ??= (Node.TryFindStringAttribute(Literals.AttrType(), out var n) ? n : throw new JmaXmlParseException("type 属性が存在しません"));
+	public string? Type => _type ??= (Node.TryFindStringAttribute(Literals.AttrType(), out var n) ? n : null);
 
 	/// <summary>
 	/// 強風域及び予報円の中心位置
 	/// </summary>
 	public IEnumerable<Coordinate> BasePoints
-		=> Node.Children.Where(c => c.Name == Literals.JmaEbBasePoint()).Select(c => new Coordinate(c));
+		=> Node.Children.Where(c => c.IsElementBasis("BasePoint"u8)).Select(c => new Coordinate(c));
 
 	/// <summary>
-	/// 強風域･暴風域の距離情報
+	/// 強風域･暴風域の距離情報。Axes 要素が存在しない場合は空。
 	/// </summary>
 	public IEnumerable<Axis> Axes
 	{
 		get {
-			if (!Node.TryFindChild(Literals.JmaEbAxes(), out var c))
-				throw new JmaXmlParseException("Axes ノードが存在しません");
-			return c.Children.Where(c => c.Name == Literals.JmaEbAxis()).Select(c => new Axis(c));
+			if (!Node.TryFindElementBasis("Axes"u8, out var c))
+				return Enumerable.Empty<Axis>();
+			return c.Children.Where(c => c.IsElementBasis("Axis"u8)).Select(c => new Axis(c));
 		}
 	}
+
+	/// <summary>
+	/// 楕円の長軸。存在しない場合は空。
+	/// </summary>
+	public IEnumerable<Axis> LongAxes => Node.TryFindElementBasis("Axes"u8, out var n)
+		? n.Children.Where(c => c.IsElementBasis("LongAxis"u8)).Select(c => new Axis(c))
+		: Enumerable.Empty<Axis>();
+
+	/// <summary>
+	/// 楕円の短軸。存在しない場合は空。
+	/// </summary>
+	public IEnumerable<Axis> ShortAxes => Node.TryFindElementBasis("Axes"u8, out var n)
+		? n.Children.Where(c => c.IsElementBasis("ShortAxis"u8)).Select(c => new Axis(c))
+		: Enumerable.Empty<Axis>();
 }

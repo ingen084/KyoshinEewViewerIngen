@@ -19,6 +19,18 @@ public struct TsunamiStation(XmlNode node)
 	/// </summary>
 	public int Code => _code ??= (Node.TryFindIntNode(Literals.Code(), out var n) ? n : throw new JmaXmlParseException("Code ノードが存在しません"));
 
+	private string? _sensor = null;
+	/// <summary>
+	/// 観測機器の名称（ＧＮＳＳ波浪計、水圧計など）。存在しない場合は null。
+	/// </summary>
+	public string? Sensor => _sensor ??= (Node.TryFindStringNode("Sensor"u8, out var n) ? n : null);
+
+	private CurrentHeight? _currentHeight = null;
+	/// <summary>
+	/// 津波の現在の高さ。存在しない場合は null。
+	/// </summary>
+	public CurrentHeight? CurrentHeight => _currentHeight ??= (Node.TryFindChild("CurrentHeight"u8, out var n) ? new(n) : null);
+
 	private DateTimeOffset? _highTideDateTime = null;
 	/// <summary>
 	/// 満潮時刻(Forecast のみ)

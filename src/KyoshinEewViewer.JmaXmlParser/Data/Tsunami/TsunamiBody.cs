@@ -9,6 +9,24 @@ public struct TsunamiBody(XmlNode node)
 {
 	private XmlNode Node { get; set; } = node;
 
+	private string? _naming = null;
+	/// <summary>
+	/// 命名地震の名称。存在しない場合は null。
+	/// </summary>
+	public string? Naming => _naming ??= (Node.TryFindStringNode(Literals.Naming(), out var n) ? n : null);
+
+	/// <summary>
+	/// 命名地震の英語名。存在しない場合は null。
+	/// </summary>
+	public string? NamingEnglish => Node.TryFindChild(Literals.Naming(), out var n) &&
+		n.TryFindStringAttribute(Literals.AttrEnglish(), out var english) ? english : null;
+
+	private string? _nextAdvisory = null;
+	/// <summary>
+	/// 次回発表予定。存在しない場合は null。
+	/// </summary>
+	public string? NextAdvisory => _nextAdvisory ??= (Node.TryFindStringNode(Literals.NextAdvisory(), out var n) ? n : null);
+
 	private TsunamiData? _tsunami = null;
 	/// <summary>
 	/// 津波に関連する情報<br/>

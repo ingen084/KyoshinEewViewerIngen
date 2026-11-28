@@ -13,6 +13,107 @@ public struct MeteorologicalInfoKindProperty(XmlNode node)
 	/// </summary>
 	public string Type => _type ??= (Node.TryFindStringNode(Literals.Type(), out var n) ? n : throw new JmaXmlParseException("Type ノードが存在しません"));
 
+	/// <summary>
+	/// 危険度・量的予想の構成部品を記載順で取得する。
+	/// </summary>
+	public IEnumerable<MeteorologicalForecastPart> ForecastParts => Node.Children
+		.Where(c => c.Name == "SignificancyPart"u8 || c.Name == "SubsequentSignificancyPart"u8 ||
+			c.Name == "CriteriaPeriod"u8 || c.Name == "WindDirectionPart"u8 || c.Name == "WindSpeedPart"u8 ||
+			c.Name == "PrecipitationPart"u8 || c.Name == "PrecipitationBasedIndexPart"u8 ||
+			c.Name == "WaveHeightPart"u8 || c.Name == "TidalLevelPart"u8 || c.Name == "SnowfallDepthPart"u8 ||
+			c.Name == "SnowDepthPart"u8 || c.Name == "HumidityPart"u8 || c.Name == "VisibilityPart"u8 || c.Name == "TemperaturePart"u8)
+		.Select(c => new MeteorologicalForecastPart(c));
+
+	/// <summary>
+	/// 気象現象の危険度。地域別・時刻別の分類は Base 以下に保持する。
+	/// </summary>
+	public IEnumerable<MeteorologicalForecastPart> SignificancyParts
+		=> Node.Children.Where(c => c.Name == "SignificancyPart"u8).Select(c => new MeteorologicalForecastPart(c));
+
+	/// <summary>
+	/// 予報対象期間より後の危険度。
+	/// </summary>
+	public IEnumerable<MeteorologicalForecastPart> SubsequentSignificancyParts
+		=> Node.Children.Where(c => c.Name == "SubsequentSignificancyPart"u8).Select(c => new MeteorologicalForecastPart(c));
+
+	/// <summary>
+	/// 警戒期間。存在しない場合は null。
+	/// </summary>
+	public MeteorologicalPeriod? WarningPeriod => Node.TryFindChild("WarningPeriod"u8, out var n) ? new(n) : null;
+
+	/// <summary>
+	/// 注意期間。存在しない場合は null。
+	/// </summary>
+	public MeteorologicalPeriod? AdvisoryPeriod => Node.TryFindChild("AdvisoryPeriod"u8, out var n) ? new(n) : null;
+
+	/// <summary>
+	/// 危険度の基準に達する時刻・期間。存在しない場合は null。
+	/// </summary>
+	public MeteorologicalForecastPart? CriteriaPeriod => Node.TryFindChild("CriteriaPeriod"u8, out var n) ? new(n) : null;
+
+	/// <summary>
+	/// 現象のピークの時間帯。存在しない場合は null。
+	/// </summary>
+	public ForecastTerm? PeakTime => Node.TryFindChild("PeakTime"u8, out var n) ? new(n) : null;
+
+	/// <summary>
+	/// 風向の予想。存在しない場合は null。
+	/// </summary>
+	public MeteorologicalForecastPart? WindDirectionPart => Node.TryFindChild("WindDirectionPart"u8, out var n) ? new(n) : null;
+
+	/// <summary>
+	/// 風速の予想。存在しない場合は null。
+	/// </summary>
+	public MeteorologicalForecastPart? WindSpeedPart => Node.TryFindChild("WindSpeedPart"u8, out var n) ? new(n) : null;
+
+	/// <summary>
+	/// 波高の予想。存在しない場合は null。
+	/// </summary>
+	public MeteorologicalForecastPart? WaveHeightPart => Node.TryFindChild("WaveHeightPart"u8, out var n) ? new(n) : null;
+
+	/// <summary>
+	/// 潮位の予想。存在しない場合は null。
+	/// </summary>
+	public MeteorologicalForecastPart? TidalLevelPart => Node.TryFindChild("TidalLevelPart"u8, out var n) ? new(n) : null;
+
+	/// <summary>
+	/// 雨量の予想。
+	/// </summary>
+	public IEnumerable<MeteorologicalForecastPart> PrecipitationParts
+		=> Node.Children.Where(c => c.Name == "PrecipitationPart"u8).Select(c => new MeteorologicalForecastPart(c));
+
+	/// <summary>
+	/// 雨量に基づく指数の予想。
+	/// </summary>
+	public IEnumerable<MeteorologicalForecastPart> PrecipitationBasedIndexParts
+		=> Node.Children.Where(c => c.Name == "PrecipitationBasedIndexPart"u8).Select(c => new MeteorologicalForecastPart(c));
+
+	/// <summary>
+	/// 降雪量の予想。存在しない場合は null。
+	/// </summary>
+	public MeteorologicalForecastPart? SnowfallDepthPart => Node.TryFindChild("SnowfallDepthPart"u8, out var n) ? new(n) : null;
+
+	/// <summary>
+	/// 積雪深の予想。存在しない場合は null。
+	/// </summary>
+	public MeteorologicalForecastPart? SnowDepthPart => Node.TryFindChild("SnowDepthPart"u8, out var n) ? new(n) : null;
+
+	/// <summary>
+	/// 湿度の予想。
+	/// </summary>
+	public IEnumerable<MeteorologicalForecastPart> HumidityParts
+		=> Node.Children.Where(c => c.Name == "HumidityPart"u8).Select(c => new MeteorologicalForecastPart(c));
+
+	/// <summary>
+	/// 視程の予想。存在しない場合は null。
+	/// </summary>
+	public MeteorologicalForecastPart? VisibilityPart => Node.TryFindChild("VisibilityPart"u8, out var n) ? new(n) : null;
+
+	/// <summary>
+	/// 気温の予想。存在しない場合は null。
+	/// </summary>
+	public MeteorologicalForecastPart? TemperaturePart => Node.TryFindChild("TemperaturePart"u8, out var n) ? new(n) : null;
+
 	private TyphoonNamePart? _typhoonNamePart = null;
 	/// <summary>
 	/// Type=呼称 のときに出現

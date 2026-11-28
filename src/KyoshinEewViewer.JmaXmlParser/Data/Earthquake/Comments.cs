@@ -1,3 +1,5 @@
+using System;
+using System.Text;
 using U8Xml;
 
 namespace KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
@@ -113,4 +115,54 @@ public struct Comments(XmlNode node)
 	/// 自由付加文
 	/// </summary>
 	public string? FreeFormComment => _freeFormComment ??= (Node.TryFindStringNode(Literals.FreeFormComment(), out var n) ? n : null);
+
+	/// <summary>
+	/// 観測に関する固定付加文の本文。存在しない場合は null。
+	/// </summary>
+	public string? ObservationCommentText => GetCommentValue("ObservationComment"u8, Literals.Text());
+
+	/// <summary>
+	/// 観測に関する固定付加文のコード。存在しない場合は null。
+	/// </summary>
+	public string? ObservationCommentCode => GetCommentValue("ObservationComment"u8, Literals.Code());
+
+	/// <summary>
+	/// 固定付加文のコード種別。付加文が存在しない場合は null。
+	/// </summary>
+	public string? ForecastCommentCodeType => GetCommentCodeType(Literals.ForecastComment());
+
+	/// <summary>
+	/// 警告の固定付加文のコード種別。付加文が存在しない場合は null。
+	/// </summary>
+	public string? WarningCommentCodeType => GetCommentCodeType(Literals.WarningComment());
+
+	/// <summary>
+	/// 観測の固定付加文のコード種別。付加文が存在しない場合は null。
+	/// </summary>
+	public string? ObservationCommentCodeType => GetCommentCodeType("ObservationComment"u8);
+
+	/// <summary>
+	/// その他の固定付加文のコード種別。付加文が存在しない場合は null。
+	/// </summary>
+	public string? VarCommentCodeType => GetCommentCodeType(Literals.VarComment());
+
+	private string? _uri = null;
+	/// <summary>
+	/// 関連資料の URI。存在しない場合は null。
+	/// </summary>
+	public string? Uri => _uri ??= (Node.TryFindStringNode("URI"u8, out var n) ? n : null);
+
+	private string? GetCommentValue(ReadOnlySpan<byte> name, ReadOnlySpan<byte> childName)
+	{
+		if (!Node.TryFindChild(name, out var n))
+			return null;
+		return n.TryFindStringNode(childName, out var value) ? value : throw new JmaXmlParseException($"{Encoding.UTF8.GetString(childName)} ノードが存在しません");
+	}
+
+	private string? GetCommentCodeType(ReadOnlySpan<byte> name)
+	{
+		if (!Node.TryFindChild(name, out var n))
+			return null;
+		return n.TryFindStringAttribute(Literals.AttrCodeType(), out var value) ? value : throw new JmaXmlParseException("codeType 属性が存在しません");
+	}
 }
