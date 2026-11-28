@@ -18,9 +18,17 @@ public sealed partial class IntensityStation<TView>
 	/// <summary>
 	/// 最大震度<br/>
 	/// 基準となる震度以上（当面は震度５弱以上とする）と考えられるが震度の値を入手していない市町村のみしか存在しない場合 震度５弱以上未入電 になる
+	/// <para>「リアルタイム震度電文」では、リアルタイム震度（工学的基盤面の値）の震度階級になる</para>
 	/// </summary>
 	[JmaXml("Int!")]
 	public partial string Int { get; }
+
+	/// <summary>
+	/// リアルタイム震度（工学的基盤面の値）の計測震度<br/>
+	/// 「リアルタイム震度電文」以外は null
+	/// </summary>
+	[JmaXml("K?")]
+	public partial float? K { get; }
 
 	/// <summary>
 	/// 情報の更新（地域）<br/>

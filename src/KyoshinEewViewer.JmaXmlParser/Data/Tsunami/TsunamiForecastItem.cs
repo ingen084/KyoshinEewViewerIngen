@@ -13,7 +13,7 @@ public sealed partial class TsunamiForecastItem<TView>
 	/// 津波警報等の種類
 	/// </summary>
 	[JmaXml("Category!")]
-	public partial Category<TView> Category { get; }
+	public partial TsunamiCategory<TView> Category { get; }
 
 	/// <summary>
 	/// 津波の到達予想時刻（津波予報区）<br/>

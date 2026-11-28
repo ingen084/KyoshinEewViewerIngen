@@ -1,3 +1,5 @@
+using System;
+
 namespace KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 
 [JmaXmlType]
@@ -44,6 +46,21 @@ public sealed partial class Area<TView>
 	/// </summary>
 	[JmaXml("ForecastLgInt?/To!")]
 	public partial string? ForecastLgIntTo { get; }
+
+	/// <summary>
+	/// 主要動の到達予測時刻<br/>
+	/// 緊急地震速報で、主要動が未到達と推測される場合に記載される。<see cref="Condition"/> とは同時に出現しない
+	/// <para>PLUM 法で予測している区域では、その震度（階級震度）を初めて予測した時刻になる</para>
+	/// </summary>
+	[JmaXml("ArrivalTime?")]
+	public partial DateTimeOffset? ArrivalTime { get; }
+
+	/// <summary>
+	/// 主要動の到達に関する状況 <c>既に主要動到達と推測</c><br/>
+	/// 緊急地震速報で、主要動の到達予測時刻を過ぎている場合に記載される。<see cref="ArrivalTime"/> とは同時に出現しない
+	/// </summary>
+	[JmaXml("Condition?")]
+	public partial string? Condition { get; }
 
 	/// <summary>
 	/// 最大震度<br/>

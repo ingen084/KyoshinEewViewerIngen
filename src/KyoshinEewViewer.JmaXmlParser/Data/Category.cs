@@ -10,8 +10,9 @@ public sealed partial class Category<TView>
 	public partial Kind<TView> Kind { get; }
 
 	/// <summary>
-	/// 事項種別
+	/// 前回の事項種別<br/>
+	/// 存在しない場合は <c>null</c>
 	/// </summary>
-	[JmaXml("LastKind!")]
-	public partial Kind<TView> LastKind { get; }
+	[JmaXml("LastKind?")]
+	public partial Kind<TView>? LastKind { get; }
 }
