@@ -58,8 +58,9 @@ dotnet build KyoshinEewViewer.sln -t:Rebuild
 - `KyoshinEewViewer.Map`: 地図描画・投影
 - `KyoshinEewViewer.CustomControl`: カスタムUIコントロール
 - `KyoshinEewViewer.JmaXmlParser`: JMA XML パーサー
+- `KyoshinEewViewer.JmaXmlParser.Generator`: JMA XML の読み取りコードのソースジェネレーター。JmaXmlParser と組で使う
 - `KyoshinEewViewer.DCReportParser`: QZSS 災危通報パーサー
-- `KyoshinEewViewer.CodeAnalysis`: ソースジェネレーター (CSV辞書、JMA XML の読み取りコード) とアナライザー
+- `KyoshinEewViewer.CodeAnalysis`: 本体専用のソースジェネレーター (CSV辞書) とアナライザー
 - `common.props`: 共有 MSBuild プロパティ (.NET 11.0、Nullable など)
 
 ### 技術スタック
@@ -141,7 +142,7 @@ bool プロパティに応じたスタイル切り替えには、コンバータ
 
 ### JMA XML の読み取り
 
-気象庁防災情報XMLは `KyoshinEewViewer.JmaXmlParser` の型 (`JmaXmlDocument<TView>` と `Data` 以下の型) で読む。読み取りコードは `JmaXmlGenerator` (`KyoshinEewViewer.CodeAnalysis`) が生成し、**コード上で参照したメンバーだけ**を1回の走査で読む。
+気象庁防災情報XMLは `KyoshinEewViewer.JmaXmlParser` の型 (`JmaXmlDocument<TView>` と `Data` 以下の型) で読む。読み取りコードは `JmaXmlGenerator` (`KyoshinEewViewer.JmaXmlParser.Generator`) が生成し、**コード上で参照したメンバーだけ**を1回の走査で読む。
 
 ```csharp
 // 読み取りの単位。名前空間直下の partial 構造体として宣言する
@@ -154,10 +155,11 @@ foreach (var pref in report.EarthquakeBody.Intensity?.Observation?.Prefs ?? defa
 
 - **読み取りの単位は読み取り箇所ごとに宣言する**。同じ単位を複数の箇所で使うと、どこか1か所で参照したメンバーがすべての箇所で読み取られる。名前は UI の View (`TyphoonView` など) と重ならないようにする
 - 参照していないメンバーは読み取られない。リフレクションなどで参照すると、値なしではなく `InvalidOperationException` になる。プロパティを列挙する仕組み (Scriban、JSON シリアライズ、バインディング) にこれらの型を渡さない
-- **別のアセンブリ (テストなど) で読む場合は、そのアセンブリで読み取りの単位を宣言する**。他のアセンブリの単位に対して対象外のメンバーを参照すると KEVIJMA001 のコンパイルエラーになる。`common.props` を取り込んでいないプロジェクトで単位を宣言するには、`KyoshinEewViewer.CodeAnalysis` へのアナライザー参照 (`OutputItemType="Analyzer" ReferenceOutputAssembly="false"`) が必要
+- **別のアセンブリ (テストなど) で読む場合は、そのアセンブリで読み取りの単位を宣言する**。他のアセンブリの単位に対して対象外のメンバーを参照すると KEVIJMA001 のコンパイルエラーになる。`common.props` を取り込んでいないプロジェクトで単位を宣言するには、`KyoshinEewViewer.JmaXmlParser` への参照に加えて、`KyoshinEewViewer.JmaXmlParser.Generator` へのアナライザー参照 (`OutputItemType="Analyzer" ReferenceOutputAssembly="false"`) が必要
 - 型引数を型パラメーターのまま受け取るメソッド (`void F<TView>(Pref<TView> pref)`) の中で参照したメンバーは、すべての単位の読み取り対象に加わる。共通処理には、値に変換してから渡す
 - 必須の要素や属性がない場合は、読み取り時ではなくメンバーを参照した時点で `JmaXmlParseException` になる
 - 型にメンバーを追加するときは、`[JmaXml("経路")]` を付けた partial プロパティを宣言する。経路の書式は `JmaXmlAttribute` のドキュメントコメントを参照する。型は JmaXmlParser の中に定義する
+- **`KyoshinEewViewer.JmaXmlParser` と `KyoshinEewViewer.JmaXmlParser.Generator` は、この2つだけで他のプロジェクトから使える状態を保つ**。`common.props` を取り込まず、本体のプロジェクトや NuGet パッケージへの参照を追加しない
 
 ### 命名規則
 

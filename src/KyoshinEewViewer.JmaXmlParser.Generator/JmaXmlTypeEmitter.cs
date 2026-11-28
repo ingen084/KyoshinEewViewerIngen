@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace KyoshinEewViewer.CodeAnalysis.JmaXml;
+namespace KyoshinEewViewer.JmaXmlParser.Generator;
 
 /// <summary>
 /// [JmaXmlType] の型の partial メンバーの実装と、値を保持するフィールドを出力する

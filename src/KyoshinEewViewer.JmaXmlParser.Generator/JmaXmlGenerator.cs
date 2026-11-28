@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using System.Runtime.CompilerServices;
 
-namespace KyoshinEewViewer.CodeAnalysis.JmaXml;
+namespace KyoshinEewViewer.JmaXmlParser.Generator;
 
 /// <summary>
 /// [JmaXmlType] を付けた型の partial メンバーの実装と、[JmaXmlView] を付けた読み取りの単位ごとの読み取りコードを生成する<br/>

@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace KyoshinEewViewer.CodeAnalysis.JmaXml;
+namespace KyoshinEewViewer.JmaXmlParser.Generator;
 
 /// <summary>
 /// 読み取りの単位が参照するメンバーだけを、1 回の走査で読み取るコードを出力する

@@ -1,7 +1,7 @@
 using Microsoft.CodeAnalysis;
 using System.Text;
 
-namespace KyoshinEewViewer.CodeAnalysis.JmaXml;
+namespace KyoshinEewViewer.JmaXmlParser.Generator;
 
 internal static class JmaXmlNames
 {
