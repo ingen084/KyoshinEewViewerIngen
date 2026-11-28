@@ -25,7 +25,7 @@ internal sealed class TelegramScenario : IAsyncDisposable
 	/// <summary>
 	/// 起動前から配信されている地震情報
 	/// </summary>
-	public static readonly TelegramFixtures.EarthquakeTelegram InitialEarthquake = new("fixture-eq-1", "20261018095600", new(2026, 10, 18, 9, 56, 0, TimeSpan.FromHours(9)), "千葉県東方沖");
+	public static readonly TelegramFixtures.EarthquakeTelegram InitialEarthquake = new("fixture-eq-1", "20261018095600", new(2026, 10, 18, 9, 56, 0, TimeSpan.FromHours(9)), "テスト県東方沖");
 	private const string DmdataWebSocketSource = "DM-D.S.S(WS)";
 	private const string DmdataPullSource = "DM-D.S.S(PULL)";
 
@@ -299,7 +299,7 @@ internal sealed class TelegramScenario : IAsyncDisposable
 	public async Task AssertEewDeliveredAsync(string eventId)
 	{
 		var before = EewUpdatedCount;
-		Network.Socket!.Receive(TelegramFixtures.DmdataEewMessage("fixture-eew-" + eventId, eventId, 1, DateTimeOffset.Now.AddSeconds(-10), "千葉県東方沖"));
+		Network.Socket!.Receive(TelegramFixtures.DmdataEewMessage("fixture-eew-" + eventId, eventId, 1, DateTimeOffset.Now.AddSeconds(-10), "テスト県東方沖"));
 		await Ui.WaitUntilAsync(() => EewUpdatedCount > before, () => $"緊急地震速報 {eventId} が届く\n{Logs}");
 	}
 

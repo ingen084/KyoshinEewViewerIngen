@@ -5,13 +5,13 @@ namespace KyoshinEewViewer.JmaXmlParser.Tests;
 
 public partial class HeadDataTest
 {
-	private static ReadOnlySpan<byte> NormalBody1() => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Report><Head><Title>奈良県気象警報・注意報</Title><ReportDateTime>2011-09-03T12:00:00+09:00</ReportDateTime><TargetDateTime>2011-09-03T12:00:00+09:00</TargetDateTime><EventID /><InfoType>発表</InfoType><Serial /><InfoKind>気象警報・注意報</InfoKind><InfoKindVersion>1.0_0</InfoKindVersion></Head></Report>"u8;
+	private static ReadOnlySpan<byte> NormalBody1() => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Report><Head><Title>テスト県気象警報・注意報</Title><ReportDateTime>2011-09-03T12:00:00+09:00</ReportDateTime><TargetDateTime>2011-09-03T12:00:00+09:00</TargetDateTime><EventID /><InfoType>発表</InfoType><Serial /><InfoKind>気象警報・注意報</InfoKind><InfoKindVersion>1.0_0</InfoKindVersion></Head></Report>"u8;
 
 	[Fact]
 	public void CanGetProterties()
 	{
 		var doc = JmaXml.Read<TestView>(NormalBody1());
-		Assert.Equal("奈良県気象警報・注意報", doc.Head.Title);
+		Assert.Equal("テスト県気象警報・注意報", doc.Head.Title);
 		Assert.Equal(new DateTimeOffset(2011, 9, 3, 12, 0, 0, TimeSpan.FromHours(9)), doc.Head.ReportDateTime);
 		Assert.Equal(new DateTimeOffset(2011, 9, 3, 12, 0, 0, TimeSpan.FromHours(9)), doc.Head.TargetDateTime);
 		Assert.Equal("", doc.Head.EventId);
@@ -52,7 +52,7 @@ public partial class HeadDataTest
 		});
 	}
 
-	private static ReadOnlySpan<byte> NormalBody4() => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Report><Head><Headline><Information type=\"type1\"><Item><Areas codeType=\"気象情報／府県予報区・細分区域等\"><Area><Name>奈良県</Name><Code>290000</Code></Area></Areas></Item></Information></Headline></Head></Report>"u8;
+	private static ReadOnlySpan<byte> NormalBody4() => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Report><Head><Headline><Information type=\"type1\"><Item><Areas codeType=\"気象情報／府県予報区・細分区域等\"><Area><Name>テスト県</Name><Code>290000</Code></Area></Areas></Item></Information></Headline></Head></Report>"u8;
 
 	[Fact]
 	public void CanGetHeadlineInformationWithArea()
@@ -66,7 +66,7 @@ public partial class HeadDataTest
 				Assert.Equal("気象情報／府県予報区・細分区域等", item.AreaCodeType);
 				Assert.Collection(item.Areas, kind =>
 				{
-					Assert.Equal("奈良県", kind.Name);
+					Assert.Equal("テスト県", kind.Name);
 					Assert.Equal("290000", kind.Code);
 				});
 			});

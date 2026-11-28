@@ -105,6 +105,7 @@ public class AxisEewReceiverTests
 	public void Axisの警報電文は予想地域をすべて警報地域とし_警報電文としてEewControllerへ渡す()
 	{
 		// 気象庁の警報電文の警報対象地域と同じ地域・予想震度が並ぶ
+		// 地域名をまとめる EewAreaGroups が実在の地域名で定義されているため、このテストでは実在の地域名を使う
 		var message = CreateMessage("緊急地震速報（警報）", "5-",
 			Forecast(451, "愛知県西部", "5弱", "5弱"),
 			Forecast(443, "静岡県西部", "4", "4"),
@@ -208,16 +209,16 @@ public class AxisEewReceiverTests
 	public void Axisの予報地域は地域ごとの最大震度を採用し_異常値と不明を除外する()
 	{
 		var message = CreateMessage("緊急地震速報（予報）", "6-",
-			Forecast(610, "香川県東部", "4", "4"),
-			Forecast(610, "香川県東部", "5-", "5-"),
-			Forecast(611, "香川県西部", "5-", "5-"),
-			Forecast(611, "香川県西部", "-1", "-1"),
-			Forecast(612, "愛媛県東予", "異常", "異常"),
-			Forecast(613, "徳島県北部", "6-", "over"),
-			Forecast(614, "徳島県南部", "不明", "不明"),
-			Forecast(615, "高知県東部", "5+", "5+"),
-			Forecast(616, "高知県西部", "5強", "5強"),
-			Forecast(617, "愛媛県中予", "5-", "5+"));
+			Forecast(610, "テスト県東部", "4", "4"),
+			Forecast(610, "テスト県東部", "5-", "5-"),
+			Forecast(611, "テスト県西部", "5-", "5-"),
+			Forecast(611, "テスト県西部", "-1", "-1"),
+			Forecast(612, "サンプル県東部", "異常", "異常"),
+			Forecast(613, "架空県北部", "6-", "over"),
+			Forecast(614, "架空県南部", "不明", "不明"),
+			Forecast(615, "ダミー県東部", "5+", "5+"),
+			Forecast(616, "ダミー県西部", "5強", "5強"),
+			Forecast(617, "サンプル県中部", "5-", "5+"));
 
 		var (eew, _) = ReceiveEew(message);
 
@@ -236,13 +237,13 @@ public class AxisEewReceiverTests
 	public void Axisの予想最大震度と同じ地域が以上の場合のみ最大震度を以上とする()
 	{
 		var over = CreateMessage("緊急地震速報（予報）", "6-",
-			Forecast(610, "香川県東部", "5-", "5-"),
-			Forecast(613, "徳島県北部", "6-", "over"));
+			Forecast(610, "テスト県東部", "5-", "5-"),
+			Forecast(613, "架空県北部", "6-", "over"));
 		Assert.True(ReceiveEew(over).Eew.IsIntensityOver);
 
 		var lowerAreaOver = CreateMessage("緊急地震速報（予報）", "5-",
-			Forecast(610, "香川県東部", "5-", "5-"),
-			Forecast(611, "香川県西部", "4", "over"));
+			Forecast(610, "テスト県東部", "5-", "5-"),
+			Forecast(611, "テスト県西部", "4", "over"));
 		Assert.False(ReceiveEew(lowerAreaOver).Eew.IsIntensityOver);
 	}
 
@@ -278,7 +279,7 @@ public class AxisEewReceiverTests
 			Hypocenter = new AxisEewHypocenter
 			{
 				Code = 601,
-				Name = "徳島県南部",
+				Name = "架空県南部",
 				Coordinate = [134.6f, 33.9f],
 				Depth = "50km",
 				Description = "北緯33.9度 東経134.6度 深さ約50km",

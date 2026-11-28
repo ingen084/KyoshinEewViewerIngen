@@ -24,10 +24,10 @@ internal static class EarthquakeScenario
 		var view = await WaitForControlAsync<EarthquakeView>(mainWindow);
 
 		UiTestDriver.Step("フィードから受信した最新の地震の内容を確認する");
-		await WaitForTextAsync(view, "石川県能登地方");
+		await WaitForTextAsync(view, "テスト県テスト地方");
 		await WaitForTextAsync(view, "5.1");
 		await WaitForTextAsync(view, "10");
-		await WaitForTextAsync(view, "石川県");
+		await WaitForTextAsync(view, "テスト県");
 
 		UiTestDriver.Step("一覧から別の地震を選ぶ");
 		var list = await WaitForAsync(
@@ -36,7 +36,7 @@ internal static class EarthquakeScenario
 		list.SelectedIndex = 1;
 		await WaitForTextAsync(view, "4.2");
 		await WaitForTextAsync(view, "50");
-		await WaitForTextAsync(view, "茨城県");
+		await WaitForTextAsync(view, "サンプル県");
 
 		UiTestDriver.Step("一覧から最新の地震に戻す");
 		list.SelectedIndex = 0;

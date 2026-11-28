@@ -54,7 +54,7 @@ public class DmdataEewClientMessageConverterTests
 			{"type":"eew","eventId":"20240101160608","serial":"4","author":"気象庁本庁",
 			 "pressTime":"2024-01-01T16:06:14+09:00","processTime":"2026-09-11T17:52:40.544+09:00",
 			 "isCanceled":false,"isLastInfo":false,"isPlumOnly":false,"isLevelOver":false,"isWarning":true,
-			 "epicenterName":"石川県能登地方","epicenterLocation":[137.2,37.5],"depth":10,"magnitude":5.7,
+			 "epicenterName":"テスト県テスト地方","epicenterLocation":[137.2,37.5],"depth":10,"magnitude":5.7,
 			 "originTime":"2026-09-11T17:52:32+09:00","arrivalTime":"2026-09-11T17:52:34+09:00",
 			 "accuracy":{"epicenters":["3","9"],"depth":"3","magnitudeCalculation":"1","numberOfMagnitudeCalculation":"4"},
 			 "maxInt":{"from":"5+","to":"over"},"maxLgInt":{"from":"1","to":"1"},
@@ -75,7 +75,7 @@ public class DmdataEewClientMessageConverterTests
 		Assert.True(eew.IsIntensityOver);
 
 		var hypocenter = Assert.IsType<EewHypocenter>(eew.Hypocenter);
-		Assert.Equal("石川県能登地方", hypocenter.Place);
+		Assert.Equal("テスト県テスト地方", hypocenter.Place);
 		Assert.Equal(new DateTime(2026, 9, 11, 17, 52, 32), hypocenter.OccurrenceTime);
 		// [経度, 緯度] の順で送られてくる
 		Assert.NotNull(hypocenter.Location);
@@ -120,7 +120,7 @@ public class DmdataEewClientMessageConverterTests
 		var message = Parse("""
 			{"type":"eew","eventId":"20240101160608","serial":"1","author":"気象庁本庁",
 			 "isCanceled":false,"isLastInfo":false,"isPlumOnly":true,"isLevelOver":false,"isWarning":false,
-			 "epicenterName":"富山湾","epicenterLocation":[137.4,37.4],"depth":10,"magnitude":null,
+			 "epicenterName":"テスト湾","epicenterLocation":[137.4,37.4],"depth":10,"magnitude":null,
 			 "originTime":"2026-09-11T17:52:34+09:00","arrivalTime":"2026-09-11T17:52:34+09:00",
 			 "accuracy":{"epicenters":["1","1"],"depth":"1","magnitudeCalculation":"1"},
 			 "regions":[],

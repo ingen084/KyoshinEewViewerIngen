@@ -58,7 +58,7 @@ public class EarthquakeInformationFragmentTests
 			<ArrivalTime>2026-01-01T12:00:00+09:00</ArrivalTime>
 			<Hypocenter>
 				<Area>
-					<Name>能登半島沖</Name>
+					<Name>テスト半島沖</Name>
 					<Code type="震央地名">495</Code>
 					<jmx_eb:Coordinate description="北緯３７．５度　東経１３７．３度　深さ　１０ｋｍ" datum="日本測地系">+37.5+137.3-10000/</jmx_eb:Coordinate>
 				</Area>
@@ -74,19 +74,19 @@ public class EarthquakeInformationFragmentTests
 				<MaxInt>5-</MaxInt>
 				<MaxLgInt>2</MaxLgInt>
 				<Pref>
-					<Name>石川県</Name><Code>17</Code><MaxInt>5-</MaxInt>
+					<Name>テスト県</Name><Code>17</Code><MaxInt>5-</MaxInt>
 					<Area>
-						<Name>石川県能登</Name><Code>390</Code><MaxInt>5-</MaxInt>
+						<Name>テスト県北部</Name><Code>390</Code><MaxInt>5-</MaxInt>
 						<City>
-							<Name>輪島市</Name><Code>1720400</Code><MaxInt>5-</MaxInt>
-							<IntensityStation><Name>輪島市鳳至町</Name><Code>1720400</Code><Int>5-</Int></IntensityStation>
+							<Name>テスト市</Name><Code>1720400</Code><MaxInt>5-</MaxInt>
+							<IntensityStation><Name>テスト市テスト町</Name><Code>1720400</Code><Int>5-</Int></IntensityStation>
 						</City>
 					</Area>
-					<Area><Name>石川県加賀</Name><Code>391</Code><MaxInt>3</MaxInt></Area>
+					<Area><Name>テスト県南部</Name><Code>391</Code><MaxInt>3</MaxInt></Area>
 				</Pref>
 				<Pref>
-					<Name>富山県</Name><Code>16</Code><MaxInt>3</MaxInt>
-					<Area><Name>富山県東部</Name><Code>380</Code><MaxInt>3</MaxInt></Area>
+					<Name>サンプル県</Name><Code>16</Code><MaxInt>3</MaxInt>
+					<Area><Name>サンプル県東部</Name><Code>380</Code><MaxInt>3</MaxInt></Area>
 				</Pref>
 			</Observation>
 		</Intensity>
@@ -109,14 +109,14 @@ public class EarthquakeInformationFragmentTests
 		Assert.False(fragment.IsTest);
 		Assert.Equal(new DateTime(2026, 1, 1, 12, 5, 0), fragment.ArrivedTime);
 		Assert.Equal(new DateTime(2026, 1, 1, 12, 2, 0), fragment.DetectionTime);
-		Assert.Equal("石川県能登", fragment.Place);
+		Assert.Equal("テスト県北部", fragment.Place);
 		Assert.Equal(JmaIntensity.Int5Lower, fragment.MaxIntensity);
 		Assert.False(fragment.IsOnlypoint);
 		Assert.Equal("この地震による津波の心配はありません。", fragment.Comment);
 		Assert.Equal("自由形式の文", fragment.FreeFormComment);
 
 		var single = Assert.IsType<IntensityInformationFragment>(Create(Report("震度速報", """
-			<Intensity><Observation><MaxInt>3</MaxInt><Pref><Name>石川県</Name><Area><Name>石川県能登</Name></Area></Pref></Observation></Intensity>
+			<Intensity><Observation><MaxInt>3</MaxInt><Pref><Name>テスト県</Name><Area><Name>テスト県北部</Name></Area></Pref></Observation></Intensity>
 			""", status: "試験")));
 		Assert.True(single.IsOnlypoint);
 		Assert.True(single.IsTest);
@@ -133,7 +133,7 @@ public class EarthquakeInformationFragmentTests
 		foreach (var f in new[] { (HypocenterInformationFragment)hypocenter, fragment })
 		{
 			Assert.Equal(new DateTime(2026, 1, 1, 12, 0, 0), f.OccurrenceTime);
-			Assert.Equal("能登半島沖", f.Place);
+			Assert.Equal("テスト半島沖", f.Place);
 			Assert.Equal(37.5f, f.Location.Latitude);
 			Assert.Equal(137.3f, f.Location.Longitude);
 			Assert.Equal(10, f.Depth);
@@ -155,7 +155,7 @@ public class EarthquakeInformationFragmentTests
 				<OriginTime>2026-01-01T12:00:00+09:00</OriginTime>
 				<Hypocenter>
 					<Area>
-						<Name>南太平洋</Name>
+						<Name>テスト海域</Name>
 						<jmx_eb:Coordinate description="南緯２０．３度　西経１７５．２度　深さ不明" datum="日本測地系">-20.3-175.2/</jmx_eb:Coordinate>
 						<jmx_eb:Coordinate type="震源位置（度分）" description="南緯２０度１８分　西経１７５度１２分　深さ　２０ｋｍ">-2018-17512-20000/</jmx_eb:Coordinate>
 					</Area>
@@ -163,7 +163,7 @@ public class EarthquakeInformationFragmentTests
 				<jmx_eb:Magnitude type="Mj" condition="不明" description="Ｍ不明">NaN</jmx_eb:Magnitude>
 			</Earthquake>
 			<Comments>
-				<FreeFormComment>１５日１３時１０分頃（日本時間）にフンガ・トンガ－フンガ・ハアパイ火山で大規模な噴火が発生しました。</FreeFormComment>
+				<FreeFormComment>１５日１３時１０分頃（日本時間）にテスト火山で大規模な噴火が発生しました。</FreeFormComment>
 			</Comments>
 			""", headTitle: "遠地地震に関する情報")));
 
@@ -176,7 +176,7 @@ public class EarthquakeInformationFragmentTests
 		Assert.Equal(JmaIntensity.Unknown, fragment.MaxIntensity);
 		Assert.True(fragment.IsForeign);
 		Assert.True(fragment.IsVolcano);
-		Assert.Equal("フンガ・トンガ－フンガ・ハアパイ火山", fragment.VolcanoName);
+		Assert.Equal("テスト火山", fragment.VolcanoName);
 		Assert.Null(fragment.Comment);
 	}
 
@@ -187,7 +187,7 @@ public class EarthquakeInformationFragmentTests
 
 		Assert.Equal(JmaIntensity.Int5Lower, fragment.MaxIntensity);
 		Assert.Equal(LpgmIntensity.LpgmInt2, fragment.MaxLpgmIntensity);
-		Assert.Equal("能登半島沖", fragment.Place);
+		Assert.Equal("テスト半島沖", fragment.Place);
 	}
 
 	[Fact(DisplayName = "必要な項目が欠けている電文や対象外の電文は例外になる")]

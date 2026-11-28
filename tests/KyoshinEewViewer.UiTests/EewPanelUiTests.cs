@@ -27,7 +27,7 @@ public sealed class EewPanelUiTests
 		Hypocenter = new()
 		{
 			OccurrenceTime = Occurred,
-			Place = "千葉県北西部",
+			Place = "テスト県北部",
 			Location = new KyoshinMonitorLib.Location(35.6f, 140.1f),
 			Magnitude = 5.4f,
 			Depth = 60,
@@ -41,11 +41,11 @@ public sealed class EewPanelUiTests
 	private static readonly DisplayCase[] DisplayCases =
 	[
 		new("予報", Forecast,
-			["緊急地震速報(03報)", "17日 08:30:12", "千葉県北西部", "60", "5.4", "受信元: 強震モニタ"],
+			["緊急地震速報(03報)", "17日 08:30:12", "テスト県北部", "60", "5.4", "受信元: 強震モニタ"],
 			["緊急地震速報(03報/最終)", "以上", "規模未受信", "不明", "警報地域", "キャンセルされました", "キャンセルまたは受信範囲外", "訓練"],
 			false),
 		new("訓練", Forecast with { IsTraining = true, DisplaySource = "EEW Client(気象庁本庁)" },
-			["訓練", "緊急地震速報(03報)", "千葉県北西部", "受信元: EEW Client(気象庁本庁)"],
+			["訓練", "緊急地震速報(03報)", "テスト県北部", "受信元: EEW Client(気象庁本庁)"],
 			[],
 			false),
 		new("警報の最終報", Forecast with
@@ -60,10 +60,10 @@ public sealed class EewPanelUiTests
 				DisplaySource = "DM-D.S.S",
 				SerialNo = 2,
 				Codes = [301, 350],
-				Names = ["千葉県北西部", "東京都２３区"],
+				Names = ["テスト県北部", "サンプル県南部"],
 			},
 		},
-			["緊急地震速報(12報/最終)", "以上", "警報地域", "2地域", "警報受信元: DM-D.S.S (2報)", "東京都２３区"],
+			["緊急地震速報(12報/最終)", "以上", "警報地域", "2地域", "警報受信元: DM-D.S.S (2報)", "サンプル県南部"],
 			["緊急地震速報(12報)"],
 			true),
 		new("仮定震源要素", Forecast with
