@@ -15,22 +15,22 @@ public class EewAreaAndRealtimeIntensityTest
 					<Intensity>
 						<Forecast>
 							<Pref>
-								<Name>宮城</Name>
+								<Name>テスト</Name>
 								<Code>9040</Code>
 								<Area>
-									<Name>宮城県中部</Name>
+									<Name>テスト県中部</Name>
 									<Code>222</Code>
 									<Category><Kind><Name>緊急地震速報（警報）</Name><Code>11</Code></Kind></Category>
 									<ForecastInt><From>5-</From><To>over</To></ForecastInt>
 									<ForecastLgInt><From>3</From><To>4</To></ForecastLgInt>
-									<ArrivalTime>2008-06-14T08:44:00+09:00</ArrivalTime>
+									<ArrivalTime>2026-01-01T12:00:20+09:00</ArrivalTime>
 								</Area>
 							</Pref>
 							<Pref>
-								<Name>岩手</Name>
+								<Name>サンプル</Name>
 								<Code>9030</Code>
 								<Area>
-									<Name>岩手県内陸南部</Name>
+									<Name>サンプル県南部</Name>
 									<Code>213</Code>
 									<Category><Kind><Name>緊急地震速報（警報）</Name><Code>11</Code></Kind></Category>
 									<ForecastInt><From>6-</From><To>6-</To></ForecastInt>
@@ -38,14 +38,14 @@ public class EewAreaAndRealtimeIntensityTest
 								</Area>
 							</Pref>
 							<Pref>
-								<Name>熊本</Name>
+								<Name>架空</Name>
 								<Code>9430</Code>
 								<Area>
-									<Name>熊本県熊本</Name>
+									<Name>架空県北部</Name>
 									<Code>741</Code>
 									<Category><Kind><Name>緊急地震速報（警報）</Name><Code>19</Code></Kind></Category>
 									<ForecastInt><From>4</From><To>5+</To></ForecastInt>
-									<ArrivalTime>2016-04-14T21:26:39+09:00</ArrivalTime>
+									<ArrivalTime>2026-01-01T12:00:35+09:00</ArrivalTime>
 								</Area>
 							</Pref>
 						</Forecast>
@@ -56,9 +56,9 @@ public class EewAreaAndRealtimeIntensityTest
 
 		(int PrefCode, int AreaCode, string Name, string KindCode, string From, string To, string? LgFrom, string? LgTo, DateTimeOffset? ArrivalTime, string? Condition)[] expected =
 		[
-			(9040, 222, "宮城県中部", "11", "5-", "over", "3", "4", new DateTimeOffset(2008, 6, 14, 8, 44, 0, TimeSpan.FromHours(9)), null),
-			(9030, 213, "岩手県内陸南部", "11", "6-", "6-", null, null, null, "既に主要動到達と推測"),
-			(9430, 741, "熊本県熊本", "19", "4", "5+", null, null, new DateTimeOffset(2016, 4, 14, 21, 26, 39, TimeSpan.FromHours(9)), null),
+			(9040, 222, "テスト県中部", "11", "5-", "over", "3", "4", new DateTimeOffset(2026, 1, 1, 12, 0, 20, TimeSpan.FromHours(9)), null),
+			(9030, 213, "サンプル県南部", "11", "6-", "6-", null, null, null, "既に主要動到達と推測"),
+			(9430, 741, "架空県北部", "19", "4", "5+", null, null, new DateTimeOffset(2026, 1, 1, 12, 0, 35, TimeSpan.FromHours(9)), null),
 		];
 		Assert.Equal(expected.Length, forecast.Prefs.Count);
 		foreach (var (pref, e) in forecast.Prefs.Zip(expected))
@@ -94,16 +94,16 @@ public class EewAreaAndRealtimeIntensityTest
 								<Type xpath="Pref/Area/City/IntensityStation/Code">リアルタイム震度観測点</Type>
 							</CodeDefine>
 							<Pref>
-								<Name>宮城県</Name>
+								<Name>テスト県</Name>
 								<Code>04</Code>
 								<Area>
-									<Name>宮城県中部</Name>
+									<Name>テスト県中部</Name>
 									<Code>222</Code>
 									<City>
-										<Name>石巻市</Name>
+										<Name>テスト市</Name>
 										<Code>0420200</Code>
-										<IntensityStation><Name>石巻市○○</Name><Code>0420202</Code><Int>3</Int><K>2.6</K></IntensityStation>
-										<IntensityStation><Name>石巻市××</Name><Code>0420203</Code><Int>0</Int><K>-1.2</K></IntensityStation>
+										<IntensityStation><Name>テスト市○○</Name><Code>0420202</Code><Int>3</Int><K>2.6</K></IntensityStation>
+										<IntensityStation><Name>テスト市××</Name><Code>0420203</Code><Int>0</Int><K>-1.2</K></IntensityStation>
 									</City>
 								</Area>
 							</Pref>
@@ -135,7 +135,7 @@ public class EewAreaAndRealtimeIntensityTest
 					<Intensity>
 						<Observation>
 							<Pref><Area><City>
-								<IntensityStation><Name>石巻市桃生町</Name><Code>0420231</Code><Int>5-</Int></IntensityStation>
+								<IntensityStation><Name>テスト市△△</Name><Code>0420231</Code><Int>5-</Int></IntensityStation>
 							</City></Area></Pref>
 						</Observation>
 					</Intensity>
