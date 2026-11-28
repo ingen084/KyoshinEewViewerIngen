@@ -1,4 +1,3 @@
-using StringLiteral;
 using System;
 using Xunit;
 
@@ -6,13 +5,12 @@ namespace KyoshinEewViewer.JmaXmlParser.Tests;
 
 public partial class HeadDataTest
 {
-	[Utf8("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Report><Head><Title>奈良県気象警報・注意報</Title><ReportDateTime>2011-09-03T12:00:00+09:00</ReportDateTime><TargetDateTime>2011-09-03T12:00:00+09:00</TargetDateTime><EventID /><InfoType>発表</InfoType><Serial /><InfoKind>気象警報・注意報</InfoKind><InfoKindVersion>1.0_0</InfoKindVersion></Head></Report>")]
-	private static partial ReadOnlySpan<byte> NormalBody1();
+	private static ReadOnlySpan<byte> NormalBody1() => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Report><Head><Title>奈良県気象警報・注意報</Title><ReportDateTime>2011-09-03T12:00:00+09:00</ReportDateTime><TargetDateTime>2011-09-03T12:00:00+09:00</TargetDateTime><EventID /><InfoType>発表</InfoType><Serial /><InfoKind>気象警報・注意報</InfoKind><InfoKindVersion>1.0_0</InfoKindVersion></Head></Report>"u8;
 
 	[Fact]
 	public void CanGetProterties()
 	{
-		using var doc = new JmaXmlDocument(NormalBody1());
+		var doc = JmaXml.Read<TestView>(NormalBody1());
 		Assert.Equal("奈良県気象警報・注意報", doc.Head.Title);
 		Assert.Equal(new DateTimeOffset(2011, 9, 3, 12, 0, 0, TimeSpan.FromHours(9)), doc.Head.ReportDateTime);
 		Assert.Equal(new DateTimeOffset(2011, 9, 3, 12, 0, 0, TimeSpan.FromHours(9)), doc.Head.TargetDateTime);
@@ -23,24 +21,22 @@ public partial class HeadDataTest
 		Assert.Equal("1.0_0", doc.Head.InfoKindVersion);
 	}
 
-	[Utf8("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Report><Head><Headline><Text>あああ</Text></Headline></Head></Report>")]
-	private static partial ReadOnlySpan<byte> NormalBody2();
+	private static ReadOnlySpan<byte> NormalBody2() => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Report><Head><Headline><Text>あああ</Text></Headline></Head></Report>"u8;
 
 	[Fact]
 	public void CanGetInformationEmptyHeadline()
 	{
-		using var doc = new JmaXmlDocument(NormalBody2());
+		var doc = JmaXml.Read<TestView>(NormalBody2());
 		Assert.Equal("あああ", doc.Head.Headline.Text);
 		Assert.Empty(doc.Head.Headline.Informations);
 	}
 
-	[Utf8("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Report><Head><Headline><Information type=\"type1\"><Item><Kind><Name>大雨警報</Name><Code>03</Code><Condition>土砂災害、浸水害</Condition></Kind></Item></Information></Headline></Head></Report>")]
-	private static partial ReadOnlySpan<byte> NormalBody3();
+	private static ReadOnlySpan<byte> NormalBody3() => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Report><Head><Headline><Information type=\"type1\"><Item><Kind><Name>大雨警報</Name><Code>03</Code><Condition>土砂災害、浸水害</Condition></Kind></Item></Information></Headline></Head></Report>"u8;
 
 	[Fact]
 	public void CanGetHeadlineInformationWithKind()
 	{
-		using var doc = new JmaXmlDocument(NormalBody3());
+		var doc = JmaXml.Read<TestView>(NormalBody3());
 		Assert.Collection(doc.Head.Headline.Informations, info =>
 		{
 			Assert.Equal("type1", info.Type);
@@ -56,13 +52,12 @@ public partial class HeadDataTest
 		});
 	}
 
-	[Utf8("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Report><Head><Headline><Information type=\"type1\"><Item><Areas codeType=\"気象情報／府県予報区・細分区域等\"><Area><Name>奈良県</Name><Code>290000</Code></Area></Areas></Item></Information></Headline></Head></Report>")]
-	private static partial ReadOnlySpan<byte> NormalBody4();
+	private static ReadOnlySpan<byte> NormalBody4() => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Report><Head><Headline><Information type=\"type1\"><Item><Areas codeType=\"気象情報／府県予報区・細分区域等\"><Area><Name>奈良県</Name><Code>290000</Code></Area></Areas></Item></Information></Headline></Head></Report>"u8;
 
 	[Fact]
 	public void CanGetHeadlineInformationWithArea()
 	{
-		using var doc = new JmaXmlDocument(NormalBody4());
+		var doc = JmaXml.Read<TestView>(NormalBody4());
 		Assert.Collection(doc.Head.Headline.Informations, info =>
 		{
 			Assert.Equal("type1", info.Type);

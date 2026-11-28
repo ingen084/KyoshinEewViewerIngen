@@ -1,38 +1,26 @@
-using System.Collections.Generic;
-using System.Linq;
-using U8Xml;
-
 namespace KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 
-public struct IntensityObservation(XmlNode node)
+[JmaXmlType]
+public sealed partial class IntensityObservation<TView>
 {
-	private XmlNode Node { get; set; } = node;
-
 	/// <summary>
 	/// コード体系の定義
 	/// </summary>
-	public IEnumerable<CodeDefineType> CodeDefineTypes
-	{
-		get {
-			if (!Node.TryFindChild(Literals.CodeDefine(), out var n))
-				return Enumerable.Empty<CodeDefineType>();
-			return n.Children.Where(c => c.Name == Literals.Type()).Select(c => new CodeDefineType(c));
-		}
-	}
+	[JmaXml("CodeDefine?/Type*")]
+	public partial JmaXmlList<CodeDefineType<TView>> CodeDefineTypes { get; }
 
-	private string? _maxInt = null;
 	/// <summary>
 	/// 最大震度
 	/// </summary>
-	public string? MaxInt => _maxInt ??= (Node.TryFindStringNode(Literals.MaxInt(), out var n) ? n : null);
+	[JmaXml("MaxInt?")]
+	public partial string? MaxInt { get; }
 
-	private string? _maxLgInt = null;
 	/// <summary>
 	/// 最大長周期地震動階級
 	/// </summary>
-	public string? MaxLgInt => _maxLgInt ??= (Node.TryFindStringNode(Literals.MaxLgInt(), out var n) ? n : null);
+	[JmaXml("MaxLgInt?")]
+	public partial string? MaxLgInt { get; }
 
-	private string? _lgCategory = null;
 	/// <summary>
 	/// 長周期地震動に関する観測情報の種類<br/>
 	/// 1. 全国の最大長周期地震動階級が２以下で、長周期地震動階級１以上が観測されたすべての地域において最大震度が５弱以上である<br/>
@@ -40,11 +28,12 @@ public struct IntensityObservation(XmlNode node)
 	/// 3. 全国の最大長周期地震動階級が３以上で、長周期地震動階級３以上が観測されたすべての地域において最大震度が５弱以上である<br/>
 	/// 4. 全国の最大長周期地震動階級が３以上で、長周期地震動階級３以上が観測された地域のうち最大震度が４以下となる地域が存在している
 	/// </summary>
-	public string? LgCategory => _lgCategory ??= (Node.TryFindStringNode(Literals.LgCategory(), out var n) ? n : null);
+	[JmaXml("LgCategory?")]
+	public partial string? LgCategory { get; }
 
 	/// <summary>
 	/// 都道府県毎の震度の観測状況
 	/// </summary>
-	public IEnumerable<Pref> Prefs
-		=> Node.Children.Where(c => c.Name == Literals.Pref()).Select(c => new Pref(c));
+	[JmaXml("Pref*")]
+	public partial JmaXmlList<Pref<TView>> Prefs { get; }
 }

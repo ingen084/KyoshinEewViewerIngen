@@ -1,21 +1,16 @@
-using KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
-using StringLiteral;
 using System;
-using U8Xml;
 using Xunit;
 
 namespace KyoshinEewViewer.JmaXmlParser.Tests.Earthquake;
 
 public partial class PrefAreaTest
 {
-	[Utf8("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Pref><Name>name</Name><Code>123</Code><MaxInt>maxint</MaxInt><MaxLgInt>maxLgInt</MaxLgInt><Revise>rev</Revise><Area></Area></Pref>")]
-	private static partial ReadOnlySpan<byte> PrefBody();
+	private static ReadOnlySpan<byte> PrefBody() => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Report><Body><Intensity><Observation><Pref><Name>name</Name><Code>123</Code><MaxInt>maxint</MaxInt><MaxLgInt>maxLgInt</MaxLgInt><Revise>rev</Revise><Area></Area></Pref></Observation></Intensity></Body></Report>"u8;
 
 	[Fact]
 	public void CanGetPrefProterties()
 	{
-		using var doc = XmlParser.Parse(PrefBody());
-		var node = new Pref(doc.Root);
+		var node = JmaXml.Read<TestView>(PrefBody()).EarthquakeBody.Intensity!.Observation!.Prefs[0];
 		Assert.Equal("name", node.Name);
 		Assert.Equal(123, node.Code);
 		Assert.Equal("maxint", node.MaxInt);
@@ -24,14 +19,12 @@ public partial class PrefAreaTest
 		Assert.Single(node.Areas);
 	}
 
-	[Utf8("<?xml version=\"1.0\" encoding=\"UTF-8\"?><Area><Name>name</Name><Code>123</Code><MaxInt>maxint</MaxInt><MaxLgInt>maxLgInt</MaxLgInt><Revise>rev</Revise><City></City><IntensityStation></IntensityStation></Area>")]
-	private static partial ReadOnlySpan<byte> AreaBody();
+	private static ReadOnlySpan<byte> AreaBody() => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Report><Body><Intensity><Observation><Pref><Area><Name>name</Name><Code>123</Code><MaxInt>maxint</MaxInt><MaxLgInt>maxLgInt</MaxLgInt><Revise>rev</Revise><City></City><IntensityStation></IntensityStation></Area></Pref></Observation></Intensity></Body></Report>"u8;
 
 	[Fact]
 	public void CanGetAreaProterties()
 	{
-		using var doc = XmlParser.Parse(AreaBody());
-		var node = new Area(doc.Root);
+		var node = JmaXml.Read<TestView>(AreaBody()).EarthquakeBody.Intensity!.Observation!.Prefs[0].Areas[0];
 		Assert.Equal("name", node.Name);
 		Assert.Equal(123, node.Code);
 		Assert.Equal("maxint", node.MaxInt);
@@ -41,14 +34,12 @@ public partial class PrefAreaTest
 		Assert.Single(node.IntensityStations);
 	}
 
-	[Utf8("<?xml version=\"1.0\" encoding=\"UTF-8\"?><City><Name>name</Name><Code>123</Code><MaxInt>maxint</MaxInt><MaxLgInt>maxLgInt</MaxLgInt><Revise>rev</Revise><Condition>condition</Condition><IntensityStation></IntensityStation></City>")]
-	private static partial ReadOnlySpan<byte> CityBody();
+	private static ReadOnlySpan<byte> CityBody() => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Report><Body><Intensity><Observation><Pref><Area><City><Name>name</Name><Code>123</Code><MaxInt>maxint</MaxInt><MaxLgInt>maxLgInt</MaxLgInt><Revise>rev</Revise><Condition>condition</Condition><IntensityStation></IntensityStation></City></Area></Pref></Observation></Intensity></Body></Report>"u8;
 
 	[Fact]
 	public void CanGetCityProterties()
 	{
-		using var doc = XmlParser.Parse(CityBody());
-		var node = new City(doc.Root);
+		var node = JmaXml.Read<TestView>(CityBody()).EarthquakeBody.Intensity!.Observation!.Prefs[0].Areas[0].Cities[0];
 		Assert.Equal("name", node.Name);
 		Assert.Equal(123, node.Code);
 		Assert.Equal("condition", node.Condition);
@@ -58,14 +49,12 @@ public partial class PrefAreaTest
 		Assert.Single(node.IntensityStations);
 	}
 
-	[Utf8("<?xml version=\"1.0\" encoding=\"UTF-8\"?><IntensityStation><Name>name</Name><Code>code</Code><Int>int</Int><Revise>rev</Revise><Sva></Sva><LgIntPerPeriod></LgIntPerPeriod><SvaPerPeriod></SvaPerPeriod></IntensityStation>")]
-	private static partial ReadOnlySpan<byte> IntensityStationBody();
+	private static ReadOnlySpan<byte> IntensityStationBody() => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Report><Body><Intensity><Observation><Pref><Area><City><IntensityStation><Name>name</Name><Code>code</Code><Int>int</Int><Revise>rev</Revise><Sva></Sva><LgIntPerPeriod></LgIntPerPeriod><SvaPerPeriod></SvaPerPeriod></IntensityStation></City></Area></Pref></Observation></Intensity></Body></Report>"u8;
 
 	[Fact]
 	public void CanGetIntensityStationProterties()
 	{
-		using var doc = XmlParser.Parse(IntensityStationBody());
-		var node = new IntensityStation(doc.Root);
+		var node = JmaXml.Read<TestView>(IntensityStationBody()).EarthquakeBody.Intensity!.Observation!.Prefs[0].Areas[0].Cities[0].IntensityStations[0];
 		Assert.Equal("name", node.Name);
 		Assert.Equal("code", node.Code);
 		Assert.Equal("int", node.Int);

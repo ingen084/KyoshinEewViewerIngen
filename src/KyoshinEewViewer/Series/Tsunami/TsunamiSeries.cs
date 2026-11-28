@@ -133,7 +133,7 @@ public partial class TsunamiSeries : SeriesBase
 					foreach (var lt in t.Skip(Array.IndexOf(t, last)).Where(t => SupportedControlTitle.Contains(t.Title)).ToArray())
 					{
 						await using var stream = await lt.GetBodyAsync();
-						using var report = new JmaXmlDocument(stream);
+						var report = JmaXml.Read<TsunamiInformationView>(stream);
 						(var tsunami, var bound) = ProcessInformation(report);
 						if (tsunami == null || tsunami.CheckExpired(timerService.CurrentTime))
 							return;
@@ -151,7 +151,7 @@ public partial class TsunamiSeries : SeriesBase
 				if (!SupportedControlTitle.Contains(t.Title))
 					return;
 				await using var stream = await t.GetBodyAsync();
-				using var report = new JmaXmlDocument(stream);
+				var report = JmaXml.Read<TsunamiInformationView>(stream);
 				(var tsunami, var bound) = ProcessInformation(report);
 				if (tsunami == null || (Current != null && tsunami.ReportedAt < Current.ReportedAt) || tsunami.CheckExpired(timerService.CurrentTime))
 					return;
@@ -329,7 +329,7 @@ public partial class TsunamiSeries : SeriesBase
 				return;
 
 			await using var stream = await files[0].OpenReadAsync();
-			using var report = new JmaXmlDocument(stream);
+			var report = JmaXml.Read<TsunamiInformationView>(stream);
 			(Current, var focus) = ProcessInformation(report);
 			MapNavigationRequest = new(focus);
 		}
@@ -339,7 +339,7 @@ public partial class TsunamiSeries : SeriesBase
 		}
 	}
 
-	public (TsunamiInfo?, Avalonia.Rect?) ProcessInformation(JmaXmlDocument report)
+	public (TsunamiInfo?, Avalonia.Rect?) ProcessInformation(JmaXmlDocument<TsunamiInformationView> report)
 	{
 		if (!SupportedControlTitle.Contains(report.Control.Title))
 			return (null, null);

@@ -59,7 +59,7 @@ dotnet build KyoshinEewViewer.sln -t:Rebuild
 - `KyoshinEewViewer.CustomControl`: カスタムUIコントロール
 - `KyoshinEewViewer.JmaXmlParser`: JMA XML パーサー
 - `KyoshinEewViewer.DCReportParser`: QZSS 災危通報パーサー
-- `KyoshinEewViewer.CsvSourceGenerator`: CSV辞書のコード生成
+- `KyoshinEewViewer.CodeAnalysis`: ソースジェネレーター (CSV辞書、JMA XML の読み取りコード) とアナライザー
 - `common.props`: 共有 MSBuild プロパティ (.NET 11.0、Nullable など)
 
 ### 技術スタック
@@ -138,6 +138,26 @@ bool プロパティに応じたスタイル切り替えには、コンバータ
 - `TelegramProvideService` は同じカテゴリの購読者を順番に `await` する。ハンドラで長く待つと後続の購読者への配信が遅れるので、待つ必要のない処理は完了を待たずに返す
 - **複数のストリームから同じ UI 状態を更新する場合**は、ストリームごとに `ObserveOn` で購読せず、`Observable.Merge` などで1本にまとめてから `ObserveOn` する。System.Reactive の `ObserveOn` は1回のディスパッチで1件しか処理せず、続きを改めてディスパッチャーへ投入するため、別々の購読の間では発行した順に処理されない (例: 先に発行した「取得中」の通知が、後から発行した「取得完了」の通知より後に処理され、表示が「取得中」のまま残る)。実装例は `EarthquakeSeries`
 - **地図レイヤー描画**: CPU側でビットマップに事前ラスタライズしてキャッシュするのではなく、シェーダー (`SKRuntimeEffect`/SKSL) で毎フレーム、メッシュデータから直接画面出力へ変換する方式を優先する。テクスチャとして GPU にデータを渡す場合は「画像キャッシュ」ではなくデータ格納形式として扱う。ズームに応じた LOD (一次メッシュ粒度の切り替えなど) も選択肢に入れる
+
+### JMA XML の読み取り
+
+気象庁防災情報XMLは `KyoshinEewViewer.JmaXmlParser` の型 (`JmaXmlDocument<TView>` と `Data` 以下の型) で読む。読み取りコードは `JmaXmlGenerator` (`KyoshinEewViewer.CodeAnalysis`) が生成し、**コード上で参照したメンバーだけ**を1回の走査で読む。
+
+```csharp
+// 読み取りの単位。名前空間直下の partial 構造体として宣言する
+[JmaXmlView]
+internal partial struct EarthquakeStationsView;
+
+var report = JmaXml.Read<EarthquakeStationsView>(stream);
+foreach (var pref in report.EarthquakeBody.Intensity?.Observation?.Prefs ?? default) { ... }
+```
+
+- **読み取りの単位は読み取り箇所ごとに宣言する**。同じ単位を複数の箇所で使うと、どこか1か所で参照したメンバーがすべての箇所で読み取られる。名前は UI の View (`TyphoonView` など) と重ならないようにする
+- 参照していないメンバーは読み取られない。リフレクションなどで参照すると、値なしではなく `InvalidOperationException` になる。プロパティを列挙する仕組み (Scriban、JSON シリアライズ、バインディング) にこれらの型を渡さない
+- **別のアセンブリ (テストなど) で読む場合は、そのアセンブリで読み取りの単位を宣言する**。他のアセンブリの単位に対して対象外のメンバーを参照すると KEVIJMA001 のコンパイルエラーになる。`common.props` を取り込んでいないプロジェクトで単位を宣言するには、`KyoshinEewViewer.CodeAnalysis` へのアナライザー参照 (`OutputItemType="Analyzer" ReferenceOutputAssembly="false"`) が必要
+- 型引数を型パラメーターのまま受け取るメソッド (`void F<TView>(Pref<TView> pref)`) の中で参照したメンバーは、すべての単位の読み取り対象に加わる。共通処理には、値に変換してから渡す
+- 必須の要素や属性がない場合は、読み取り時ではなくメンバーを参照した時点で `JmaXmlParseException` になる
+- 型にメンバーを追加するときは、`[JmaXml("経路")]` を付けた partial プロパティを宣言する。経路の書式は `JmaXmlAttribute` のドキュメントコメントを参照する。型は JmaXmlParser の中に定義する
 
 ### 命名規則
 

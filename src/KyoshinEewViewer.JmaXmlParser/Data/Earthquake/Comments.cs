@@ -1,116 +1,47 @@
-using U8Xml;
-
 namespace KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 
-public struct Comments(XmlNode node)
+[JmaXmlType]
+public sealed partial class Comments<TView>
 {
-	private XmlNode Node { get; set; } = node;
-
-	private string? _forecastCommentText = null;
 	/// <summary>
 	/// 固定付加文(本文)
 	/// </summary>
-	public string? ForecastCommentText
-	{
-		get {
-			if (_forecastCommentText != null)
-				return _forecastCommentText;
-			if (!Node.TryFindChild(Literals.ForecastComment(), out var n))
-				return null;
-			if (!n.TryFindStringNode(Literals.Text(), out var r))
-				throw new JmaXmlParseException("Text ノードが存在しません");
-			return _forecastCommentText = r;
-		}
-	}
+	[JmaXml("ForecastComment?/Text!")]
+	public partial string? ForecastCommentText { get; }
 
-	private string? _forecastCommentCode = null;
 	/// <summary>
 	/// 固定付加文(コード)
 	/// </summary>
-	public string? ForecastCommentCode
-	{
-		get {
-			if (_forecastCommentCode != null)
-				return _forecastCommentCode;
-			if (!Node.TryFindChild(Literals.ForecastComment(), out var n))
-				return null;
-			if (!n.TryFindStringNode(Literals.Code(), out var r))
-				throw new JmaXmlParseException("Code ノードが存在しません");
-			return _forecastCommentCode = r;
-		}
-	}
+	[JmaXml("ForecastComment?/Code!")]
+	public partial string? ForecastCommentCode { get; }
 
-	private string? _warningCommentText = null;
 	/// <summary>
 	/// 固定付加文(本文)
 	/// </summary>
-	public string? WarningCommentText
-	{
-		get {
-			if (_warningCommentText != null)
-				return _warningCommentText;
-			if (!Node.TryFindChild(Literals.WarningComment(), out var n))
-				return null;
-			if (!n.TryFindStringNode(Literals.Text(), out var r))
-				throw new JmaXmlParseException("Text ノードが存在しません");
-			return _warningCommentText = r;
-		}
-	}
+	[JmaXml("WarningComment?/Text!")]
+	public partial string? WarningCommentText { get; }
 
-	private string? _warningCommentCode = null;
 	/// <summary>
 	/// 固定付加文(コード)
 	/// </summary>
-	public string? WarningCommentCode
-	{
-		get {
-			if (_warningCommentCode != null)
-				return _warningCommentCode;
-			if (!Node.TryFindChild(Literals.WarningComment(), out var n))
-				return null;
-			if (!n.TryFindStringNode(Literals.Code(), out var r))
-				throw new JmaXmlParseException("Code ノードが存在しません");
-			return _warningCommentCode = r;
-		}
-	}
+	[JmaXml("WarningComment?/Code!")]
+	public partial string? WarningCommentCode { get; }
 
-	private string? _varCommentText = null;
 	/// <summary>
 	/// 固定付加文(その他･本文)
 	/// </summary>
-	public string? VarCommentText
-	{
-		get {
-			if (_varCommentText != null)
-				return _varCommentText;
-			if (!Node.TryFindChild(Literals.VarComment(), out var n))
-				return null;
-			if (!n.TryFindStringNode(Literals.Text(), out var r))
-				throw new JmaXmlParseException("Text ノードが存在しません");
-			return _varCommentText = r;
-		}
-	}
+	[JmaXml("VarComment?/Text!")]
+	public partial string? VarCommentText { get; }
 
-	private string? _varCommentCode = null;
 	/// <summary>
 	/// 固定付加文(その他･コード)
 	/// </summary>
-	public string? VarCommentCode
-	{
-		get {
-			if (_varCommentCode != null)
-				return _varCommentCode;
-			if (!Node.TryFindChild(Literals.VarComment(), out var n))
-				return null;
-			if (!n.TryFindStringNode(Literals.Code(), out var r))
-				throw new JmaXmlParseException("Code ノードが存在しません");
-			return _varCommentCode = r;
-		}
-	}
+	[JmaXml("VarComment?/Code!")]
+	public partial string? VarCommentCode { get; }
 
-	private string? _freeFormComment = null;
 	/// <summary>
 	/// 自由付加文
 	/// </summary>
-	public string? FreeFormComment => _freeFormComment ??= (Node.TryFindStringNode(Literals.FreeFormComment(), out var n) ? n : null);
+	[JmaXml("FreeFormComment?")]
+	public partial string? FreeFormComment { get; }
 }

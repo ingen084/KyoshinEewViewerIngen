@@ -1,11 +1,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using KyoshinEewViewer.Core;
 using KyoshinEewViewer.JmaXmlParser;
-using KyoshinEewViewer.JmaXmlParser.Data.Earthquake;
 using KyoshinEewViewer.Series.Earthquake.Services;
 using KyoshinEewViewer.Services.TelegramPublishers;
 using KyoshinMonitorLib;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -21,7 +21,7 @@ public abstract partial class EarthquakeInformationFragment : ObservableObject
 	/// 「震源位置（度分）」が存在する場合はそちらを優先し、無ければ通常の「震源位置」を採用する。
 	/// 誤差は座標表現の精度から推定する。
 	/// </summary>
-	private static (Location? Location, Location? LocationError, int Depth, int? DepthError) ParseHypocenterCoordinates(HypocenterArea area)
+	private static (Location? Location, Location? LocationError, int Depth, int? DepthError) ParseHypocenterCoordinates(IEnumerable<(string? Type, string Value)> coordinates)
 	{
 		Location? location = null;
 		Location? locationError = null;
@@ -34,7 +34,7 @@ public abstract partial class EarthquakeInformationFragment : ObservableObject
 		int? degreeMinuteDepthError = null;
 		var hasDegreeMinute = false;
 
-		foreach (var c in area.Coordinates)
+		foreach (var c in coordinates)
 		{
 			if (c.Type == "震源位置（度分）")
 			{
@@ -71,7 +71,7 @@ public abstract partial class EarthquakeInformationFragment : ObservableObject
 	}
 
 	// メモ　取り消しは上位でやる
-	public static EarthquakeInformationFragment CreateFromJmxXmlDocument(Telegram telegram, JmaXmlDocument report)
+	public static EarthquakeInformationFragment CreateFromJmxXmlDocument(Telegram telegram, JmaXmlDocument<EarthquakeFragmentView> report)
 	{
 		switch (report.Control.Title)
 		{
@@ -81,7 +81,7 @@ public abstract partial class EarthquakeInformationFragment : ObservableObject
 					if (report.EarthquakeBody.Earthquake is not { } earthquake)
 						throw new EarthquakeInformationFragmentProcessException("Earthquake がみつかりません");
 
-					var (location, locationError, depth, depthError) = ParseHypocenterCoordinates(earthquake.Hypocenter.Area);
+					var (location, locationError, depth, depthError) = ParseHypocenterCoordinates(earthquake.Hypocenter.Area.Coordinates.Select(c => (c.Type, c.Value!)));
 
 					return new HypocenterInformationFragment
 					{
@@ -156,7 +156,7 @@ public abstract partial class EarthquakeInformationFragment : ObservableObject
 					if (report.EarthquakeBody.Earthquake is not { } earthquake)
 						throw new EarthquakeInformationFragmentProcessException("Earthquake がみつかりません");
 
-					var (location, locationError, depth, depthError) = ParseHypocenterCoordinates(earthquake.Hypocenter.Area);
+					var (location, locationError, depth, depthError) = ParseHypocenterCoordinates(earthquake.Hypocenter.Area.Coordinates.Select(c => (c.Type, c.Value!)));
 
 					MatchCollection? volcanoMatches = null;
 					if (report.EarthquakeBody.Comments?.FreeFormComment is string fc)
@@ -196,7 +196,7 @@ public abstract partial class EarthquakeInformationFragment : ObservableObject
 					if (report.EarthquakeBody.Earthquake is not { } earthquake)
 						throw new EarthquakeInformationFragmentProcessException("Earthquake がみつかりません");
 
-					var (location, locationError, depth, depthError) = ParseHypocenterCoordinates(earthquake.Hypocenter.Area);
+					var (location, locationError, depth, depthError) = ParseHypocenterCoordinates(earthquake.Hypocenter.Area.Coordinates.Select(c => (c.Type, c.Value!)));
 
 					return new LpgmIntensityInformationFragment
 					{
@@ -233,7 +233,7 @@ public abstract partial class EarthquakeInformationFragment : ObservableObject
 
 	}
 
-	public static (string EventId, EarthquakeInformationFragment Fragment)[] CreateFromTsunamiJmxXmlDocument(Telegram telegram, JmaXmlDocument report)
+	public static (string EventId, EarthquakeInformationFragment Fragment)[] CreateFromTsunamiJmxXmlDocument(Telegram telegram, JmaXmlDocument<TsunamiEarthquakeView> report)
 	{
 		if (report.Control.Title != "津波警報・注意報・予報a")
 			throw new EarthquakeInformationFragmentProcessException($"不明な電文タイトルです: {report.Control.Title}");
@@ -250,7 +250,7 @@ public abstract partial class EarthquakeInformationFragment : ObservableObject
 		{
 			var earthquake = earthquakes[i];
 
-			var (location, locationError, depth, depthError) = ParseHypocenterCoordinates(earthquake.Hypocenter.Area);
+			var (location, locationError, depth, depthError) = ParseHypocenterCoordinates(earthquake.Hypocenter.Area.Coordinates.Select(c => (c.Type, c.Value!)));
 
 			result[i] = (eventIds[i], new HypocenterInformationFragment
 			{
@@ -272,8 +272,8 @@ public abstract partial class EarthquakeInformationFragment : ObservableObject
 				Depth = depth,
 				DepthError = depthError,
 
-				Comment = report.EarthquakeBody.Comments?.ForecastCommentText,
-				FreeFormComment = report.EarthquakeBody.Comments?.FreeFormComment,
+				Comment = report.TsunamiBody.Comments?.ForecastCommentText,
+				FreeFormComment = report.TsunamiBody.Comments?.FreeFormComment,
 			});
 		}
 		return result;

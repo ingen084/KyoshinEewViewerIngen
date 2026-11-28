@@ -1,22 +1,17 @@
-using System.Collections.Generic;
-using System.Linq;
-using U8Xml;
-
 namespace KyoshinEewViewer.JmaXmlParser.Data.Headline;
 
-public struct HeadlineInformation(XmlNode node)
+[JmaXmlType]
+public sealed partial class HeadlineInformation<TView>
 {
-	private XmlNode Node { get; set; } = node;
-
-	private string? _type = null;
 	/// <summary>
 	/// 事項種別
 	/// </summary>
-	public string Type => _type ??= (Node.TryFindStringAttribute(Literals.AttrType(), out var n) ? n : throw new JmaXmlParseException("type 属性が存在しません"));
+	[JmaXml("@type!")]
+	public partial string Type { get; }
 
 	/// <summary>
 	/// 事項種別と対象地域
 	/// </summary>
-	public IEnumerable<HeadlineInformationItem> Items
-		=> Node.Children.Where(c => c.Name == Literals.Item()).Select(c => new HeadlineInformationItem(c));
+	[JmaXml("Item*")]
+	public partial JmaXmlList<HeadlineInformationItem<TView>> Items { get; }
 }

@@ -128,7 +128,7 @@ public partial class TyphoonWatchService : ObservableObject
 	{
 		using (body)
 		{
-			using var document = new JmaXmlDocument(body);
+			var document = JmaXml.Read<TyphoonTelegramView>(body);
 
 			// 今のところこれのみ対応
 			if (document.Control.Title != "台風解析・予報情報（５日予報）（Ｈ３０）")
@@ -138,7 +138,7 @@ public partial class TyphoonWatchService : ObservableObject
 			(string, bool, TyphoonPlace?) currentPlace = ("", false, null);
 			TyphoonPlace? estimatePlace = null;
 
-			(Direction d, int l)? ParseAxis(Axis axis)
+			(Direction d, int l)? ParseAxis(Axis<TyphoonTelegramView> axis)
 			{
 				var direction = CoordinateConverter.GetDirection(axis.Direction.Value) ?? Direction.None;
 				// サイズが取得できないときはデータがないという扱いにする
@@ -150,7 +150,7 @@ public partial class TyphoonWatchService : ObservableObject
 				return (direction, radius);
 			}
 
-			TyphoonRenderCircle? ParseCircleElement(Location center, TyphoonCircle circle)
+			TyphoonRenderCircle? ParseCircleElement(Location center, TyphoonCircle<TyphoonTelegramView> circle)
 			{
 				// 取得できる方向要素を取得
 				var axes = circle.Axes.Select(ParseAxis).Where(x => x is not null).Select(x => x!.Value).ToArray();
@@ -171,7 +171,7 @@ public partial class TyphoonWatchService : ObservableObject
 				return new TyphoonRenderCircle(center, range, rawCenter);
 			}
 
-			(string, bool, TyphoonPlace) ProcessNowTyphoonCircle(MeteorologicalInfo info)
+			(string, bool, TyphoonPlace) ProcessNowTyphoonCircle(MeteorologicalInfo<TyphoonTelegramView> info)
 			{
 				var namePart = info.MeteorologicalInfoKindProperties.First(p => p.Type == "呼称");
 				var number = string.IsNullOrWhiteSpace(namePart.TyphoonNamePart.Number) ? null : namePart.TyphoonNamePart.Number[2..];
@@ -183,7 +183,7 @@ public partial class TyphoonWatchService : ObservableObject
 				);
 			}
 
-			TyphoonPlace ProcessEstimateTyphoonCircle(MeteorologicalInfo info)
+			TyphoonPlace ProcessEstimateTyphoonCircle(MeteorologicalInfo<TyphoonTelegramView> info)
 			{
 				TyphoonRenderCircle? strongCircle = null, stormCircle = null;
 
@@ -193,12 +193,12 @@ public partial class TyphoonWatchService : ObservableObject
 				var center = CoordinateConverter.GetLocation(centerPart.CenterPart.Coordinates.First(c => c.Type == "中心位置（度）").Value) ?? throw new Exception("現在の中心座標が取得できません");
 
 				// 消滅時などの場合は存在しない
-				MeteorologicalInfoKindProperty? windPart = null;
+				MeteorologicalInfoKindProperty<TyphoonTelegramView>? windPart = null;
 				if (info.MeteorologicalInfoKindProperties.Any(p => p.Type == "風"))
 				{
 					windPart = info.MeteorologicalInfoKindProperties.First(p => p.Type == "風");
-					strongCircle = ParseCircleElement(center, windPart.Value.WarningAreaParts.First(a => a.Type == "強風域").Circle);
-					stormCircle = ParseCircleElement(center, windPart.Value.WarningAreaParts.First(a => a.Type == "暴風域").Circle);
+					strongCircle = ParseCircleElement(center, windPart.WarningAreaParts.First(a => a.Type == "強風域").Circle);
+					stormCircle = ParseCircleElement(center, windPart.WarningAreaParts.First(a => a.Type == "暴風域").Circle);
 				}
 
 				return new(
@@ -218,7 +218,7 @@ public partial class TyphoonWatchService : ObservableObject
 			}
 
 			// 引数として MeteorologicalInfo をとる
-			TyphoonPlace ProcessForecastTyphoonCircle(MeteorologicalInfo info)
+			TyphoonPlace ProcessForecastTyphoonCircle(MeteorologicalInfo<TyphoonTelegramView> info)
 			{
 				TyphoonRenderCircle? forecastCircle = null, forecastStormCircle = null;
 
@@ -230,11 +230,11 @@ public partial class TyphoonWatchService : ObservableObject
 				forecastCircle = ParseCircleElement(center, area);
 
 				// 消滅時などの場合は存在しない
-				MeteorologicalInfoKindProperty? windPart = null;
+				MeteorologicalInfoKindProperty<TyphoonTelegramView>? windPart = null;
 				if (info.MeteorologicalInfoKindProperties.Any(p => p.Type == "風"))
 				{
 					windPart = info.MeteorologicalInfoKindProperties.First(p => p.Type == "風");
-					forecastStormCircle = ParseCircleElement(center, windPart.Value.WarningAreaParts.First(a => a.Type == "暴風警戒域").Circle);
+					forecastStormCircle = ParseCircleElement(center, windPart.WarningAreaParts.First(a => a.Type == "暴風警戒域").Circle);
 				}
 
 				return new(

@@ -49,7 +49,7 @@ public partial class EewTelegramSubscriber : ObservableObject
 				try
 				{
 					await using var stream = await t.GetBodyAsync();
-					using var report = new JmaXmlDocument(stream);
+					var report = JmaXml.Read<EewForecastView>(stream);
 
 					// サポート外であれば見なかったことにする
 					if (report.Control.Title == "緊急地震速報配信テスト")
@@ -158,7 +158,7 @@ public partial class EewTelegramSubscriber : ObservableObject
 				try
 				{
 					await using var stream = await t.GetBodyAsync();
-					using var report = new JmaXmlDocument(stream);
+					var report = JmaXml.Read<EewWarningView>(stream);
 
 					// 試験は扱わない
 					if (report.Control.Status is not ("通常" or "訓練"))

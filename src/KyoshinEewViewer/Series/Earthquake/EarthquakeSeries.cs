@@ -377,7 +377,7 @@ public partial class EarthquakeSeries : SeriesBase
 			var pointGroups = new List<ObservationIntensityGroup>();
 
 			await using var stream = await targetFragment.BasedTelegram.GetBodyAsync();
-			using var report = new JmaXmlDocument(stream);
+			var report = JmaXml.Read<EarthquakeStationsView>(stream);
 
 			// 観測点に関する情報を解析する
 			void ProcessDetailPoints(bool onlyAreas)
